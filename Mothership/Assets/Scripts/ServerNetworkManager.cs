@@ -1,29 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Events;
 
 public class ServerNetworkManager : NetworkManager
 {
-    //TODO: Make this customizable when creating server
-    private const string gameName = "Mothership001";
-    public string GameName { get { return gameName; } }
-    private const string gameDesc = "Test Mothership Server";
-    public string GameDesc { get { return gameDesc; } }
+    private string GameName { get; set; }
+    private string GameDescription { get; set; }
 
     private ServerManager ServerManager { get; set; }
 
     // Used for level loading to prevent message leaking
     public int LastLevelPrefix { get; private set; }
 
-    public System.Action<bool> OnServerReady { get; set; }
+    public UnityAction OnServerReady { get; set; }
 
-    public void StartServer()
+    public void StartServer(string gameName, string gameDescription)
     {
         if (!Network.isServer && !Network.isClient)
         {
+            GameName = gameName;
+            GameDescription = gameDescription;
             NetworkConnectionError error = Network.InitializeServer(5, 25000, !Network.HavePublicAddress());
             if (error == NetworkConnectionError.NoError)
             {
-                MasterServer.RegisterHost(gameTypeName, gameName, gameDesc);
+                Network.maxConnections = 8;
+                MasterServer.RegisterHost(gameTypeName, GameName, GameDescription);
             }
             else
             {
@@ -32,11 +33,6 @@ public class ServerNetworkManager : NetworkManager
         }
     }
 
-    private void OnServerInitialized()
-    {
-        Debug.Log("Server Ready - waiting for registraion");
-        InitialiseRoleManager();
-    }
 
     private void OnMasterServerEvent(MasterServerEvent msEvent)
     {
@@ -45,7 +41,7 @@ public class ServerNetworkManager : NetworkManager
         switch (msEvent)
         {
             case MasterServerEvent.RegistrationSucceeded:
-                
+                InitialiseRoleManager();
                 break;
         }
 
@@ -53,10 +49,7 @@ public class ServerNetworkManager : NetworkManager
 
     private void OnFailedToConnectToMasterServer(NetworkConnectionError info)
     {
-        if (OnServerReady != null)
-        {
-            OnServerReady(false);
-        }
+        
     }
 
     private void InitialiseRoleManager()
@@ -64,6 +57,11 @@ public class ServerNetworkManager : NetworkManager
         GameObject roleManagerObj = new GameObject(roleManagerObjectName);
         ServerManager = roleManagerObj.AddComponent<ServerManager>();
         //ServerManager.Init(this);
+
+        if(OnServerReady != null)
+        {
+            OnServerReady();
+        }
     }
 
     private void OnPlayerConnected(NetworkPlayer newPlayer)
