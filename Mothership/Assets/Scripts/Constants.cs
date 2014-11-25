@@ -8,7 +8,7 @@ namespace Mothership
         public const string GAME_MOTHERSHIP = "MotherShip";
 
         // NPC related constants.
-        public const float DEFAULT_NPC_SPEED = 50.0f;
+        public const float DEFAULT_NPC_SPEED = 10.0f;
     }
 
     public class DefaultPaths

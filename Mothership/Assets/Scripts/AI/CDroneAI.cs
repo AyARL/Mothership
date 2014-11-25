@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Mothership;
 
-public class CDroneAI : MonoBehaviour {
+public class CDroneAI : IAIBase {
 	
     // Declares the drone's states.
 	public enum EDroneState
@@ -19,35 +19,9 @@ public class CDroneAI : MonoBehaviour {
     private EDroneState m_eState = EDroneState.DRONE_IDLE;
     public EDroneState DroneState { get { return m_eState; } }
 
-    // The speed of this lovely drone.
-    [ SerializeField ]
-	private float m_fSpeed;
-    public float Speed { get { return m_fSpeed; } }
-
-    // The Health.
-    [ SerializeField ]
-    private float m_fHealth = 100;
-    public float Health { get { return m_fHealth; } }
-
-	public bool DebugMode;
-	
-    // Will indicate if we reached the target node.
-	private bool m_bReachedNode = true;
-    public bool ReachedNode { get { return m_bReachedNode; } }
-
-    // Current target position.
-    [ SerializeField ]
-	private Vector3 m_v3Target = Vector3.zero;
-    public Vector3 TargetPosition { get { return m_v3Target; } }
-
-    // Target Node.
-	Vector3 m_v3CurrNode;
-	int m_iNodeIndex;
-	List< Vector3 > m_liPath = new List<Vector3>();
-	float m_fOldTime = 0;
-	float m_fCheckTime = 0;
-	float m_fElapsedTime = 0;
-
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               Awake
+    /////////////////////////////////////////////////////////////////////////////
     void Awake()
     {
         m_v3Target = GameObject.Find( "Target" ).transform.position;
@@ -58,6 +32,12 @@ public class CDroneAI : MonoBehaviour {
     /////////////////////////////////////////////////////////////////////////////
 	void Update () 
 	{
+        // Call in the interface update function.
+        base.Update();
+
+        // Will check if we need to transition to a new state
+        CheckForTransitions();
+
         // Will run the NPCs State machines logic.
         RunStates();
 	}
@@ -67,17 +47,13 @@ public class CDroneAI : MonoBehaviour {
     /////////////////////////////////////////////////////////////////////////////
     private void RunStates()
     {
-        // Set the NPCs speed.
-		m_fSpeed = Time.deltaTime * Constants.DEFAULT_NPC_SPEED;
 		m_fElapsedTime += Time.deltaTime;
 		
 		if (m_fElapsedTime > m_fOldTime)
 		{
 			switch ( m_eState )
 			{
-			case EDroneState.DRONE_IDLE:
-
-                MoveOrder( m_v3Target );
+                case EDroneState.DRONE_IDLE:
 
 				break;
 				
@@ -105,65 +81,27 @@ public class CDroneAI : MonoBehaviour {
 			}
 		}
     }
-	
+  
     /////////////////////////////////////////////////////////////////////////////
-    /// Function:               GoTo
+    /// Function:               CheckForTransitions
     /////////////////////////////////////////////////////////////////////////////
-	void GoTo()
-	{
-		if ( DebugMode )
-		{
-			for ( int i=0; i<m_liPath.Count-1; ++i )
-			{
-				Debug.DrawLine( ( Vector3 )m_liPath[ i ], ( Vector3 )m_liPath[ i + 1 ], Color.white, 0.01f );
-			}
-		}
-		
-		Vector3 v3NewPos = transform.position;
-		float fXdistance = v3NewPos.x - m_v3CurrNode.x;
-        float fYdistance = v3NewPos.z - m_v3CurrNode.z;
+    private void CheckForTransitions()
+    {
+        // According to current state, we will check if we need to transition to
+        //  a different state.
+        switch ( m_eState )
+        {
+            case EDroneState.DRONE_IDLE:
 
-		if ( fXdistance < 0 ) 
-            fXdistance -= fXdistance * 2;
+                if ( null != m_v3Target )
+                {
+                    MoveOrder( m_v3Target );
+                    m_eState = EDroneState.DRONE_MOVING;
+                }
 
-		if ( fYdistance < 0 ) 
-            fYdistance -= fYdistance * 2;
-	
-		if ( ( fXdistance < 0.1 && fYdistance < 0.1 ) && m_v3Target == m_v3CurrNode )
-		{
-			m_eState = EDroneState.DRONE_IDLE;
-		}
-
-		else if ( fXdistance < 0.1 && fYdistance < 0.1 )
-		{
-			m_iNodeIndex++;
-			m_bReachedNode = true;
-		}
-
-		Vector3 v3Motion = m_v3CurrNode - v3NewPos;
-		v3Motion.Normalize();
-		v3NewPos += v3Motion * m_fSpeed;
-		
-		transform.position = v3NewPos;
-	}
-	
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               SetTarget
-    /////////////////////////////////////////////////////////////////////////////
-	private void SetTarget()
-	{
-		m_liPath = CNodeController.FindPath( transform.position, m_v3Target );
-		m_iNodeIndex = 0;
-		m_bReachedNode = true;
-	}
-	
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               MoveOrder
-    /////////////////////////////////////////////////////////////////////////////
-	public void MoveOrder( Vector3 v3Pos )
-	{
-		m_v3Target = v3Pos;
-		SetTarget();
-		m_eState = EDroneState.DRONE_MOVING;
-	}
+                break;
+            case EDroneState.DRONE_MOVING:
+                break;
+        }
+    }
 }

@@ -119,8 +119,7 @@ public class CNodeController : MonoBehaviour {
 
 		// We need to check if we have a clear path towards the target.
 		float fTargetDistance = Vector3.Distance( v3StartPos, v3TargetPos );
-		//if ( fTargetDistance > .7f )
-			//fTargetDistance -= .7f;
+
 		if ( false == Physics.Raycast( v3StartPos, v3TargetPos - v3StartPos, fTargetDistance ) )
 		{
             // There's nothing standing between the start position and the target,
