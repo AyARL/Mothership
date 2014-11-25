@@ -59,7 +59,8 @@ class CNode
     /////////////////////////////////////////////////////////////////////////////		
 	public void AddNode( CNode cNode )
 	{
-		m_liConnectedNodes.Add( cNode );
+        if ( null != cNode )
+		    m_liConnectedNodes.Add( cNode );
 	}
 		
     /////////////////////////////////////////////////////////////////////////////
@@ -93,6 +94,14 @@ class CNode
 	{
 		m_fWeight = fWeight;
 	}
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               AddPotentialPreviousNode
+    /////////////////////////////////////////////////////////////////////////////
+    public void AddPotentialPreviousNode( CNode cNode )
+    {
+        m_liPotentialPrevPoints.Add( cNode );
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -147,6 +156,10 @@ public class CNodeController : MonoBehaviour {
 		{
 			foreach ( CNode cNode2 in liNodes )
 			{
+                // Check if this is the same node.
+                if ( cNode1.NodePosition == cNode2.NodePosition )
+                    continue;
+
                 // Get the distance between the two nodes and check if there's anything standing between
 				fDistance = Vector3.Distance( cNode1.NodePosition, cNode2.NodePosition );
 				if ( false == Physics.Raycast( cNode1.NodePosition, cNode2.NodePosition - cNode1.NodePosition, fDistance ) )
@@ -195,6 +208,9 @@ public class CNodeController : MonoBehaviour {
             // Searched for all flag will be true unless there are open nodes in the nodelist.
 			bSearchedAll = true;
 
+            // Will hold a list of potential path members.
+            List< CNode > liOfInterest = new List< CNode >();
+
 			foreach ( CNode cNode in liNodes )
 			{
 				if ( cNode.NodeType == CNode.ENodeType.NODE_OPEN )
@@ -211,10 +227,10 @@ public class CNodeController : MonoBehaviour {
                             case CNode.ENodeType.NODE_NONE:
 
                                 // Add our current node as the previous node of the potential node.
-                                cPotentialNode.AddPrevNode(cNode);
+                                cPotentialNode.AddPotentialPreviousNode( cNode );
 
-                                // Set the node to open.
-                                cPotentialNode.SetState( CNode.ENodeType.NODE_OPEN );
+                                // Add a potential path waypoint.
+                                liOfInterest.Add( cPotentialNode );
 
                                 // Set the node weight.
 							    cPotentialNode.SetWeight( Vector3.Distance( v3StartPos, cPotentialNode.NodePosition ) + Vector3.Distance( v3TargetPos, cPotentialNode.NodePosition ) );
@@ -235,6 +251,9 @@ public class CNodeController : MonoBehaviour {
 					cNode.SetState( CNode.ENodeType.NODE_CLOSED );
 				}
 			}
+
+            // Set the previous points for the potential path members.
+            PopulatePrevNodes( ref liOfInterest );
 		}
 		
         // Check if we found the end node.
@@ -257,7 +276,7 @@ public class CNodeController : MonoBehaviour {
 				
                 // Will hold the full path after we're done tracing.
 				List< CNode > liPath = new List< CNode >();
-				liPath.Add(cTargetNode);
+				liPath.Add( cTargetNode );
 
 				while( bTracing )
 				{
@@ -307,4 +326,48 @@ public class CNodeController : MonoBehaviour {
 			return null;
 		}
 	}
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               PopulatePrevNodes
+    /////////////////////////////////////////////////////////////////////////////
+    private static void PopulatePrevNodes( ref List< CNode > liOfInterest )
+    {
+        // Loop through the list of interest and attempt to find the previous node
+        //  with the least weight.
+        foreach ( CNode cNode in liOfInterest )
+        { 
+            // Set the node to open.
+            cNode.SetState( CNode.ENodeType.NODE_OPEN );
+
+            // Will hold a reference to the preferred previous node which we're going
+            //  to return.
+            CNode cReturnNode = null;
+
+            // Keep track of the lowest weight.
+            float fLowestWeight = -1;
+
+            // Loop through the list of potential previous nodes.
+            foreach ( CNode cPrevNode in cNode.PotentialPrevNodes )
+            {
+                // Check if the lowest weight has been initialized ( -1 == false )
+                if ( -1 == fLowestWeight )
+                {
+                    fLowestWeight = cPrevNode.Weight;
+                    cReturnNode = cPrevNode;
+                    continue;
+                }
+                else
+                {
+                    if ( fLowestWeight > cPrevNode.Weight )
+                    {
+                        fLowestWeight = cPrevNode.Weight;
+                        cReturnNode = cPrevNode;
+                    }
+                }
+            }
+
+            // Set the preferred prev node.
+            cNode.SetPrevNode( cReturnNode );
+        }
+    }
 }

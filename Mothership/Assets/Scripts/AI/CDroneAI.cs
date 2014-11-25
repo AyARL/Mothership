@@ -77,7 +77,7 @@ public class CDroneAI : MonoBehaviour {
 			{
 			case EDroneState.DRONE_IDLE:
 
-                    SetTarget();
+                MoveOrder( m_v3Target );
 
 				break;
 				
