@@ -163,7 +163,7 @@ public class CNodeController : MonoBehaviour {
 				fDistance = Vector3.Distance( cNode1.NodePosition, cNode2.NodePosition );
 				if ( false == Physics.Raycast( cNode1.NodePosition, cNode2.NodePosition - cNode1.NodePosition, fDistance ) )
 				{
-					Debug.DrawRay( cNode1.NodePosition, cNode2.NodePosition - cNode1.NodePosition, Color.white, 1);
+					//Debug.DrawRay( cNode1.NodePosition, cNode2.NodePosition - cNode1.NodePosition, Color.white, 1);
 					cNode1.AddNode( cNode2 );
 				}
 			}
@@ -172,7 +172,7 @@ public class CNodeController : MonoBehaviour {
 			fDistance = Vector3.Distance( v3TargetPos, cNode1.NodePosition );
 			if ( false == Physics.Raycast( v3TargetPos, cNode1.NodePosition - v3TargetPos, fDistance ) )
 			{
-				Debug.DrawRay( v3TargetPos, cNode1.NodePosition - v3TargetPos, Color.white, 1 );
+				//Debug.DrawRay( v3TargetPos, cNode1.NodePosition - v3TargetPos, Color.white, 1 );
 				cNode1.AddNode( cTargetNode );
 			}
 		}
@@ -186,7 +186,7 @@ public class CNodeController : MonoBehaviour {
 			if (false == Physics.Raycast( v3StartPos, cNode.NodePosition - v3StartPos, fDistance ) )
 			{
 				// There's nothing in the way, we can travel to this node if we choose to.
-                Debug.DrawRay( v3StartPos, cNode.NodePosition - v3StartPos, Color.white, 1);
+                //Debug.DrawRay( v3StartPos, cNode.NodePosition - v3StartPos, Color.white, 1);
 				
                 // Set the previous node to the start node.
 				cNode.SetPrevNode( cStartNode );
