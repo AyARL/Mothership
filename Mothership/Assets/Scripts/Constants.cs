@@ -8,7 +8,21 @@ namespace Mothership
         public const string GAME_MOTHERSHIP = "MotherShip";
 
         // NPC related constants.
-        public const float DEFAULT_NPC_SPEED = 10.0f;
+        public const float DEFAULT_SPEED_TANK = 5f;
+        public const float DEFAULT_SPEED_REPAIRBOT = 10f;
+        public const float DEFAULT_SPEED_WARRIOR = 15.0f;
+        public const float DEFAULT_SPEED_DRONE = 20.0f;
+
+        public const float DEFAULT_HEALTH_REPAIRBOT = 50f;
+        public const float DEFAULT_HEALTH_DRONE = 100f;
+        public const float DEFAULT_HEALTH_WARRIOR = 200f;
+        public const float DEFAULT_HEALTH_TANK = 400f;
+        
+
+        // Weapons related constants.
+        public const float DAMAGE_BULLET = 5f;
+        public const float DAMAGE_MISSILE = 25f;
+        public const float DAMAGE_RAYGUN = 100f;
     }
 
     public class DefaultPaths
@@ -72,12 +86,19 @@ namespace Mothership
         public const string TAG_AUDIO_CONTROLLER = "AudioController";
         public const string TAG_AUDIO = "Audio";
         public const string TAG_NODE = "Node";
+        public const string TAG_POWERUP = "PowerUp";
     }
 
     public class Names
     {
         // List of commonly used names.
         public const string NAME_NODE = "Node";
+        public const string NAME_RED_BASE = "RedBase";
+        public const string NAME_BLUE_BASE = "BlueBase";
+        public const string NAME_BULLET = "Bullet";
+        public const string NAME_MISSILE = "Missile";
+        public const string NAME_RAY = "Ray";
+        public const string NAME_POWER_UP = "PowerUp";
     }
 
     public class ErrorStrings
@@ -93,7 +114,10 @@ namespace Mothership
         public const string ERROR_AUDIO_FAILED_RELOAD = "Could not load audio resources.";
 
         // Path finding errors.
-        public const string ERROR_PATHFINDING_NO_VALID_PATH = "Could not find a valid path to the target";
+        public const string ERROR_PATHFINDING_NO_VALID_PATH = "Could not find a valid path to the target.";
+
+        // AI Errors
+        public const string ERROR_UNASSIGNED_NPC = "Unassigned NPC detected, please assign NPC to a team.";
     }
 
     public class ResourcePacks
