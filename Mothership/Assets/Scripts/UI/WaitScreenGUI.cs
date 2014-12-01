@@ -25,6 +25,11 @@ public class WaitScreenGUI : MonoBehaviour
         contents.SetActive(false);
     }
 
+    public void SetMessage(string message)
+    {
+        this.message.text = message;
+    }
+
     private IEnumerator AnimateIndicator()
     {
         var anims = loadingIndicator.GetComponentsInChildren<Animation>();

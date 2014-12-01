@@ -13,9 +13,16 @@ namespace MothershipOS
             Error_EmailInUse, 
             Error_PasswordEmpty,
             Error_NameInUse
-        };
+        }
 
         public enum LoginResponse
+        {
+            Norror,
+            Error_InvalidHash,
+            Error_IncorrectCredentials
+        }
+
+        public enum GetProfileResponse
         {
             Norror,
             Error_InvalidHash,

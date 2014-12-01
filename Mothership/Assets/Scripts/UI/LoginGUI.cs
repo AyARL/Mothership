@@ -14,9 +14,6 @@ namespace MothershipUI
         private GameObject content = null;
 
         [SerializeField]
-        private string loginBaseURL = "http://studentnet.kingston.ac.uk/~k1159960/login.php";
-
-        [SerializeField]
         private InputField emailField = null;
         [SerializeField]
         private InputField passwordField = null;
@@ -24,6 +21,9 @@ namespace MothershipUI
         private Button submitButton = null;
         [SerializeField]
         private Text message = null;
+
+        [SerializeField]
+        private ProfileGUI profileScreen = null;
 
         // Use this for initialization
         void Start()
@@ -53,30 +53,24 @@ namespace MothershipUI
             {
                 submitButton.interactable = false;
                 message.text = "Contacting Server...";
-                WWWForm form = CreateForm();
+                WWWForm form = WWWFormUtility.GetLoginForm(emailField.text, passwordField.text);
                 StartCoroutine(Login(form));
             }
         }
 
-        private WWWForm CreateForm()
-        {
-            WWWForm form = new WWWForm();
-            form.AddField("Email", emailField.text);
-            form.AddField("Password", HashUtility.GetMD5Hash(passwordField.text));
-            form.AddField("Hash", HashUtility.GetMD5Hash(emailField.text + AppKey.appKey));
-
-            return form;
-        }
-
         private IEnumerator Login(WWWForm form)
         {
-            WWW response = new WWW(loginBaseURL, form);
+            WWW response = new WWW(WWWFormUtility.loginURL, form);
             yield return response;
 
             if (response.error == null)
             {
                 Debug.Log(response.text);
-                ReadResponse(response.text);
+                if (ReadResponse(response.text))
+                {
+                    DisableScreen();
+                    profileScreen.EnableScreen();
+                }
             }
             else
             {
@@ -84,7 +78,7 @@ namespace MothershipUI
             }
         }
 
-        private void ReadResponse(string input)
+        private bool ReadResponse(string input)
         {
             // Check if error code was returned, otherwise try to decode form Json
             int errorCode;
@@ -92,18 +86,21 @@ namespace MothershipUI
             {
                 Debug.Log(Enum.GetName(typeof(ResponseEnums.LoginResponse), errorCode));
                 message.text = Enum.GetName(typeof(ResponseEnums.LoginResponse), errorCode);
+                return false;
             }
             else
             {
                 User user = JsonValidator.ValidateJsonData<User>(input);
                 if (user != default(User))
                 {
-                    Debug.Log(user);
                     message.text = "Logged In...";
+                    UserDataManager.userData.User = user;
+                    return true;
                 }
                 else
                 {
                     Debug.LogError("Failed to deserialize as User: " + input);
+                    return false;
                 }
             }
         }

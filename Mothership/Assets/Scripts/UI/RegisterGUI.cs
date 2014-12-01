@@ -13,9 +13,6 @@ namespace MothershipUI
         private GameObject content = null;
 
         [SerializeField]
-        private string registerBaseURL = "http://studentnet.kingston.ac.uk/~k1159960/register.php";
-
-        [SerializeField]
         private InputField emailField = null;
         [SerializeField]
         private InputField passwordField = null;
@@ -25,6 +22,9 @@ namespace MothershipUI
         private Button submitButton = null;
         [SerializeField]
         private Text message = null;
+
+        [SerializeField]
+        private ProfileGUI profileScreen = null;
 
         private void Start()
         {
@@ -78,13 +78,17 @@ namespace MothershipUI
 
         private IEnumerator Register(WWWForm form)
         {
-            WWW response = new WWW(registerBaseURL, form);
+            WWW response = new WWW(WWWFormUtility.registerURL, form);
             yield return response;
 
-            if(response.error == null)
+            if (response.error == null)
             {
                 Debug.Log(response.text);
-                ReadResponse(response.text);
+                if (ReadResponse(response.text))
+                {
+                    DisableScreen();
+                    profileScreen.EnableScreen();
+                }
             }
             else
             {
@@ -92,25 +96,29 @@ namespace MothershipUI
             }
         }
 
-        private void ReadResponse(string input)
+        private bool ReadResponse(string input)
         {
             // Check if error code was returned, otherwise try to decode form Json
             int errorCode;
-            if(Int32.TryParse(input, out errorCode))
+            if (Int32.TryParse(input, out errorCode))
             {
                 Debug.Log(Enum.GetName(typeof(ResponseEnums.AccountCreationResponse), errorCode));
                 message.text = Enum.GetName(typeof(ResponseEnums.AccountCreationResponse), errorCode);
+                return false;
             }
             else
             {
                 User user = JsonValidator.ValidateJsonData<User>(input);
-                if(user != default(User))
+                if (user != default(User))
                 {
                     message.text = "Registered. Logging in..";
+                    UserDataManager.userData.User = user;
+                    return true;
                 }
                 else
                 {
                     Debug.LogError("Failed to deserialize as User: " + input);
+                    return false;
                 }
             }
         }

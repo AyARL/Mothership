@@ -18,6 +18,10 @@
             {
        	    $row = mysql_fetch_array($result);
        	    echo json_encode($row);
+
+                $userID = $row['UserID'];
+                $updateQuery = "UPDATE Profile SET `LastLogin` = CURRENT_TIMESTAMP WHERE `UserID` = '" .$userID. "';";
+                mysql_query($updateQuery);
             }
             else
             {
