@@ -27,7 +27,6 @@ public class CDroneAI : IAIBase {
         // Drone initialization.
         m_fHealth = Constants.DEFAULT_HEALTH_DRONE;
         m_fSpeedMultiplier = Constants.DEFAULT_SPEED_DRONE;
-        SetTeam( ETeam.TEAM_BLUE );
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -72,6 +71,13 @@ public class CDroneAI : IAIBase {
                     RunMovingState();
 
 				break;
+
+            case EDroneState.DRONE_ATTACKING:
+
+                    // Run Attack logic.
+                    RunAttackState();
+
+                break;
 			}
 		}
     }
@@ -90,9 +96,9 @@ public class CDroneAI : IAIBase {
 
         // We don't want the drone to lazy about, so if it's not holding a ray gun
         //  powerup, we want it to head out and find it.
-        if ( m_cItem != null )
+        if ( m_iItemId != -1 )
         {
-            if ( m_cItem.ItemType == CPowerUp.EItemType.TYPE_RAYGUN )
+            if ( m_iItemId == PowerUpIDs.ID_RAYGUN )
             {
                 // We have the ray gun, tell the drone to go back home.
                 m_v3Target = m_goHomeBase.transform.position;
@@ -145,6 +151,14 @@ public class CDroneAI : IAIBase {
             else
 				GoTo();
 		}
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               RunAttackState
+    /////////////////////////////////////////////////////////////////////////////
+    private void RunAttackState()
+    {
+
     }
   
     /////////////////////////////////////////////////////////////////////////////
@@ -204,7 +218,11 @@ public class CDroneAI : IAIBase {
                     }
                     else if ( m_eTeam == ETeam.TEAM_RED )
                     {
-                        //if ( m_cItem )
+                        // We collided with our own base, check if we have the raygun equipped.
+                        if ( m_iItemId == PowerUpIDs.ID_RAYGUN )
+                        {
+
+                        }
                     }
 
                     break;
