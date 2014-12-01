@@ -17,17 +17,25 @@ namespace MothershipOS
 
         public enum LoginResponse
         {
-            Norror,
+            NoError,
             Error_InvalidHash,
             Error_IncorrectCredentials
         }
 
         public enum GetProfileResponse
         {
-            Norror,
+            NoError,
             Error_InvalidHash,
             Error_IncorrectCredentials,
             Error_NoProfile
+        }
+
+        public enum GetLastGameResponse
+        {
+            NoError,
+            Error_InvalidHash,
+            Error_IncorrectCredentials,
+            Error_NoData
         }
     }
 }

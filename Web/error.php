@@ -23,4 +23,9 @@
 		const Error_IncorrectCredentials = 2;
 		const Error_NoProfile = 3;
 	}
+
+	abstract class GetLastGameResponse extends Response
+	{
+		const Error_NoData = 2;
+	}
 ?>

@@ -10,7 +10,7 @@ namespace MothershipOS
         public static string registerURL = "http://studentnet.kingston.ac.uk/~k1159960/register.php";
         public static string loginURL = "http://studentnet.kingston.ac.uk/~k1159960/login.php";
         public static string getProfileURL = "http://studentnet.kingston.ac.uk/~k1159960/get_profile.php";
-        
+        public static string getLastGameURL = "http://studentnet.kingston.ac.uk/~k1159960/get_last_game.php";
 
         public static WWWForm GetLoginForm(string email, string password)
         {
