@@ -173,9 +173,53 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               OnTriggerEnter
     /////////////////////////////////////////////////////////////////////////////
-    protected void OnTriggerEnter( Collider cCollider ) 
+    void OnTriggerEnter( Collider cCollider ) 
     {
         // Run the base IAIBase collision logic.
         base.OnTriggerEnter( cCollider );
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               OnCollisionEnter
+    /////////////////////////////////////////////////////////////////////////////
+    void OnCollisionEnter( Collision cCollision )
+    {
+        // Error reporting
+        string strFunction = "CDroneAI::OnCollisionEnter()";
+
+        // Get a handle on the gameobject we collided with.
+        GameObject goCollisionObject = cCollision.gameObject;
+        
+        // Check if we collided with a base, and act accordingly depending on the
+        //  team.
+        if ( goCollisionObject.tag == Tags.TAG_BASE )
+        {
+            switch ( goCollisionObject.name )
+            {
+                case Names.NAME_RED_BASE:
+
+                    if ( m_eTeam == ETeam.TEAM_BLUE )
+                    {
+
+                    }
+                    else if ( m_eTeam == ETeam.TEAM_RED )
+                    {
+                        //if ( m_cItem )
+                    }
+
+                    break;
+                case Names.NAME_BLUE_BASE:
+
+                    if ( m_eTeam == ETeam.TEAM_BLUE )
+                    {
+
+                    }
+                    else if ( m_eTeam == ETeam.TEAM_RED )
+                    {
+                    }
+
+                    break;
+            }
+        } 
     }
 }
