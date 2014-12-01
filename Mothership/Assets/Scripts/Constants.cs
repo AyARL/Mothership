@@ -29,8 +29,10 @@ namespace Mothership
     {
         // Editor Custom Menu Items paths.
         // Will be used by the custom menu items script for resource creation.
-        public const string SO_RESOURCES_PATH = "Theatre/Resources/";
+        public const string SO_RESOURCES_PATH = "MotherShip/Resources/";
         public const string SO_AUDIO = "Audio";
+        public const string SO_NPC = "NPCs";
+        public const string SO_ITEMS = "Items";
         
         // Asset paths
         public const string PATH_RESOURCES = "Resources/";
@@ -87,6 +89,7 @@ namespace Mothership
         public const string TAG_AUDIO = "Audio";
         public const string TAG_NODE = "Node";
         public const string TAG_POWERUP = "PowerUp";
+        public const string TAG_BASE = "Base";
     }
 
     public class Names
@@ -124,5 +127,12 @@ namespace Mothership
     {
         public const string RESOURCE_CONTAINER_AUDIO_OBJECTS = "AudioResource";
         public const string RESOURCE_CONTAINER_NPCS = "NPCResource";
+        public const string RESOURCE_CONTAINER_ITEMS = "ItemsResource";
+    }
+
+    public class PowerUpIDs
+    {
+        // Powerup/Item IDs.
+        public const uint ID_RAYGUN = 1;
     }
 }

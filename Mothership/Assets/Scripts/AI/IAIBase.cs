@@ -56,8 +56,8 @@ public class IAIBase : MonoBehaviour
 
     // Reference to the held item (if any).
     [ SerializeField ]
-    protected CPowerUp m_cItem = null;
-    public CPowerUp HeldItem { get { return m_cItem; } }
+    protected int m_iItemId = -1;
+    public int HeldItem { get { return m_iItemId; } }
 
     protected Vector3 m_v3CurrNode;
 	protected int m_iNodeIndex;
@@ -209,23 +209,24 @@ public class IAIBase : MonoBehaviour
                 m_fHealth -= Constants.DAMAGE_RAYGUN;
 
                 break;
-            case Names.NAME_POWER_UP:
+        }
 
-                // Attempt to get a handle on the object's powerup script.
-                CPowerUp cPowerUp = goObject.GetComponent< CPowerUp >();
-                if ( null == cPowerUp )
-                {
-                    // We failed to get a handle, this shouldn't happen - report the error.
-                    Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( CPowerUp ).ToString() ) );
-                    return;
-                }
+        // Check if we hit a powerup.
+        if ( goObject.tag == Tags.TAG_POWERUP )
+        {
+            // Attempt to get a handle on the object's powerup script.
+            CPowerUp cPowerUp = goObject.GetComponent< CPowerUp >();
+            if ( null == cPowerUp )
+            {
+                // We failed to get a handle, this shouldn't happen - report the error.
+                Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( CPowerUp ).ToString() ) );
+                return;
+            }
 
-                // Assign the held item and indicate that we picked up the power up, this
-                //  will destroy the powerup.
-                m_cItem = cPowerUp;
-                //cPowerUp.PickupPowerUp();
-
-                break;
+            // Assign the held item and indicate that we picked up the power up, this
+            //  will destroy the powerup.
+            m_iItemId = cPowerUp.ItemId;
+            cPowerUp.PickupPowerUp();
         }
     }
 }

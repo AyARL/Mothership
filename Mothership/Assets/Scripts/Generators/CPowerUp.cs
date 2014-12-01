@@ -20,6 +20,11 @@ public class CPowerUp : MonoBehaviour {
         ATT_CARRYABLE,
     };
 
+    // The Id of this item, we're going to use this to identify items.
+    [ SerializeField ]
+    private int m_iItemID;
+    public int ItemId { get { return m_iItemID; } }
+
     // Holds a static list of all active powerups.
     private static List< GameObject > m_liPowerUpList = new List< GameObject >();
 

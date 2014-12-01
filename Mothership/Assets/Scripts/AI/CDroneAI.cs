@@ -27,7 +27,6 @@ public class CDroneAI : IAIBase {
         // Drone initialization.
         m_fHealth = Constants.DEFAULT_HEALTH_DRONE;
         m_fSpeedMultiplier = Constants.DEFAULT_SPEED_DRONE;
-        SetTeam( ETeam.TEAM_BLUE );
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -72,6 +71,13 @@ public class CDroneAI : IAIBase {
                     RunMovingState();
 
 				break;
+
+            case EDroneState.DRONE_ATTACKING:
+
+                    // Run Attack logic.
+                    RunAttackState();
+
+                break;
 			}
 		}
     }
@@ -90,9 +96,9 @@ public class CDroneAI : IAIBase {
 
         // We don't want the drone to lazy about, so if it's not holding a ray gun
         //  powerup, we want it to head out and find it.
-        if ( m_cItem != null )
+        if ( m_iItemId != -1 )
         {
-            if ( m_cItem.ItemType == CPowerUp.EItemType.TYPE_RAYGUN )
+            if ( m_iItemId == PowerUpIDs.ID_RAYGUN )
             {
                 // We have the ray gun, tell the drone to go back home.
                 m_v3Target = m_goHomeBase.transform.position;
@@ -146,6 +152,14 @@ public class CDroneAI : IAIBase {
 				GoTo();
 		}
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               RunAttackState
+    /////////////////////////////////////////////////////////////////////////////
+    private void RunAttackState()
+    {
+
+    }
   
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               CheckForTransitions
@@ -173,9 +187,57 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               OnTriggerEnter
     /////////////////////////////////////////////////////////////////////////////
-    protected void OnTriggerEnter( Collider cCollider ) 
+    void OnTriggerEnter( Collider cCollider ) 
     {
         // Run the base IAIBase collision logic.
         base.OnTriggerEnter( cCollider );
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               OnCollisionEnter
+    /////////////////////////////////////////////////////////////////////////////
+    void OnCollisionEnter( Collision cCollision )
+    {
+        // Error reporting
+        string strFunction = "CDroneAI::OnCollisionEnter()";
+
+        // Get a handle on the gameobject we collided with.
+        GameObject goCollisionObject = cCollision.gameObject;
+        
+        // Check if we collided with a base, and act accordingly depending on the
+        //  team.
+        if ( goCollisionObject.tag == Tags.TAG_BASE )
+        {
+            switch ( goCollisionObject.name )
+            {
+                case Names.NAME_RED_BASE:
+
+                    if ( m_eTeam == ETeam.TEAM_BLUE )
+                    {
+
+                    }
+                    else if ( m_eTeam == ETeam.TEAM_RED )
+                    {
+                        // We collided with our own base, check if we have the raygun equipped.
+                        if ( m_iItemId == PowerUpIDs.ID_RAYGUN )
+                        {
+
+                        }
+                    }
+
+                    break;
+                case Names.NAME_BLUE_BASE:
+
+                    if ( m_eTeam == ETeam.TEAM_BLUE )
+                    {
+
+                    }
+                    else if ( m_eTeam == ETeam.TEAM_RED )
+                    {
+                    }
+
+                    break;
+            }
+        } 
     }
 }
