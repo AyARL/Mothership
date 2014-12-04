@@ -12,6 +12,15 @@ public class IAIBase : MonoBehaviour
         TEAM_BLUE,
     }
 
+    private static CPowerUpSO m_ItemsResource = null;
+    public static CPowerUpSO ItemsResource { get { return m_ItemsResource; } set { m_ItemsResource = value; } }
+
+    // A list holding all active red NPCs.
+    protected static List< GameObject > m_liActiveReds = new List< GameObject >();
+
+    // A list holding all active blue NPCs.
+    protected static List< GameObject > m_liActiveBlues = new List< GameObject >();
+
     [ SerializeField ]
     protected ETeam m_eTeam = ETeam.TEAM_NONE;
     public ETeam Team { get { return m_eTeam; } }
@@ -54,10 +63,24 @@ public class IAIBase : MonoBehaviour
 	protected Vector3 m_v3Target = Vector3.zero;
     public Vector3 TargetPosition { get { return m_v3Target; } }
 
-    // Reference to the held item (if any).
+    // Indicates if we're carrying the mothership.
     [ SerializeField ]
     protected int m_iItemId = -1;
     public int HeldItem { get { return m_iItemId; } }
+
+    // Will flag that this NPC is being attacked.
+    protected bool m_bIsBeingAttacked = false;
+
+    protected bool m_bTargetInRange = false;
+
+    // Will hold ammo variables.
+    protected Dictionary< string, uint > m_dictInventory = new Dictionary< string, uint >();
+
+    // Will hold a reference to the prefabs we want to instantiate.
+    protected Dictionary< string, GameObject > m_dictProjectilePrefabs = new Dictionary< string, GameObject >(); 
+
+    // Will hold a handle on this object's animator
+    protected Animator m_anAnimator;
 
     protected Vector3 m_v3CurrNode;
 	protected int m_iNodeIndex;
@@ -65,6 +88,60 @@ public class IAIBase : MonoBehaviour
 	protected float m_fOldTime = 0;
 	protected float m_fCheckTime = 0;
 	protected float m_fElapsedTime = 0;
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               Start
+    /////////////////////////////////////////////////////////////////////////////
+    protected void Start()
+    {
+        // Error reporting.
+        string strFunction = "IAIBase::Start()";
+
+        if ( null == m_ItemsResource )
+        {
+            m_ItemsResource = Resources.Load< CPowerUpSO >( ResourcePacks.RESOURCE_CONTAINER_ITEMS );
+            if ( null == m_ItemsResource )
+            {
+                Debug.LogError( string.Format("{0} {1} " + ErrorStrings.ERROR_AUDIO_FAILED_RELOAD, strFunction, ResourcePacks.RESOURCE_CONTAINER_ITEMS ) );
+                return;
+            }
+        }
+
+        // Add this NPC to the correct list depending on its team.
+        switch ( m_eTeam )
+        {
+            case ETeam.TEAM_BLUE:
+
+                m_liActiveBlues.Add( gameObject );
+
+                break;
+
+            case ETeam.TEAM_RED:
+
+                m_liActiveReds.Add( gameObject );
+
+                break;
+            default:
+
+                // Unassigned NPC detected, report the issue.
+                Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_UNASSIGNED_NPC, transform.position ) );
+
+                return;
+        }
+
+        // Initialize inventory stock.
+        m_dictInventory.Add( Names.NAME_BULLET, 500 );
+        m_dictInventory.Add( Names.NAME_MISSILE, 0 );
+        m_dictInventory.Add( Names.NAME_RAY, 0 );
+
+        // Get a handle on the NPC's animator.
+        m_anAnimator = gameObject.GetComponent< Animator >();
+        if ( null == m_anAnimator )
+        {
+            // Shit happened
+            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( Animator ).ToString() ) );
+        }
+    }
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Update
@@ -107,7 +184,7 @@ public class IAIBase : MonoBehaviour
             if ( null == m_goHomeBase )
             {
                 // We didn't manage to find the base, report the issue.
-                Debug.LogError( string.Format( "{0} {1}: {}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, strBaseName ) );
+                Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, strBaseName ) );
                 return;
             }
 
@@ -119,6 +196,9 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
 	protected void GoTo()
 	{
+        if ( m_v3Target == Vector3.zero )
+            return;
+
         // Check if we want to show this character's path in the editor.
 		if ( true == m_bShowPath )
 		{
@@ -189,44 +269,159 @@ public class IAIBase : MonoBehaviour
         GameObject goObject = cCollider.gameObject;
 
         // Depending on the name of the object, react accordingly.
-        switch ( goObject.name )
+        switch ( goObject.tag )
         {
-            case Names.NAME_MISSILE:
+            case Tags.TAG_WEAPON:
 
-                // We've been hit by a missile, damage the NPC.
-                m_fHealth -= Constants.DAMAGE_MISSILE;
+                // Reduce the NPCs health depending on the type of projectile.
+                if ( goObject.name == Names.NAME_MISSILE )
+                    m_fHealth -= Constants.PROJECTILE_DAMAGE_MISSILE;
 
+                else if ( goObject.name == Names.NAME_BULLET )
+                    m_fHealth -= Constants.PROJECTILE_DAMAGE_BULLET;
+
+                else if ( goObject.name == Names.NAME_RAY )
+                    m_fHealth -= Constants.PROJECTILE_DAMAGE_RAY;
+
+                // We've been attacked by an enemy, flag this fact.
+                m_bIsBeingAttacked = true;
+                
                 break;
-            case Names.NAME_BULLET:
 
-                // We've been hit by a bullet, damage the NPC.
-                m_fHealth -= Constants.DAMAGE_BULLET;
+            case Tags.TAG_POWERUP:
 
-                break;
-            case Names.NAME_RAY:
+                // Attempt to get a handle on the object's powerup script.
+                CPowerUp cPowerUp = goObject.GetComponent< CPowerUp >();
+                if ( null == cPowerUp )
+                {
+                    // We failed to get a handle, this shouldn't happen - report the error.
+                    Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( CPowerUp ).ToString() ) );
+                    return;
+                }
 
-                // We've been hit by a ray guy, damage the NPC.
-                m_fHealth -= Constants.DAMAGE_RAYGUN;
+                // Increase inventory stocks or health depending on the type of powerup.
+                if ( goObject.name == Names.NAME_MISSILE )
+                    m_dictInventory[ Names.NAME_MISSILE ] += 3;
+
+                else if ( goObject.name == Names.NAME_BULLET )
+                    m_dictInventory[ Names.NAME_MISSILE ] += 50;
+
+                else if ( goObject.name == Names.NAME_RAY )
+                    m_dictInventory[ Names.NAME_RAY ] += 1;
+
+                else if ( goObject.name == Names.NAME_HEALTH )
+                    m_fHealth += 50;
+
+                cPowerUp.PickupPowerUp();
 
                 break;
         }
+    }
 
-        // Check if we hit a powerup.
-        if ( goObject.tag == Tags.TAG_POWERUP )
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               GetClosestEnemy
+    /////////////////////////////////////////////////////////////////////////////
+    protected GameObject GetClosestEnemy()
+    {
+        // Loop through the enemy list and get a reference to the closest enemy.
+        List< GameObject > liEnemies = new List< GameObject >();
+
+        if ( m_eTeam == ETeam.TEAM_BLUE )
         {
-            // Attempt to get a handle on the object's powerup script.
-            CPowerUp cPowerUp = goObject.GetComponent< CPowerUp >();
-            if ( null == cPowerUp )
-            {
-                // We failed to get a handle, this shouldn't happen - report the error.
-                Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( CPowerUp ).ToString() ) );
-                return;
+            liEnemies = m_liActiveReds;
+        }
+
+        else if ( m_eTeam == ETeam.TEAM_RED )
+        {
+            liEnemies = m_liActiveBlues;
+        }
+
+        float fLowestDistance = -1;
+        GameObject goClosestEnemy = null;
+
+        foreach ( GameObject goEnemy in liEnemies )
+        {
+            float fDistance = Vector3.Distance( goEnemy.transform.position, transform.position );
+            // Check if the variable hasn't been set yet.
+            if ( fLowestDistance == -1 )
+            { 
+                fLowestDistance = fDistance ;
+                goClosestEnemy = goEnemy;
+                continue;
             }
 
-            // Assign the held item and indicate that we picked up the power up, this
-            //  will destroy the powerup.
-            m_iItemId = cPowerUp.ItemId;
-            cPowerUp.PickupPowerUp();
+            // Current enemy is closer than previous enemies.
+            if ( fLowestDistance > fDistance )
+            {
+                fLowestDistance = fDistance;
+                goClosestEnemy = goEnemy;
+            }
         }
+
+        return goClosestEnemy;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               AttackTarget
+    /////////////////////////////////////////////////////////////////////////////
+    protected IEnumerator AttackTarget( Transform trEnemy )
+    {
+        while ( true == m_bTargetInRange )
+        {
+            while ( m_dictInventory[ Names.NAME_BULLET ] > 0 )
+            { 
+                Fire( Names.NAME_BULLET, trEnemy );
+                yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_BULLET );
+            }
+
+            while ( m_dictInventory[ Names.NAME_MISSILE ] > 0 )
+            { 
+                Fire( Names.NAME_MISSILE, trEnemy );
+                yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_MISSILE );
+            }
+
+            while ( m_dictInventory[ Names.NAME_RAY ] > 0 )
+            { 
+                Fire( Names.NAME_RAY, trEnemy );
+                yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_RAY );
+            }
+        }
+    }
+
+         // Fire bullet here  } } 
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               Fire
+    /////////////////////////////////////////////////////////////////////////////
+    protected void Fire( string strProjectileName, Transform trEnemy )
+    {
+        string strFunction = "IAIBase::Fire()";
+        m_dictProjectilePrefabs = m_ItemsResource.Weapons;
+        if ( false == m_dictProjectilePrefabs.ContainsKey( strProjectileName ) )
+        {
+            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_UNRECOGNIZED_NAME, strProjectileName ) );
+            return;
+        }
+
+        GameObject goProjectile = m_dictProjectilePrefabs[ strProjectileName ];
+        if ( null == goProjectile )
+        {
+            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof( GameObject ).ToString() ) );
+            return;
+        }
+
+        CProjectile cProjectile = goProjectile.GetComponent< CProjectile >();
+        if ( null == cProjectile )
+        {
+            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( CProjectile ).ToString() ) );
+            return;
+        }
+
+        Vector3 v3Direction = trEnemy.position - transform.position;
+        cProjectile.Direction = v3Direction.normalized;
+        cProjectile.Instantiator = gameObject;
+        cProjectile.Activation = true;
+
+        Instantiate( goProjectile, transform.position, Quaternion.identity );
     }
 }

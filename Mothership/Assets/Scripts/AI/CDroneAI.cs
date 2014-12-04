@@ -11,7 +11,8 @@ public class CDroneAI : IAIBase {
 		DRONE_IDLE,
 		DRONE_MOVING,
         DRONE_ATTACKING,
-        DROME_DEAD,
+        DRONE_DEAD,
+        DRONE_FLEE,
 	}
 	
     // Drone state should be idle by default
@@ -24,6 +25,9 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     void Start ()
     {
+        // Run the start function
+        base.Start();
+
         // Drone initialization.
         m_fHealth = Constants.DEFAULT_HEALTH_DRONE;
         m_fSpeedMultiplier = Constants.DEFAULT_SPEED_DRONE;
@@ -90,9 +94,21 @@ public class CDroneAI : IAIBase {
         // Error reporting...
         string strFunction = "CDroneAI::RunIdleState()";
 
+        // Check if the moving animation is on and disable it if it is.
+        if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
+            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, false );
+
         // We only want to set the target if it's unset.
         if ( m_v3Target != Vector3.zero )
             return;
+
+        // The drone will attempt to run away back to its base when its health is
+        //  getting low.
+        if ( m_fHealth < Constants.DEFAULT_HEALTH_DRONE / 2 )
+        {
+            m_v3Target = m_goHomeBase.transform.position;
+            return;
+        }
 
         // We don't want the drone to lazy about, so if it's not holding a ray gun
         //  powerup, we want it to head out and find it.
@@ -118,13 +134,15 @@ public class CDroneAI : IAIBase {
         m_v3Target = goPowerup.transform.position;
     }
 
-
-
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               RunMovingState
     /////////////////////////////////////////////////////////////////////////////
     private void RunMovingState()
     {
+        // Enable the moving animation if it's not on.
+        if ( false == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
+            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, true );
+
         m_fOldTime = m_fElapsedTime + 0.01f;
 
 		if (m_fElapsedTime > m_fCheckTime)
@@ -158,7 +176,10 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     private void RunAttackState()
     {
-
+        // Get a handle on the closest enemy and calculate distance from it.
+        // Enable the moving animation if it's not on.
+        if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
+            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, false );
     }
   
     /////////////////////////////////////////////////////////////////////////////
@@ -166,11 +187,42 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     private void CheckForTransitions()
     {
+        // We need to constantly check if the NPC died.
+        if ( m_fHealth <= 0 )
+            m_eState = EDroneState.DRONE_DEAD;
+
+        // Get a handle on the closest enemy and calculate distance from it.
+        GameObject goClosestEnemy = GetClosestEnemy();
+        float fDistance = Vector3.Distance( goClosestEnemy.transform.position, transform.position );
+
         // According to current state, we will check if we need to transition to
         //  a different state.
         switch ( m_eState )
         {
             case EDroneState.DRONE_IDLE:
+
+                if ( true == m_bIsBeingAttacked )
+                {
+                    // Attempt to decide if we should attack or flee.
+                    if ( m_fHealth < Constants.DEFAULT_HEALTH_DRONE / 2 )
+                    {
+                        // There's a 4 in 6 chance that the drone will try to run to home base.
+                        if ( Random.Range( 0, 5 ) < 4 )
+                        {
+                            m_v3Target = m_goHomeBase.transform.position;
+                            m_eState = EDroneState.DRONE_MOVING;
+                            break;
+                        }
+                    }
+                }
+
+                if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
+                {
+                    m_v3Target = Vector3.zero;
+                    m_eState = EDroneState.DRONE_ATTACKING;
+                    m_bTargetInRange = true;
+                    break;
+                }
 
                 if ( Vector3.zero != m_v3Target )
                 {
@@ -180,6 +232,19 @@ public class CDroneAI : IAIBase {
 
                 break;
             case EDroneState.DRONE_MOVING:
+                break;
+                
+            case EDroneState.DRONE_ATTACKING:
+
+                StartCoroutine( AttackTarget( goClosestEnemy.transform ) );
+
+                if ( fDistance > Constants.DEFAULT_ATTACK_RANGE + 20f )
+                {
+                    m_v3Target = goClosestEnemy.transform.position;
+                    m_eState = EDroneState.DRONE_MOVING;
+                    m_bTargetInRange = false;
+                }
+
                 break;
         }
     }
@@ -196,7 +261,7 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               OnCollisionEnter
     /////////////////////////////////////////////////////////////////////////////
-    void OnCollisionEnter( Collision cCollision )
+    void OnCollisionStay( Collision cCollision )
     {
         // Error reporting
         string strFunction = "CDroneAI::OnCollisionEnter()";
@@ -208,35 +273,13 @@ public class CDroneAI : IAIBase {
         //  team.
         if ( goCollisionObject.tag == Tags.TAG_BASE )
         {
-            switch ( goCollisionObject.name )
+            if ( goCollisionObject.name == Names.NAME_RED_BASE && m_eTeam == ETeam.TEAM_RED )
             {
-                case Names.NAME_RED_BASE:
-
-                    if ( m_eTeam == ETeam.TEAM_BLUE )
-                    {
-
-                    }
-                    else if ( m_eTeam == ETeam.TEAM_RED )
-                    {
-                        // We collided with our own base, check if we have the raygun equipped.
-                        if ( m_iItemId == PowerUpIDs.ID_RAYGUN )
-                        {
-
-                        }
-                    }
-
-                    break;
-                case Names.NAME_BLUE_BASE:
-
-                    if ( m_eTeam == ETeam.TEAM_BLUE )
-                    {
-
-                    }
-                    else if ( m_eTeam == ETeam.TEAM_RED )
-                    {
-                    }
-
-                    break;
+                m_fHealth += 0.5f;
+            }
+            else if ( goCollisionObject.name == Names.NAME_BLUE_BASE && m_eTeam == ETeam.TEAM_BLUE )
+            {
+                m_fHealth += 0.5f;
             }
         } 
     }

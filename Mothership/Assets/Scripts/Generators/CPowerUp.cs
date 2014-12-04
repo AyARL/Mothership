@@ -11,7 +11,10 @@ public class CPowerUp : MonoBehaviour {
     public enum EItemType
     {
         TYPE_NONE,
-        TYPE_RAYGUN,
+        TYPE_RAY,
+        TYPE_BULLET,
+        TYPE_MISSILE,
+        TYPE_HEALTH,
     };
     
     public enum EItemAttributes
@@ -34,7 +37,7 @@ public class CPowerUp : MonoBehaviour {
 
     // The item's type. For now all powerups will spawn as rayguns
     [ SerializeField ]
-    private EItemType m_eItemType = EItemType.TYPE_RAYGUN;
+    private EItemType m_eItemType = EItemType.TYPE_RAY;
     public EItemType ItemType { get { return m_eItemType; } }
 
 	/////////////////////////////////////////////////////////////////////////////

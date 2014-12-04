@@ -18,11 +18,20 @@ namespace Mothership
         public const float DEFAULT_HEALTH_WARRIOR = 200f;
         public const float DEFAULT_HEALTH_TANK = 400f;
         
+        public const float DEFAULT_ATTACK_RANGE = 40f;
 
         // Weapons related constants.
-        public const float DAMAGE_BULLET = 5f;
-        public const float DAMAGE_MISSILE = 25f;
-        public const float DAMAGE_RAYGUN = 100f;
+        public const float PROJECTILE_DAMAGE_BULLET = 5f;
+        public const float PROJECTILE_DAMAGE_MISSILE = 25f;
+        public const float PROJECTILE_DAMAGE_RAY = 100f;
+
+        public const float PROJECTILE_SPEED_BULLET = 15f;
+        public const float PROJECTILE_SPEED_MISSILE = 10f;
+        public const float PROJECTILE_SPEED_RAY = 20f;
+
+        public const float PROJECTILE_DELAY_BULLET = 5f;
+        public const float PROJECTILE_DELAY_MISSILE = 10f;
+        public const float PROJECTILE_DELAY_RAY = 15f;
     }
 
     public class DefaultPaths
@@ -44,11 +53,11 @@ namespace Mothership
     public class AnimatorValues
     {
         // Animator float names.
-        public const string ANIMATOR_SPEED = "fSpeed";
 
         // Animator trigger names.
 
         // Animator boolean names.
+        public const string ANIMATOR_IS_MOVING = "bIsMoving";
 
     }
 
@@ -89,6 +98,7 @@ namespace Mothership
         public const string TAG_AUDIO = "Audio";
         public const string TAG_NODE = "Node";
         public const string TAG_POWERUP = "PowerUp";
+        public const string TAG_WEAPON = "Weapon";
         public const string TAG_BASE = "Base";
     }
 
@@ -102,6 +112,7 @@ namespace Mothership
         public const string NAME_MISSILE = "Missile";
         public const string NAME_RAY = "Ray";
         public const string NAME_POWER_UP = "PowerUp";
+        public const string NAME_HEALTH = "Health";
     }
 
     public class ErrorStrings
@@ -121,6 +132,9 @@ namespace Mothership
 
         // AI Errors
         public const string ERROR_UNASSIGNED_NPC = "Unassigned NPC detected, please assign NPC to a team.";
+
+        // Projectile Errors.
+        public const string ERROR_UNASSIGNED_TYPE = "Projectile type is unassigned.";
     }
 
     public class ResourcePacks
