@@ -50,6 +50,16 @@ public class IAIBase : MonoBehaviour
 
     [ SerializeField ]
 	protected bool m_bShowPath = false;
+
+    // Current target position.
+    [ SerializeField ]
+	protected Vector3 m_v3Target = Vector3.zero;
+    public Vector3 TargetPosition { get { return m_v3Target; } }
+
+    // We're going to hold a reference to the "gun" gameobject
+    //  from which we're going to fire.
+    [ SerializeField ]
+    protected GameObject m_goGun;
 	
     // Will indicate if we reached the target node.
 	protected bool m_bReachedNode = true;
@@ -57,16 +67,6 @@ public class IAIBase : MonoBehaviour
 
     protected bool m_bReachedTarget = false;
     public bool ReachedTarget { get { return m_bReachedTarget; } }
-
-    // Current target position.
-    [ SerializeField ]
-	protected Vector3 m_v3Target = Vector3.zero;
-    public Vector3 TargetPosition { get { return m_v3Target; } }
-
-    // Indicates if we're carrying the mothership.
-    [ SerializeField ]
-    protected int m_iItemId = -1;
-    public int HeldItem { get { return m_iItemId; } }
 
     // Will flag that this NPC is being attacked.
     protected bool m_bIsBeingAttacked = false;
@@ -88,6 +88,10 @@ public class IAIBase : MonoBehaviour
 	protected float m_fOldTime = 0;
 	protected float m_fCheckTime = 0;
 	protected float m_fElapsedTime = 0;
+
+    bool m_bCanFireBullet = true;
+    bool m_bCanFireMissile = true;
+    bool m_bCanFireRay = true;
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Start
@@ -366,29 +370,37 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     protected IEnumerator AttackTarget( Transform trEnemy )
     {
+        
+
         while ( true == m_bTargetInRange )
         {
-            while ( m_dictInventory[ Names.NAME_BULLET ] > 0 )
+            if ( m_dictInventory[ Names.NAME_BULLET ] > 0 && true == m_bCanFireBullet )
             { 
+                m_bCanFireBullet = false;
                 Fire( Names.NAME_BULLET, trEnemy );
                 yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_BULLET );
+                m_bCanFireBullet = true;
             }
 
-            while ( m_dictInventory[ Names.NAME_MISSILE ] > 0 )
+            if ( m_dictInventory[ Names.NAME_MISSILE ] > 0 && true == m_bCanFireMissile )
             { 
+                m_bCanFireMissile = false;
                 Fire( Names.NAME_MISSILE, trEnemy );
                 yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_MISSILE );
+                m_bCanFireMissile = true;
             }
 
-            while ( m_dictInventory[ Names.NAME_RAY ] > 0 )
+            if ( m_dictInventory[ Names.NAME_RAY ] > 0 && true == m_bCanFireRay )
             { 
+                m_bCanFireRay = false;
                 Fire( Names.NAME_RAY, trEnemy );
                 yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_RAY );
+                m_bCanFireRay = true;
             }
-        }
-    }
 
-         // Fire bullet here  } } 
+            yield return null;
+        }
+    } 
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Fire
@@ -396,6 +408,7 @@ public class IAIBase : MonoBehaviour
     protected void Fire( string strProjectileName, Transform trEnemy )
     {
         string strFunction = "IAIBase::Fire()";
+        
         m_dictProjectilePrefabs = m_ItemsResource.Weapons;
         if ( false == m_dictProjectilePrefabs.ContainsKey( strProjectileName ) )
         {
@@ -421,7 +434,9 @@ public class IAIBase : MonoBehaviour
         cProjectile.Direction = v3Direction.normalized;
         cProjectile.Instantiator = gameObject;
         cProjectile.Activation = true;
+        goProjectile.name = Names.NAME_BULLET;
+        Instantiate( goProjectile, m_goGun.transform.position, Quaternion.identity );
 
-        Instantiate( goProjectile, transform.position, Quaternion.identity );
+        m_dictInventory[ strProjectileName ]--;
     }
 }

@@ -20,6 +20,8 @@ public class CDroneAI : IAIBase {
     private EDroneState m_eState = EDroneState.DRONE_IDLE;
     public EDroneState DroneState { get { return m_eState; } }
 
+    private GameObject m_goClosestEnemy;
+
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Start
     /////////////////////////////////////////////////////////////////////////////
@@ -112,15 +114,15 @@ public class CDroneAI : IAIBase {
 
         // We don't want the drone to lazy about, so if it's not holding a ray gun
         //  powerup, we want it to head out and find it.
-        if ( m_iItemId != -1 )
-        {
-            if ( m_iItemId == PowerUpIDs.ID_RAYGUN )
-            {
-                // We have the ray gun, tell the drone to go back home.
-                m_v3Target = m_goHomeBase.transform.position;
-                return;
-            }
-        }
+        //if ( m_iItemId != -1 )
+        //{
+        //    if ( m_iItemId == PowerUpIDs.ID_RAYGUN )
+        //    {
+        //        // We have the ray gun, tell the drone to go back home.
+        //        m_v3Target = m_goHomeBase.transform.position;
+        //        return;
+        //    }
+        //}
 
         // We're not holding anything, find the closest powerup and go pick it up.
         GameObject goPowerup = CPowerUp.GetClosestPowerUp( transform );
@@ -180,6 +182,10 @@ public class CDroneAI : IAIBase {
         // Enable the moving animation if it's not on.
         if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
             m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, false );
+
+        Vector3 v3Direction = m_goClosestEnemy.transform.position - transform.position;
+
+        transform.rotation = Quaternion.LookRotation( v3Direction.normalized );
     }
   
     /////////////////////////////////////////////////////////////////////////////
@@ -192,8 +198,15 @@ public class CDroneAI : IAIBase {
             m_eState = EDroneState.DRONE_DEAD;
 
         // Get a handle on the closest enemy and calculate distance from it.
-        GameObject goClosestEnemy = GetClosestEnemy();
-        float fDistance = Vector3.Distance( goClosestEnemy.transform.position, transform.position );
+        m_goClosestEnemy = GetClosestEnemy();
+        float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
+
+        if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
+        {
+            m_v3Target = Vector3.zero;
+            m_eState = EDroneState.DRONE_ATTACKING;
+            m_bTargetInRange = true;
+        }
 
         // According to current state, we will check if we need to transition to
         //  a different state.
@@ -216,14 +229,6 @@ public class CDroneAI : IAIBase {
                     }
                 }
 
-                if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
-                {
-                    m_v3Target = Vector3.zero;
-                    m_eState = EDroneState.DRONE_ATTACKING;
-                    m_bTargetInRange = true;
-                    break;
-                }
-
                 if ( Vector3.zero != m_v3Target )
                 {
                     MoveOrder( m_v3Target );
@@ -236,11 +241,11 @@ public class CDroneAI : IAIBase {
                 
             case EDroneState.DRONE_ATTACKING:
 
-                StartCoroutine( AttackTarget( goClosestEnemy.transform ) );
+                StartCoroutine( AttackTarget( m_goClosestEnemy.transform ) );
 
                 if ( fDistance > Constants.DEFAULT_ATTACK_RANGE + 20f )
                 {
-                    m_v3Target = goClosestEnemy.transform.position;
+                    m_v3Target = m_goClosestEnemy.transform.position;
                     m_eState = EDroneState.DRONE_MOVING;
                     m_bTargetInRange = false;
                 }

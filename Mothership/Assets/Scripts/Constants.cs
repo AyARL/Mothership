@@ -19,6 +19,7 @@ namespace Mothership
         public const float DEFAULT_HEALTH_TANK = 400f;
         
         public const float DEFAULT_ATTACK_RANGE = 40f;
+        public const float DEFAULT_MAX_PROJECTILE_RANGE = 50f;
 
         // Weapons related constants.
         public const float PROJECTILE_DAMAGE_BULLET = 5f;
@@ -29,9 +30,9 @@ namespace Mothership
         public const float PROJECTILE_SPEED_MISSILE = 10f;
         public const float PROJECTILE_SPEED_RAY = 20f;
 
-        public const float PROJECTILE_DELAY_BULLET = 5f;
-        public const float PROJECTILE_DELAY_MISSILE = 10f;
-        public const float PROJECTILE_DELAY_RAY = 15f;
+        public const float PROJECTILE_DELAY_BULLET = 0.5f;
+        public const float PROJECTILE_DELAY_MISSILE = 2f;
+        public const float PROJECTILE_DELAY_RAY = 5f;
     }
 
     public class DefaultPaths

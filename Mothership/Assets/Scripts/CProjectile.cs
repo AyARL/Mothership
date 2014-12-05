@@ -82,7 +82,7 @@ public class CProjectile : MonoBehaviour {
             return;
 
 	    // Check if the projectile needs to be destroyed
-        if ( Vector3.Distance( m_v3InitialPosition, transform.position ) > 20f )
+        if ( Vector3.Distance( m_v3InitialPosition, transform.position ) > Constants.DEFAULT_MAX_PROJECTILE_RANGE )
         {
             Destroy( gameObject );
         }
