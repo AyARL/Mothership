@@ -11,6 +11,8 @@ public class ProfileGUI : MonoBehaviour
     private GameObject content = null;
     [SerializeField]
     private WaitScreenGUI waitScreen = null;
+    [SerializeField]
+    private MainMenuGUI mainMenu = null;
 
     // Profile
     [SerializeField]
@@ -24,6 +26,10 @@ public class ProfileGUI : MonoBehaviour
 
     //Last game played
     [SerializeField]
+    private GameObject dataGroup = null;
+    [SerializeField]
+    private Text noDataLabel = null;
+    [SerializeField]
     private Text datePlayed = null;
     [SerializeField]
     private Text gameResult = null;
@@ -36,6 +42,11 @@ public class ProfileGUI : MonoBehaviour
     private Button logOutButton = null;
 
     private PlayerGameStats lastGameStats = null;
+    
+    private void Start()
+    {
+        logOutButton.onClick.AddListener(LogOut);
+    }
 
     public void EnableScreen()
     {
@@ -49,6 +60,15 @@ public class ProfileGUI : MonoBehaviour
 
     public void DisableScreen()
     {
+        displayName.text = "";
+        totalEXP.text = "";
+        gamesCount.text = "";
+        winRate.text = "";
+
+        datePlayed.text = "";
+        gameResult.text = "";
+        expEarned.text = "";
+
         content.SetActive(false);
     }
 
@@ -127,8 +147,15 @@ public class ProfileGUI : MonoBehaviour
         int errorCode;
         if (Int32.TryParse(data, out errorCode))
         {
-            Debug.Log(Enum.GetName(typeof(ResponseEnums.GetLastGameResponse), errorCode));
-            return false;
+            if ((ResponseEnums.GetLastGameResponse)errorCode == ResponseEnums.GetLastGameResponse.Error_NoData)
+            {
+                return true;
+            }
+            else
+            {
+                Debug.Log(Enum.GetName(typeof(ResponseEnums.GetLastGameResponse), errorCode));
+                return false;
+            }
         }
         else
         {
@@ -167,9 +194,26 @@ public class ProfileGUI : MonoBehaviour
 
     private void FillLastGameData()
     {
-        datePlayed.text = lastGameStats.DatePlayed;
-        gameResult.text = lastGameStats.Winner == lastGameStats.Team ? "Win" : "Loss";
-        expEarned.text = lastGameStats.EXPEarned.ToString();
+        if (lastGameStats != null)
+        {
+            noDataLabel.gameObject.SetActive(false);
+            dataGroup.SetActive(true);
+            datePlayed.text = lastGameStats.DatePlayed;
+            gameResult.text = lastGameStats.Winner == lastGameStats.Team ? "Win" : "Loss";
+            expEarned.text = lastGameStats.EXPEarned.ToString();
+        }
+        else
+        {
+            noDataLabel.gameObject.SetActive(true);
+            dataGroup.SetActive(false);
+        }
+    }
+
+    private void LogOut()
+    {
+        UserDataManager.userData.Clear();
+        DisableScreen();
+        mainMenu.EnableScreen();
     }
 
 }

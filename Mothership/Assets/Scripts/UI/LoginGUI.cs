@@ -44,6 +44,10 @@ namespace MothershipUI
 
         public void DisableScreen()
         {
+            emailField.text = "";
+            passwordField.text = "";
+            message.text = "";
+            submitButton.interactable = true;
             content.SetActive(false);
         }
 
@@ -75,6 +79,7 @@ namespace MothershipUI
             else
             {
                 message.text = response.error;
+                submitButton.interactable = true;
             }
         }
 
@@ -86,6 +91,7 @@ namespace MothershipUI
             {
                 Debug.Log(Enum.GetName(typeof(ResponseEnums.LoginResponse), errorCode));
                 message.text = Enum.GetName(typeof(ResponseEnums.LoginResponse), errorCode);
+                submitButton.interactable = true;
                 return false;
             }
             else

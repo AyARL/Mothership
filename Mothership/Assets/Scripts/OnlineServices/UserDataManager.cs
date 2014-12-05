@@ -25,6 +25,11 @@ namespace MothershipOS
             }
         }
 
+        public void Clear()
+        {
+            User = null;
+            Profile = null;
+        }
 
     }
 }

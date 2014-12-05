@@ -26,6 +26,7 @@
 
 	abstract class GetLastGameResponse extends Response
 	{
-		const Error_NoData = 2;
+		const Error_IncorrectCredentials = 2;
+		const Error_NoData = 3;
 	}
 ?>
