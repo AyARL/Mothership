@@ -84,6 +84,13 @@ public class CDroneAI : IAIBase {
                     RunAttackState();
 
                 break;
+
+                case EDroneState.DRONE_DEAD:
+
+                    // The drone is dead, we have to clean up and get rid of it.
+                    Die();
+
+                    break;
 			}
 		}
     }
@@ -195,17 +202,28 @@ public class CDroneAI : IAIBase {
     {
         // We need to constantly check if the NPC died.
         if ( m_fHealth <= 0 )
+        { 
             m_eState = EDroneState.DRONE_DEAD;
+            return;
+        }
 
         // Get a handle on the closest enemy and calculate distance from it.
         m_goClosestEnemy = GetClosestEnemy();
-        float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
+        if ( null != m_goClosestEnemy )
+        { 
+            float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
 
-        if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
+            if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
+            {
+                m_v3Target = Vector3.zero;
+                m_eState = EDroneState.DRONE_ATTACKING;
+                m_bTargetInRange = true;
+            }
+        }
+        else
         {
-            m_v3Target = Vector3.zero;
-            m_eState = EDroneState.DRONE_ATTACKING;
-            m_bTargetInRange = true;
+            m_bTargetInRange = false;
+            m_bIsBeingAttacked = false;
         }
 
         // According to current state, we will check if we need to transition to
@@ -241,7 +259,19 @@ public class CDroneAI : IAIBase {
                 
             case EDroneState.DRONE_ATTACKING:
 
+                if ( null == m_goClosestEnemy )
+                {
+                    // The enemy has been destroyed, switch back to idle.
+                    m_eState = EDroneState.DRONE_IDLE;
+                    m_v3Target = Vector3.zero;
+                    m_bTargetInRange = false;
+                    m_bIsBeingAttacked = false;
+                    break;
+                }
+
                 StartCoroutine( AttackTarget( m_goClosestEnemy.transform ) );
+
+                float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
 
                 if ( fDistance > Constants.DEFAULT_ATTACK_RANGE + 20f )
                 {
@@ -252,6 +282,15 @@ public class CDroneAI : IAIBase {
 
                 break;
         }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               OnCollisionEnter
+    /////////////////////////////////////////////////////////////////////////////
+    void OnCollisionEnter( Collision cCollision )
+    {
+        // Run the base IAIBase collision logic.
+        base.OnCollisionEnter( cCollision );
     }
 
     /////////////////////////////////////////////////////////////////////////////

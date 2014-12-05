@@ -26,9 +26,9 @@ namespace Mothership
         public const float PROJECTILE_DAMAGE_MISSILE = 25f;
         public const float PROJECTILE_DAMAGE_RAY = 100f;
 
-        public const float PROJECTILE_SPEED_BULLET = 15f;
-        public const float PROJECTILE_SPEED_MISSILE = 10f;
-        public const float PROJECTILE_SPEED_RAY = 20f;
+        public const float PROJECTILE_SPEED_BULLET = 20f;
+        public const float PROJECTILE_SPEED_MISSILE = 15f;
+        public const float PROJECTILE_SPEED_RAY = 30f;
 
         public const float PROJECTILE_DELAY_BULLET = 0.5f;
         public const float PROJECTILE_DELAY_MISSILE = 2f;
@@ -114,6 +114,8 @@ namespace Mothership
         public const string NAME_RAY = "Ray";
         public const string NAME_POWER_UP = "PowerUp";
         public const string NAME_HEALTH = "Health";
+        public const string NAME_MOTHERSHIP_RED = "MothershipRed";
+        public const string NAME_MOTHERSHIP_BLUE = "MothershipBlue";
     }
 
     public class ErrorStrings

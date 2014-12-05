@@ -82,6 +82,9 @@ public class IAIBase : MonoBehaviour
     // Will hold a handle on this object's animator
     protected Animator m_anAnimator;
 
+    protected GameObject m_goEnemyFlag = null;
+    protected GameObject m_goOwnFlag = null;
+
     protected Vector3 m_v3CurrNode;
 	protected int m_iNodeIndex;
 	protected List< Vector3 > m_liPath = new List<Vector3>();
@@ -192,7 +195,54 @@ public class IAIBase : MonoBehaviour
                 return;
             }
 
+            m_goOwnFlag = FindFlag( m_eTeam );
+
+            switch ( m_eTeam )
+            {
+                case ETeam.TEAM_BLUE:
+
+                    m_goEnemyFlag = FindFlag( ETeam.TEAM_RED );
+
+                    break;
+                case ETeam.TEAM_RED:
+
+                     m_goEnemyFlag = FindFlag( ETeam.TEAM_BLUE );
+
+                    break;
+            }
+
         }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               FindFlag
+    /////////////////////////////////////////////////////////////////////////////
+    private GameObject FindFlag( ETeam eTeam )
+    {
+        string strFunction = "IAIBase::CDroneAI()";
+
+        GameObject goObject = null;
+
+        switch ( eTeam )
+        {
+            case ETeam.TEAM_RED:
+
+                goObject = GameObject.Find( Names.NAME_MOTHERSHIP_RED );
+
+                break;
+            case ETeam.TEAM_BLUE:
+
+                goObject = GameObject.Find( Names.NAME_MOTHERSHIP_BLUE );
+                
+                break;
+        }
+
+        if ( null == goObject )
+        {
+            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof( GameObject ).ToString() ) );
+        }
+
+        return goObject;
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -263,14 +313,12 @@ public class IAIBase : MonoBehaviour
     }
 
     /////////////////////////////////////////////////////////////////////////////
-    /// Function:               OnTriggerEnter
+    /// Function:               OnCollisionEnter
     /////////////////////////////////////////////////////////////////////////////
-    protected void OnTriggerEnter( Collider cCollider ) 
+    protected void OnCollisionEnter( Collision cCollision ) 
     {
-        string strFunction = "IAIBase::OnCollisionEnter()";
-
         // Get a handle on the gameObject with which we collided. 
-        GameObject goObject = cCollider.gameObject;
+        GameObject goObject = cCollision.gameObject;
 
         // Depending on the name of the object, react accordingly.
         switch ( goObject.tag )
@@ -278,20 +326,35 @@ public class IAIBase : MonoBehaviour
             case Tags.TAG_WEAPON:
 
                 // Reduce the NPCs health depending on the type of projectile.
-                if ( goObject.name == Names.NAME_MISSILE )
+                if ( goObject.name == Names.NAME_MISSILE + "(Clone)" )
                     m_fHealth -= Constants.PROJECTILE_DAMAGE_MISSILE;
 
-                else if ( goObject.name == Names.NAME_BULLET )
+                else if ( goObject.name == Names.NAME_BULLET + "(Clone)" )
                     m_fHealth -= Constants.PROJECTILE_DAMAGE_BULLET;
 
-                else if ( goObject.name == Names.NAME_RAY )
+                else if ( goObject.name == Names.NAME_RAY + "(Clone)" )
                     m_fHealth -= Constants.PROJECTILE_DAMAGE_RAY;
 
                 // We've been attacked by an enemy, flag this fact.
                 m_bIsBeingAttacked = true;
                 
                 break;
+        }
+    }
 
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               OnTriggerEnter
+    /////////////////////////////////////////////////////////////////////////////
+    protected void OnTriggerEnter( Collider cCollider ) 
+    {
+        string strFunction = "IAIBase::OnTriggerEnter()";
+
+        // Get a handle on the gameObject with which we collided. 
+        GameObject goObject = cCollider.gameObject;
+
+        // Depending on the name of the object, react accordingly.
+        switch ( goObject.tag )
+        {
             case Tags.TAG_POWERUP:
 
                 // Attempt to get a handle on the object's powerup script.
@@ -370,8 +433,6 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     protected IEnumerator AttackTarget( Transform trEnemy )
     {
-        
-
         while ( true == m_bTargetInRange )
         {
             if ( m_dictInventory[ Names.NAME_BULLET ] > 0 && true == m_bCanFireBullet )
@@ -438,5 +499,36 @@ public class IAIBase : MonoBehaviour
         Instantiate( goProjectile, m_goGun.transform.position, Quaternion.identity );
 
         m_dictInventory[ strProjectileName ]--;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               Die
+    /////////////////////////////////////////////////////////////////////////////
+    protected void Die()
+    {
+        string strFunction = "IAIBase::Die()";
+
+        switch ( m_eTeam )
+        {
+            case ETeam.TEAM_BLUE:
+
+                m_liActiveBlues.Remove( gameObject );
+
+                break;
+
+            case ETeam.TEAM_RED:
+
+                m_liActiveReds.Remove( gameObject );
+
+                break;
+            default:
+
+                // Unassigned NPC detected, report the issue.
+                Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_UNASSIGNED_NPC, transform.position ) );
+
+                return;
+        }
+
+        Destroy( gameObject );
     }
 }
