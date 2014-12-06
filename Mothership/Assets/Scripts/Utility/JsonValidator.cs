@@ -4,7 +4,7 @@ using Pathfinding.Serialization.JsonFx;
 
 namespace MothershipUtility
 {
-    public static class JsonValidator
+    public static class JsonUtility
     {
         public static T ValidateJsonData<T>(string input)
         {

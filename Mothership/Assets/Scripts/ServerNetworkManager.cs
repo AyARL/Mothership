@@ -1,13 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Events;
+using MothershipUtility;
 
 public class ServerNetworkManager : NetworkManager
 {
     private string GameName { get; set; }
     private string GameDescription { get; set; }
-
-    private ServerManager ServerManager { get; set; }
 
     // Used for level loading to prevent message leaking
     public int LastLevelPrefix { get; private set; }
@@ -20,10 +19,9 @@ public class ServerNetworkManager : NetworkManager
         {
             GameName = gameName;
             GameDescription = gameDescription;
-            NetworkConnectionError error = Network.InitializeServer(5, 25000, !Network.HavePublicAddress());
+            NetworkConnectionError error = Network.InitializeServer(8, 25000, !Network.HavePublicAddress());
             if (error == NetworkConnectionError.NoError)
             {
-                Network.maxConnections = 8;
                 MasterServer.RegisterHost(gameTypeName, GameName, GameDescription);
             }
             else
@@ -41,7 +39,10 @@ public class ServerNetworkManager : NetworkManager
         switch (msEvent)
         {
             case MasterServerEvent.RegistrationSucceeded:
-                InitialiseRoleManager();
+                if (serverManager == null)
+                {
+                    InitialiseRoleManager();
+                }
                 break;
         }
 
@@ -49,14 +50,14 @@ public class ServerNetworkManager : NetworkManager
 
     private void OnFailedToConnectToMasterServer(NetworkConnectionError info)
     {
-        
+        Debug.LogError(info.ToString());
     }
 
     private void InitialiseRoleManager()
     {
         GameObject roleManagerObj = new GameObject(roleManagerObjectName);
-        ServerManager = roleManagerObj.AddComponent<ServerManager>();
-        //ServerManager.Init(this);
+        serverManager = roleManagerObj.AddComponent<ServerManager>();
+        serverManager.Init(this);
 
         if(OnServerReady != null)
         {
@@ -79,4 +80,13 @@ public class ServerNetworkManager : NetworkManager
         MasterServer.UnregisterHost(); // don't advertise on Master Server
         Network.maxConnections = Network.connections.Length; // allow connections equal to current count
     }
+
+    public void SendTeamSetupUpdate(TeamList redTeam, TeamList blueTeam)
+    {
+        string redTeamString = JsonUtility.SerializeToJson<TeamList>(redTeam);
+        string blueTeamString = JsonUtility.SerializeToJson<TeamList>(blueTeam);
+
+        networkView.RPC("RPCSendTeamData", RPCMode.Others, redTeamString, blueTeamString);
+    }
+
 }

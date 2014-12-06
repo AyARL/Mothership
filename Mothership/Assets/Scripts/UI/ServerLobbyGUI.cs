@@ -33,4 +33,12 @@ public class ServerLobbyGUI : MonoBehaviour
     {
 
     }
+
+    private void CloseServer()
+    {
+        if (NetworkManager.networkManager != null)
+        {
+            NetworkManager.networkManager.RemoveNetworkManager();
+        }
+    }
 }

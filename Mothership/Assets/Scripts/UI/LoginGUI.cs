@@ -96,7 +96,7 @@ namespace MothershipUI
             }
             else
             {
-                User user = JsonValidator.ValidateJsonData<User>(input);
+                User user = JsonUtility.ValidateJsonData<User>(input);
                 if (user != default(User))
                 {
                     message.text = "Logged In...";
