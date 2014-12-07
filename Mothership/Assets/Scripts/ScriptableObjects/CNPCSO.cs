@@ -5,6 +5,10 @@ using System.Collections.Generic;
 public class CNPCSO : ScriptableObject
 {
     [ SerializeField ]
+    private GameObject m_goFlag;
+    public GameObject Flag { get { return m_goFlag; } }
+
+    [ SerializeField ]
     private GameObject[] m_rggoRedTeamAI;
 
     [ SerializeField ]
@@ -28,6 +32,93 @@ public class CNPCSO : ScriptableObject
             UpdateBlueTeamObjects();
             return m_liBlueTeamNPCs;
         }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               GetObjectByType
+    /////////////////////////////////////////////////////////////////////////////
+    public GameObject GetObjectByType( IAIBase.ETeam eTeam, IAIBase.ENPCType eType )
+    {
+        bool bMatchFound = false;
+
+        if ( eTeam == IAIBase.ETeam.TEAM_BLUE )
+        {
+            UpdateBlueTeamObjects();
+
+            foreach ( GameObject goObject in m_liBlueTeamNPCs )
+            {
+                switch ( eType )
+                {
+                    case IAIBase.ENPCType.TYPE_DRONE:
+
+                        CDroneAI cDrone = goObject.GetComponent< CDroneAI >();
+                        if ( null == cDrone )
+                            continue;
+
+                        bMatchFound = true;
+
+                        break;
+                    case IAIBase.ENPCType.TYPE_HEALER:
+                        break;
+                    case IAIBase.ENPCType.TYPE_TANK:
+
+                        CTankAI cTank = goObject.GetComponent< CTankAI >();
+                        if ( null == cTank )
+                            continue;
+
+                        bMatchFound = true;
+
+                        break;
+                    case IAIBase.ENPCType.TYPE_WARRIOR:
+                        break;
+                }
+                
+                if ( true == bMatchFound )
+                {
+                    return goObject;
+                }
+            }
+        }
+        else if ( eTeam == IAIBase.ETeam.TEAM_RED )
+        {
+            UpdateRedTeamObjects();
+
+            foreach ( GameObject goObject in m_liRedTeamNPCs )
+            {
+                switch ( eType )
+                {
+                    case IAIBase.ENPCType.TYPE_DRONE:
+
+                        CDroneAI cDrone = goObject.GetComponent< CDroneAI >();
+                        if ( null == cDrone )
+                            continue;
+
+                        bMatchFound = true;
+
+                        break;
+                    case IAIBase.ENPCType.TYPE_HEALER:
+                        break;
+                    case IAIBase.ENPCType.TYPE_TANK:
+
+                        CTankAI cTank = goObject.GetComponent< CTankAI >();
+                        if ( null == cTank )
+                            continue;
+
+                        bMatchFound = true;
+
+                        break;
+                    case IAIBase.ENPCType.TYPE_WARRIOR:
+                        break;
+                }
+                
+                if ( true == bMatchFound )
+                {
+                    return goObject;
+                }
+            }
+        }
+
+        return null;
     }
 
     /////////////////////////////////////////////////////////////////////////////

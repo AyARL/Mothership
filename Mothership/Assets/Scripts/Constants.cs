@@ -116,6 +116,7 @@ namespace Mothership
         public const string NAME_HEALTH = "Health";
         public const string NAME_MOTHERSHIP_RED = "MothershipRed";
         public const string NAME_MOTHERSHIP_BLUE = "MothershipBlue";
+        public const string NAME_FLAG = "Flag";
     }
 
     public class ErrorStrings
@@ -129,6 +130,7 @@ namespace Mothership
         public const string ERROR_UNMATCHED_AUDIO_CLIP = "Unable to match provided audio file to available patterns.";
         public const string ERROR_AUDIO_FILES_NOT_LOADED = "Audio Controller has indicated that it hasn't finished loading all audio files.";
         public const string ERROR_AUDIO_FAILED_RELOAD = "Could not load audio resources.";
+        public const string ERROR_CANNOT_LOAD_RESOURCE = "Could not load specified resource pack.";
 
         // Path finding errors.
         public const string ERROR_PATHFINDING_NO_VALID_PATH = "Could not find a valid path to the target.";
