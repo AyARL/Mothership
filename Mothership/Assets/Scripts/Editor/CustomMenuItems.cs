@@ -22,4 +22,10 @@ public static class CustomMenuItems
     {
         ScriptableObjectUtility.CreateResource< CPowerUpSO >( ResourcePacks.RESOURCE_CONTAINER_ITEMS );
     }
+
+    [MenuItem(DefaultPaths.SO_RESOURCES_PATH + "Player Prefab Resource")]
+    public static void CreatePlayerPrefabResource()
+    {
+        ScriptableObjectUtility.CreateResource<PlayerPrefabResourceSO>();
+    }
 }

@@ -37,6 +37,30 @@ public abstract class NetworkManager : MonoBehaviour
         Destroy(this);
     }
 
+    private void OnLevelWasLoaded(int level)
+    {
+        Network.isMessageQueueRunning = true;
+        Network.SetSendingEnabled(0, true);
+
+        if(Network.isClient)
+        {
+            networkView.RPC("RPCClientLoadedLevel", RPCMode.Server, level);
+        }
+        
+        if (level != 0)
+        {
+            if (Network.isClient)
+            {
+                clientManager.SendGameMessage(new EnteredGame());
+            }
+
+            if(Network.isServer)
+            {
+                serverManager.SendGameMessage(new EnteredGame());
+            }
+        }
+    }
+
     #region RPCs
 
     #region Server->Client

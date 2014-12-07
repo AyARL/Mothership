@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.Events;
 using MothershipUtility;
 using MothershipOS;
+using MothershipStateMachine;
 
 public class ClientNetworkManager : NetworkManager
 {
@@ -86,11 +87,5 @@ public class ClientNetworkManager : NetworkManager
         networkView.RPC("RPCClientReadyToPlay", RPCMode.Server);
     }
 
-    private void OnLevelWasLoaded(int level)
-    {
-        Network.isMessageQueueRunning = true;
-        Network.SetSendingEnabled(0, true);
-
-        networkView.RPC("RPCClientLoadedLevel", RPCMode.Server, level);
-    }
+    
 }

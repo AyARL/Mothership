@@ -34,4 +34,6 @@ namespace MothershipStateMachine
         public NetworkPlayer Player { get; set; }
         public int Level { get; set; }
     }
+
+    public class EnteredGame : GameMessage { }
 }
