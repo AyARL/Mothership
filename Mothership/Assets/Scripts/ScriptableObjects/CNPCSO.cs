@@ -70,6 +70,13 @@ public class CNPCSO : ScriptableObject
 
                         break;
                     case IAIBase.ENPCType.TYPE_WARRIOR:
+
+                        CWarriorAI cWarrior = goObject.GetComponent< CWarriorAI >();
+                        if ( null == cWarrior )
+                            continue;
+
+                        bMatchFound = true;
+
                         break;
                 }
                 
@@ -108,6 +115,13 @@ public class CNPCSO : ScriptableObject
 
                         break;
                     case IAIBase.ENPCType.TYPE_WARRIOR:
+
+                        CWarriorAI cWarrior = goObject.GetComponent< CWarriorAI >();
+                        if ( null == cWarrior )
+                            continue;
+
+                        bMatchFound = true;
+
                         break;
                 }
                 
