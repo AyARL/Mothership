@@ -28,50 +28,66 @@ public class PlayerController : MonoBehaviour
             // align camera to player
             Camera.main.transform.position = gameObject.transform.position + cameraOffset;
 
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if(Physics.Raycast(ray, out hit))
+            Move();
+
+        }
+    }
+
+    private void Move()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            Vector3 targetDir = new Vector3(hit.point.x, transform.position.y, hit.point.z) - transform.position;
+            float step = rotateSpeed * Time.deltaTime;
+            Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0f);
+            Debug.DrawRay(transform.position, newDir, Color.red);
+            transform.rotation = Quaternion.LookRotation(newDir);
+        }
+
+        float fTranslation = Input.GetAxis("Vertical") * movementSpeed * Time.deltaTime;
+        float sTranslation = Input.GetAxis("Horizontal") * movementSpeed * Time.deltaTime;
+
+        if(fTranslation != 0 && sTranslation != 0)
+        {
+            fTranslation *= 0.75f;
+            sTranslation *= 0.75f;
+        }
+
+        transform.Translate(sTranslation, 0, fTranslation);
+
+        AnimateMovement(fTranslation, sTranslation);
+    }
+
+    private void AnimateMovement(float fTranslation, float sTranslation)
+    {
+        if (animator != null)
+        {
+            if (fTranslation > 0)
             {
-                Vector3 targetDir = new Vector3(hit.point.x, transform.position.y, hit.point.z) - transform.position;
-                float step = rotateSpeed * Time.deltaTime;
-                Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0f);
-                Debug.DrawRay(transform.position, newDir, Color.red);
-                transform.rotation = Quaternion.LookRotation(newDir);
+                animator.SetBool("bIsMoving", true);
+            }
+            else
+            {
+                animator.SetBool("bIsMoving", false);
             }
 
-            float fTranslation = Input.GetAxis("Vertical") * movementSpeed * Time.deltaTime;
-            float sTranslation = Input.GetAxis("Horizontal") * movementSpeed * Time.deltaTime;
-            transform.Translate(sTranslation, 0, fTranslation);
-
-            if (animator != null)
+            if (sTranslation > 0)
             {
-                if (fTranslation > 0)
-                {
-                    animator.SetBool("bIsMoving", true);
-                }
-                else
-                {
-                    animator.SetBool("bIsMoving", false);
-                }
-
-                if(sTranslation > 0)
-                {
-                    animator.SetBool("bIsTurningR", true);
-                    animator.SetBool("bIsTurningL", false);
-                }
-                else if(sTranslation < 0)
-                {
-                    animator.SetBool("bIsTurningL", true);
-                    animator.SetBool("bIsTurningR", false);
-                }
-                else
-                {
-                    animator.SetBool("bIsTurningL", false);
-                    animator.SetBool("bIsTurningR", false);
-                }
+                animator.SetBool("bIsTurningR", true);
+                animator.SetBool("bIsTurningL", false);
             }
-
-            
+            else if (sTranslation < 0)
+            {
+                animator.SetBool("bIsTurningL", true);
+                animator.SetBool("bIsTurningR", false);
+            }
+            else
+            {
+                animator.SetBool("bIsTurningL", false);
+                animator.SetBool("bIsTurningR", false);
+            }
         }
     }
 }
