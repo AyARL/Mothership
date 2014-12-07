@@ -21,11 +21,11 @@ namespace MothershipStateMachine
             {
                 if(manager.RegisterClient(registerClient))
                 {
-                    IEnumerable<ClientDataOnServer> redTeam = manager.GetTeam(ClientDataOnServer.Team.RedTeam);
-                    TeamList redList = new TeamList(ClientDataOnServer.Team.RedTeam, redTeam.Select(c => c.Profile.DisplayName).ToArray());
+                    IEnumerable<ClientDataOnServer> redTeam = manager.GetTeam(IAIBase.ETeam.TEAM_RED);
+                    TeamList redList = new TeamList(IAIBase.ETeam.TEAM_RED, redTeam.Select(c => c.Profile.DisplayName).ToArray());
 
-                    IEnumerable<ClientDataOnServer> blueTeam = manager.GetTeam(ClientDataOnServer.Team.BlueTeam);
-                    TeamList blueList = new TeamList(ClientDataOnServer.Team.BlueTeam, blueTeam.Select(c => c.Profile.DisplayName).ToArray());
+                    IEnumerable<ClientDataOnServer> blueTeam = manager.GetTeam(IAIBase.ETeam.TEAM_BLUE);
+                    TeamList blueList = new TeamList(IAIBase.ETeam.TEAM_BLUE, blueTeam.Select(c => c.Profile.DisplayName).ToArray());
 
                     manager.networkManager.SendTeamSetupUpdate(redList, blueList);
                 }

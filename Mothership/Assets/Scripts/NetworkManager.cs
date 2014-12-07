@@ -48,12 +48,12 @@ public abstract class NetworkManager : MonoBehaviour
 
     #region Client->Server
     [RPC]
-    protected void RPCRegisterClient(string userString, string profileString)
+    protected void RPCRegisterClient(string userString, string profileString, NetworkMessageInfo info)
     {
         User user = JsonUtility.ValidateJsonData<User>(userString);
         Profile profile = JsonUtility.ValidateJsonData<Profile>(profileString);
 
-        serverManager.SendGameMessage(new RegisterClient() { User = user, Profile = profile });
+        serverManager.SendGameMessage(new RegisterClient() { User = user, Profile = profile, NetworkPlayer = info.sender });
     }
     #endregion
 

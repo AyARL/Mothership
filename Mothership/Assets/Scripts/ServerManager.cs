@@ -34,7 +34,7 @@ public class ServerManager : RoleManager
     {
         if (registeredClients.Count < 8)
         {
-            ClientDataOnServer client = new ClientDataOnServer(registerMessage.User, registerMessage.Profile, GetTeamForNextClient());
+            ClientDataOnServer client = new ClientDataOnServer(registerMessage.User, registerMessage.Profile, registerMessage.NetworkPlayer, GetTeamForNextClient());
             registeredClients.Add(client);
 
             if(OnClientRegistered != null)
@@ -51,15 +51,15 @@ public class ServerManager : RoleManager
         }
     }
 
-    private ClientDataOnServer.Team GetTeamForNextClient()
+    private IAIBase.ETeam GetTeamForNextClient()
     {
-        int redCount = registeredClients.Count(c => c.ClientTeam == ClientDataOnServer.Team.RedTeam);
-        int blueCount = registeredClients.Count(c => c.ClientTeam == ClientDataOnServer.Team.BlueTeam);
+        int redCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_RED);
+        int blueCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_BLUE);
 
-        return redCount <= blueCount ? ClientDataOnServer.Team.RedTeam : ClientDataOnServer.Team.BlueTeam;
+        return redCount <= blueCount ? IAIBase.ETeam.TEAM_RED : IAIBase.ETeam.TEAM_BLUE;
     }
 
-    public IEnumerable<ClientDataOnServer> GetTeam(ClientDataOnServer.Team teamColour)
+    public IEnumerable<ClientDataOnServer> GetTeam(IAIBase.ETeam teamColour)
     {
         return registeredClients.Where(c => c.ClientTeam == teamColour);
     }

@@ -57,7 +57,7 @@ namespace MothershipUI
             int i = 0;
             switch (team.TeamColour)
             {
-                case ClientDataOnServer.Team.BlueTeam:
+                case IAIBase.ETeam.TEAM_BLUE:
                     foreach (string player in team.TeamDisplayNames)
                     {
                         blueTeamList[i].text = player;
@@ -72,7 +72,7 @@ namespace MothershipUI
 
                     break;
 
-                case ClientDataOnServer.Team.RedTeam:
+                case IAIBase.ETeam.TEAM_RED:
                     foreach (string player in team.TeamDisplayNames)
                     {
                         redTeamList[i].text = player;

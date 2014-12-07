@@ -10,6 +10,12 @@ namespace MothershipStateMachine
     {
         public User User { get; set; }
         public Profile Profile { get; set; }
+        public NetworkPlayer NetworkPlayer { get; set; }
+    }
+
+    public class ClientDisconnected : GameMessage
+    {
+        public NetworkPlayer NetworkPlayer { get; set; }
     }
 
     public class UpdateTeamRoster : GameMessage

@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.Events;
 using MothershipUtility;
+using MothershipStateMachine;
 
 public class ServerNetworkManager : NetworkManager
 {
@@ -68,11 +69,12 @@ public class ServerNetworkManager : NetworkManager
     private void OnPlayerConnected(NetworkPlayer newPlayer)
     {
         Debug.Log("Player Connected");
+        // Use for reinstating disconnected players
     }
 
     private void OnPlayerDisconnected(NetworkPlayer player)
     {
-        
+        serverManager.SendGameMessage(new ClientDisconnected() { NetworkPlayer = player });
     }
 
     public void PreventFurtherConnections()
