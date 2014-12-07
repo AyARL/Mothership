@@ -9,11 +9,15 @@ public class ClientDataOnServer
     public NetworkPlayer NetworkPlayer { get; private set; }
     public IAIBase.ETeam ClientTeam { get; private set; }
 
+    public bool ReadyToPlay { get; set; }
+
     public ClientDataOnServer(User user, Profile profile, NetworkPlayer networkPlayer, IAIBase.ETeam team)
     {
         User = user;
         Profile = profile;
         NetworkPlayer = networkPlayer;
         ClientTeam = team;
+
+        ReadyToPlay = false;
     }
 }

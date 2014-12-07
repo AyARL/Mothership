@@ -18,6 +18,14 @@ namespace MothershipStateMachine
             if(updateTeams != null)
             {
                 manager.OnUpdateTeamRoster(updateTeams.RedTeam, updateTeams.BlueTeam);
+                return;
+            }
+
+            ClientReadyToPlay readyToPlay = message as ClientReadyToPlay;
+            if(readyToPlay != null)
+            {
+                manager.NetworkManager.ReadyToPlay();
+                return;
             }
         }
 

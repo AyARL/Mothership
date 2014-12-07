@@ -81,6 +81,11 @@ public class ClientNetworkManager : NetworkManager
         networkView.RPC("RPCRegisterClient", RPCMode.Server, serializedUser, serializedProfile);
     }
 
+    public void ReadyToPlay()
+    {
+        networkView.RPC("RPCClientReadyToPlay", RPCMode.Server);
+    }
+
     private void OnLevelWasLoaded(int level)
     {
         Network.isMessageQueueRunning = true;

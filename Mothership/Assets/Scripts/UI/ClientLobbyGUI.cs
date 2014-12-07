@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System.Linq;
 using Pathfinding.Serialization.JsonFx;
 using System.Collections.Generic;
+using MothershipStateMachine;
 
 namespace MothershipUI
 {
@@ -28,6 +29,11 @@ namespace MothershipUI
         private Button readyButton = null;
 
         private ClientManager clientManager = null;
+
+        private void Start()
+        {
+            readyButton.onClick.AddListener(() => { clientManager.SendGameMessage(new ClientReadyToPlay()); readyButton.interactable = false; });
+        }
 
         public void EnableScreen()
         {

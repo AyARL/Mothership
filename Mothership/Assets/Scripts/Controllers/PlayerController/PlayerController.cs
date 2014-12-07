@@ -10,12 +10,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float rotateSpeed = 10f;
 
+    private Animator animator = null;
+
     bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
 
     // Use this for initialization
     void Start()
     {
-
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -40,6 +42,34 @@ public class PlayerController : MonoBehaviour
             float fTranslation = Input.GetAxis("Vertical") * movementSpeed * Time.deltaTime;
             float sTranslation = Input.GetAxis("Horizontal") * movementSpeed * Time.deltaTime;
             transform.Translate(sTranslation, 0, fTranslation);
+
+            if (animator != null)
+            {
+                if (fTranslation > 0)
+                {
+                    animator.SetBool("bIsMoving", true);
+                }
+                else
+                {
+                    animator.SetBool("bIsMoving", false);
+                }
+
+                if(sTranslation > 0)
+                {
+                    animator.SetBool("bIsTurningR", true);
+                    animator.SetBool("bIsTurningL", false);
+                }
+                else if(sTranslation < 0)
+                {
+                    animator.SetBool("bIsTurningL", true);
+                    animator.SetBool("bIsTurningR", false);
+                }
+                else
+                {
+                    animator.SetBool("bIsTurningL", false);
+                    animator.SetBool("bIsTurningR", false);
+                }
+            }
 
             
         }

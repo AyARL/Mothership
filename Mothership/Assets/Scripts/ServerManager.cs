@@ -11,6 +11,7 @@ public class ServerManager : RoleManager
 
     private List<ClientDataOnServer> registeredClients;
     public IEnumerable<ClientDataOnServer> RegisteredClients { get { return registeredClients; } }
+    public int MinPlayersInGame { get; private set; }   // number of players required before a game can be started
 
     // States
     public ServerLobbyState ServerLobbyState { get; set; }
@@ -21,8 +22,8 @@ public class ServerManager : RoleManager
     public override void Init(NetworkManager networkManager)
     {
         this.networkManager = networkManager as ServerNetworkManager;
-
         registeredClients = new List<ClientDataOnServer>();
+        MinPlayersInGame = 2;
 
         // Initialise all states
         ServerLobbyState = new ServerLobbyState(this);

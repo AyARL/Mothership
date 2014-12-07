@@ -9,9 +9,6 @@ public class ServerNetworkManager : NetworkManager
     private string GameName { get; set; }
     private string GameDescription { get; set; }
 
-    // Used for level loading to prevent message leaking
-    public int LastLevelPrefix { get; private set; }
-
     public UnityAction OnServerReady { get; set; }
 
     public void StartServer(string gameName, string gameDescription)
@@ -77,18 +74,25 @@ public class ServerNetworkManager : NetworkManager
         serverManager.SendGameMessage(new ClientDisconnected() { NetworkPlayer = player });
     }
 
-    public void PreventFurtherConnections()
-    {
-        MasterServer.UnregisterHost(); // don't advertise on Master Server
-        Network.maxConnections = Network.connections.Length; // allow connections equal to current count
-    }
-
     public void SendTeamSetupUpdate(TeamList redTeam, TeamList blueTeam)
     {
         string redTeamString = JsonUtility.SerializeToJson<TeamList>(redTeam);
         string blueTeamString = JsonUtility.SerializeToJson<TeamList>(blueTeam);
 
         networkView.RPC("RPCSendTeamData", RPCMode.Others, redTeamString, blueTeamString);
+    }
+
+    public void StartMission()
+    {
+        LastLevelPrefix += 1;
+        Network.RemoveRPCsInGroup(networkView.group);
+        networkView.RPC("RPCLoadLevel", RPCMode.AllBuffered, 1, LastLevelPrefix);
+    }
+
+    private void PreventFurtherConnections()
+    {
+        MasterServer.UnregisterHost(); // don't advertise on Master Server
+        Network.maxConnections = -1; // allow connections equal to current count
     }
 
 }

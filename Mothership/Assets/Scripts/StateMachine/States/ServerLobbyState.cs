@@ -28,7 +28,19 @@ namespace MothershipStateMachine
                     TeamList blueList = new TeamList(IAIBase.ETeam.TEAM_BLUE, blueTeam.Select(c => c.Profile.DisplayName).ToArray());
 
                     manager.networkManager.SendTeamSetupUpdate(redList, blueList);
+                    return;
                 }
+            }
+
+            ClientReadyToPlay clientReady = message as ClientReadyToPlay;
+            if(clientReady != null)
+            {
+                manager.RegisteredClients.First(c => c.NetworkPlayer == clientReady.Player).ReadyToPlay = true;
+                if(manager.RegisteredClients.Count() >= manager.MinPlayersInGame &&  manager.RegisteredClients.All(c => c.ReadyToPlay == true))
+                {
+                    manager.networkManager.StartMission();
+                }
+                return;
             }
         }
 

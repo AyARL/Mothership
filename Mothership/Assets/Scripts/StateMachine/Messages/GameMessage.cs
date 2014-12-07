@@ -23,4 +23,15 @@ namespace MothershipStateMachine
         public TeamList RedTeam { get; set; }
         public TeamList BlueTeam { get; set; }
     }
+
+    public class ClientReadyToPlay : GameMessage
+    {
+        public NetworkPlayer Player { get; set; }
+    }
+
+    public class ClientLoadedLevel : GameMessage
+    {
+        public NetworkPlayer Player { get; set; }
+        public int Level { get; set; }
+    }
 }
