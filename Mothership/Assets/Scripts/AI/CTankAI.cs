@@ -3,22 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using Mothership;
 
-public class CDroneAI : IAIBase {
+public class CTankAI : IAIBase {
 
     // Declares the drone's states.
-	public enum EDroneState
+	public enum ETankState
 	{
-		DRONE_IDLE,
-		DRONE_MOVING,
-        DRONE_ATTACKING,
-        DRONE_DEAD,
-        DRONE_FLEE,
+		TANK_IDLE,
+		TANK_MOVING,
+        TANK_ATTACKING,
+        TANK_DEAD,
 	}
 	
     // Drone state should be idle by default
     [ SerializeField ]
-    private EDroneState m_eState = EDroneState.DRONE_IDLE;
-    public EDroneState DroneState { get { return m_eState; } }
+    private ETankState m_eState = ETankState.TANK_IDLE;
+    public ETankState DroneState { get { return m_eState; } }
 
     private GameObject m_goClosestEnemy;
 
@@ -31,9 +30,13 @@ public class CDroneAI : IAIBase {
         base.Start();
 
         // Drone initialization.
-        m_fHealth = Constants.DEFAULT_HEALTH_DRONE;
-        m_fSpeedMultiplier = Constants.DEFAULT_SPEED_DRONE;
-        m_eNPCType = ENPCType.TYPE_DRONE;
+        m_fHealth = Constants.DEFAULT_HEALTH_TANK;
+        m_fSpeedMultiplier = Constants.DEFAULT_SPEED_TANK;
+        m_eNPCType = ENPCType.TYPE_TANK;
+
+        m_dictInventory[ Names.NAME_BULLET ] = 1000;
+        m_dictInventory[ Names.NAME_MISSILE ] = 3;
+        m_dictInventory[ Names.NAME_RAY ] = 1;
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -56,39 +59,36 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     private void RunStates()
     {
-        // The drone is the "scout" and generally is only interested in retrieving 
-        //  the ray, reason why we're going to search for the closest powerup and
-        //  set it as the target.
 		m_fElapsedTime += Time.deltaTime;
 		
 		if (m_fElapsedTime > m_fOldTime)
 		{
 			switch ( m_eState )
 			{
-                case EDroneState.DRONE_IDLE:
+                case ETankState.TANK_IDLE:
 
                     // Run the Idle state.
                     RunIdleState();
 
 				break;
 				
-			case EDroneState.DRONE_MOVING:
+			case ETankState.TANK_MOVING:
 				
                     // Run movement logic.
                     RunMovingState();
 
 				break;
 
-            case EDroneState.DRONE_ATTACKING:
+            case ETankState.TANK_ATTACKING:
 
                     // Run Attack logic.
                     RunAttackState();
 
                 break;
 
-                case EDroneState.DRONE_DEAD:
+                case ETankState.TANK_DEAD:
 
-                    // The drone is dead, we have to clean up and get rid of it.
+                    // The tank is dead, we have to clean up and get rid of it.
                     Die();
 
                     break;
@@ -114,7 +114,7 @@ public class CDroneAI : IAIBase {
 
         // The drone will attempt to find a health pack if its health is low.
         //  But ensure we don't do that if we're holding the flag.
-        if ( m_fHealth < Constants.DEFAULT_HEALTH_DRONE / 2 && false == m_bHasFlag )
+        if ( m_fHealth < Constants.DEFAULT_HEALTH_TANK / 2 && false == m_bHasFlag )
         {
             // Find the closest powerup and go pick it up.
             GameObject goPowerup = CPowerUp.GetClosestPowerUp( transform );
@@ -174,7 +174,7 @@ public class CDroneAI : IAIBase {
                 //  vector.
                 m_bReachedTarget = false;
                 //m_bReachedNode = false;
-                m_eState = EDroneState.DRONE_IDLE;
+                m_eState = ETankState.TANK_IDLE;
                 m_v3Target = Vector3.zero;
                 return;
             }
@@ -206,7 +206,7 @@ public class CDroneAI : IAIBase {
         // We need to constantly check if the NPC died.
         if ( m_fHealth <= 0 )
         { 
-            m_eState = EDroneState.DRONE_DEAD;
+            m_eState = ETankState.TANK_DEAD;
             return;
         }
 
@@ -219,7 +219,7 @@ public class CDroneAI : IAIBase {
                 m_v3Target = m_goHomeBase.transform.position;
 
                 MoveOrder( m_v3Target );
-                m_eState = EDroneState.DRONE_MOVING;
+                m_eState = ETankState.TANK_MOVING;
             }
             return;
         }
@@ -233,7 +233,7 @@ public class CDroneAI : IAIBase {
             if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
             {
                 m_v3Target = Vector3.zero;
-                m_eState = EDroneState.DRONE_ATTACKING;
+                m_eState = ETankState.TANK_ATTACKING;
                 m_bTargetInRange = true;
             }
         }
@@ -247,18 +247,18 @@ public class CDroneAI : IAIBase {
         //  a different state.
         switch ( m_eState )
         {
-            case EDroneState.DRONE_IDLE:
+            case ETankState.TANK_IDLE:
 
                 if ( true == m_bIsBeingAttacked )
                 {
                     // Attempt to decide if we should attack or flee.
-                    if ( m_fHealth < Constants.DEFAULT_HEALTH_DRONE / 2 )
+                    if ( m_fHealth < Constants.DEFAULT_HEALTH_TANK / 2 )
                     {
                         // There's a 4 in 6 chance that the drone will try to run to home base.
                         if ( Random.Range( 0, 5 ) < 4 )
                         {
                             m_v3Target = m_goHomeBase.transform.position;
-                            m_eState = EDroneState.DRONE_MOVING;
+                            m_eState = ETankState.TANK_MOVING;
                             break;
                         }
                     }
@@ -267,19 +267,19 @@ public class CDroneAI : IAIBase {
                 if ( Vector3.zero != m_v3Target )
                 {
                     MoveOrder( m_v3Target );
-                    m_eState = EDroneState.DRONE_MOVING;
+                    m_eState = ETankState.TANK_MOVING;
                 }
 
                 break;
-            case EDroneState.DRONE_MOVING:
+            case ETankState.TANK_MOVING:
                 break;
                 
-            case EDroneState.DRONE_ATTACKING:
+            case ETankState.TANK_ATTACKING:
 
                 if ( null == m_goClosestEnemy )
                 {
                     // The enemy has been destroyed, switch back to idle.
-                    m_eState = EDroneState.DRONE_IDLE;
+                    m_eState = ETankState.TANK_IDLE;
                     m_v3Target = Vector3.zero;
                     m_bTargetInRange = false;
                     m_bIsBeingAttacked = false;
@@ -293,7 +293,7 @@ public class CDroneAI : IAIBase {
                 if ( fDistance > Constants.DEFAULT_ATTACK_RANGE + 20f )
                 {
                     m_v3Target = m_goClosestEnemy.transform.position;
-                    m_eState = EDroneState.DRONE_MOVING;
+                    m_eState = ETankState.TANK_MOVING;
                     m_bTargetInRange = false;
                 }
 
@@ -356,7 +356,7 @@ public class CDroneAI : IAIBase {
         {
             m_bHasFlag = false;
             m_v3Target = Vector3.zero;
-            m_eState = EDroneState.DRONE_IDLE;
+            m_eState = ETankState.TANK_IDLE;
             CSpawner.SpawnFlag();
         }
     }

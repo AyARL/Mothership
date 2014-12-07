@@ -12,6 +12,20 @@ public class IAIBase : MonoBehaviour
         TEAM_BLUE,
     }
 
+    public enum ENPCType
+    {
+        TYPE_NONE,
+        TYPE_DRONE,
+        TYPE_TANK,
+        TYPE_HEALER,
+        TYPE_WARRIOR,
+    }
+
+    protected ENPCType m_eNPCType = ENPCType.TYPE_NONE;
+    public ENPCType NPCType { get { return m_eNPCType; } }
+
+    private static GameObject m_goFlagHolder = null;
+
     private static CPowerUpSO m_ItemsResource = null;
     public static CPowerUpSO ItemsResource { get { return m_ItemsResource; } set { m_ItemsResource = value; } }
 
@@ -59,7 +73,10 @@ public class IAIBase : MonoBehaviour
     // We're going to hold a reference to the "gun" gameobject
     //  from which we're going to fire.
     [ SerializeField ]
-    protected GameObject m_goGun;
+    protected GameObject[] m_rggoGuns;
+
+    [ SerializeField ]
+    protected GameObject m_goFlagPrefab = null;
 	
     // Will indicate if we reached the target node.
 	protected bool m_bReachedNode = true;
@@ -73,6 +90,8 @@ public class IAIBase : MonoBehaviour
 
     protected bool m_bTargetInRange = false;
 
+    protected bool m_bHasFlag = false;
+
     // Will hold ammo variables.
     protected Dictionary< string, uint > m_dictInventory = new Dictionary< string, uint >();
 
@@ -82,8 +101,7 @@ public class IAIBase : MonoBehaviour
     // Will hold a handle on this object's animator
     protected Animator m_anAnimator;
 
-    protected GameObject m_goEnemyFlag = null;
-    protected GameObject m_goOwnFlag = null;
+    protected GameObject m_goFlag = null;
 
     protected Vector3 m_v3CurrNode;
 	protected int m_iNodeIndex;
@@ -195,51 +213,42 @@ public class IAIBase : MonoBehaviour
                 return;
             }
 
-            m_goOwnFlag = FindFlag( m_eTeam );
-
-            switch ( m_eTeam )
-            {
-                case ETeam.TEAM_BLUE:
-
-                    m_goEnemyFlag = FindFlag( ETeam.TEAM_RED );
-
-                    break;
-                case ETeam.TEAM_RED:
-
-                     m_goEnemyFlag = FindFlag( ETeam.TEAM_BLUE );
-
-                    break;
-            }
-
+            // Find the flag.
+            if ( null == m_goFlag ) 
+                m_goFlag = FindFlag( m_eTeam );
         }
     }
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               FindFlag
     /////////////////////////////////////////////////////////////////////////////
-    private GameObject FindFlag( ETeam eTeam )
+    protected GameObject FindFlag( ETeam eTeam = ETeam.TEAM_NONE )
     {
         string strFunction = "IAIBase::CDroneAI()";
 
         GameObject goObject = null;
 
-        switch ( eTeam )
-        {
-            case ETeam.TEAM_RED:
+        goObject = GameObject.Find( Names.NAME_FLAG );
 
-                goObject = GameObject.Find( Names.NAME_MOTHERSHIP_RED );
+        //switch ( eTeam )
+        //{
+        //    case ETeam.TEAM_RED:
 
-                break;
-            case ETeam.TEAM_BLUE:
+        //        goObject = GameObject.Find( Names.NAME_MOTHERSHIP_RED );
 
-                goObject = GameObject.Find( Names.NAME_MOTHERSHIP_BLUE );
+        //        break;
+        //    case ETeam.TEAM_BLUE:
+
+        //        goObject = GameObject.Find( Names.NAME_MOTHERSHIP_BLUE );
                 
-                break;
-        }
+        //        break;
+        //}
 
         if ( null == goObject )
         {
-            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof( GameObject ).ToString() ) );
+            // Someone is holding the flag, go towards him.
+            goObject = m_goFlagHolder;
+            //Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof( GameObject ).ToString() ) );
         }
 
         return goObject;
@@ -383,6 +392,16 @@ public class IAIBase : MonoBehaviour
 
                 break;
         }
+
+        // Check if we collided with the flag.
+        if ( cCollider.name == Names.NAME_FLAG )
+        {
+            // Set the flag's parent.
+            m_goFlagHolder = gameObject;
+            m_bReachedTarget = true;
+            Destroy( cCollider.gameObject );
+            m_bHasFlag = true;
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -491,12 +510,15 @@ public class IAIBase : MonoBehaviour
             return;
         }
 
-        Vector3 v3Direction = trEnemy.position - transform.position;
+        // Select a gun position.
+        Vector3 v3GunPosition = m_rggoGuns[ Random.Range( 0, m_rggoGuns.Length - 1 ) ].transform.position;
+
+        Vector3 v3Direction = trEnemy.position - v3GunPosition;
         cProjectile.Direction = v3Direction.normalized;
         cProjectile.Instantiator = gameObject;
         cProjectile.Activation = true;
         goProjectile.name = Names.NAME_BULLET;
-        Instantiate( goProjectile, m_goGun.transform.position, Quaternion.identity );
+        Instantiate( goProjectile, v3GunPosition, Quaternion.identity );
 
         m_dictInventory[ strProjectileName ]--;
     }
@@ -529,6 +551,16 @@ public class IAIBase : MonoBehaviour
                 return;
         }
 
+        // We need to drop the flag if we're holding it.
+        if ( m_bHasFlag )
+        { 
+            GameObject goFlag = (GameObject)Instantiate( m_goFlagPrefab, transform.position, Quaternion.identity );
+            goFlag.name = Names.NAME_FLAG;
+            m_goFlagHolder = null;
+        }
+
         Destroy( gameObject );
+
+        CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
     }
 }
