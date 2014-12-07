@@ -308,24 +308,6 @@ public class CDroneAI : IAIBase {
     {
         // Run the base IAIBase collision logic.
         base.OnCollisionEnter( cCollision );
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               OnTriggerEnter
-    /////////////////////////////////////////////////////////////////////////////
-    void OnTriggerEnter( Collider cCollider ) 
-    {
-        // Run the base IAIBase collision logic.
-        base.OnTriggerEnter( cCollider );
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               OnCollisionEnter
-    /////////////////////////////////////////////////////////////////////////////
-    void OnCollisionStay( Collision cCollision )
-    {
-        // Error reporting
-        string strFunction = "CDroneAI::OnCollisionEnter()";
 
         // Get a handle on the gameobject we collided with.
         GameObject goCollisionObject = cCollision.gameObject;
@@ -342,7 +324,16 @@ public class CDroneAI : IAIBase {
             {
                 CollidedWithBase();
             }
-        } 
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               OnTriggerEnter
+    /////////////////////////////////////////////////////////////////////////////
+    void OnTriggerEnter( Collider cCollider ) 
+    {
+        // Run the base IAIBase collision logic.
+        base.OnTriggerEnter( cCollider );
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -354,9 +345,8 @@ public class CDroneAI : IAIBase {
 
         if ( true == m_bHasFlag )
         {
-            m_bHasFlag = false;
-            m_v3Target = Vector3.zero;
-            m_eState = EDroneState.DRONE_IDLE;
+            Die( false );
+            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
             CSpawner.SpawnFlag();
         }
     }

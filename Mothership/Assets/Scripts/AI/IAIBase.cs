@@ -526,7 +526,7 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Die
     /////////////////////////////////////////////////////////////////////////////
-    protected void Die()
+    protected void Die( bool bInstantiateFlag = true )
     {
         string strFunction = "IAIBase::Die()";
 
@@ -552,7 +552,7 @@ public class IAIBase : MonoBehaviour
         }
 
         // We need to drop the flag if we're holding it.
-        if ( m_bHasFlag )
+        if ( true == m_bHasFlag && true == bInstantiateFlag )
         { 
             GameObject goFlag = (GameObject)Instantiate( m_goFlagPrefab, transform.position, Quaternion.identity );
             goFlag.name = Names.NAME_FLAG;

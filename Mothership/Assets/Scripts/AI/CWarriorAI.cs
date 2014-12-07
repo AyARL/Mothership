@@ -32,7 +32,7 @@ public class CWarriorAI : IAIBase {
         // Drone initialization.
         m_fHealth = Constants.DEFAULT_HEALTH_WARRIOR;
         m_fSpeedMultiplier = Constants.DEFAULT_SPEED_WARRIOR;
-        m_eNPCType = ENPCType.TYPE_TANK;
+        m_eNPCType = ENPCType.TYPE_WARRIOR;
 
         m_dictInventory[ Names.NAME_BULLET ] = 1000;
         m_dictInventory[ Names.NAME_MISSILE ] = 3;
