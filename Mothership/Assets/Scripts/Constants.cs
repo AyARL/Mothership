@@ -56,9 +56,11 @@ namespace Mothership
         // Animator float names.
 
         // Animator trigger names.
+        public const string ANIMATOR_IS_DEAD = "IsDead";
 
         // Animator boolean names.
         public const string ANIMATOR_IS_MOVING = "bIsMoving";
+        public const string ANIMATOR_ENEMY_SEEN = "bEnemySeen";
 
     }
 
