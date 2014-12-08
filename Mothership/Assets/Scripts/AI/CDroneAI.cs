@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Mothership;
+using MothershipStateMachine;
 
 public class CDroneAI : IAIBase {
 
@@ -334,20 +335,5 @@ public class CDroneAI : IAIBase {
     {
         // Run the base IAIBase collision logic.
         base.OnTriggerEnter( cCollider );
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               CollidedWithBase
-    /////////////////////////////////////////////////////////////////////////////
-    private void CollidedWithBase()
-    {
-        m_fHealth += 0.5f;
-
-        if ( true == m_bHasFlag )
-        {
-            Die( false );
-            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
-            CSpawner.SpawnFlag();
-        }
     }
 }
