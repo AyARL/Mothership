@@ -89,6 +89,7 @@ public class PlayerController : MonoBehaviour
                 animator.SetBool("bIsTurningL", false);
                 animator.SetBool("bIsTurningR", false);
             }
+
         }
     }
 }
