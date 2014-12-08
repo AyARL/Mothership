@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Mothership;
+using MothershipStateMachine;
 
 public class IAIBase : MonoBehaviour 
 {
@@ -102,6 +103,9 @@ public class IAIBase : MonoBehaviour
     protected Animator m_anAnimator;
 
     protected GameObject m_goFlag = null;
+
+    protected string m_strAttackerName;
+    public string AttackerName { get { return m_strAttackerName; } }
 
     protected Vector3 m_v3CurrNode;
 	protected int m_iNodeIndex;
@@ -334,6 +338,10 @@ public class IAIBase : MonoBehaviour
         {
             case Tags.TAG_WEAPON:
 
+                // Get the name of the attacker.
+                CProjectile cProjectile = goObject.GetComponent< CProjectile >();
+                m_strAttackerName = cProjectile.Instantiator.gameObject.name;
+
                 // Reduce the NPCs health depending on the type of projectile.
                 if ( goObject.name == Names.NAME_MISSILE + "(Clone)" )
                     m_fHealth -= Constants.PROJECTILE_DAMAGE_MISSILE;
@@ -401,6 +409,10 @@ public class IAIBase : MonoBehaviour
             m_bReachedTarget = true;
             Destroy( cCollider.gameObject );
             m_bHasFlag = true;
+
+            // Send message to the server manager.
+            ServerManager cServer = RoleManager.roleManager as ServerManager;
+            cServer.SendGameMessage( new FlagPickedUp() { PlayerName = gameObject.name } );
         }
     }
 
@@ -559,8 +571,31 @@ public class IAIBase : MonoBehaviour
             m_goFlagHolder = null;
         }
 
+        // Inform the server who killed this AI character.
+        ServerManager cServer = RoleManager.roleManager as ServerManager;
+        cServer.SendGameMessage( new AIPlayerKilled() { PlayerName = gameObject.name, KillerName = m_strAttackerName } );
+
         Destroy( gameObject );
 
         CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               CollidedWithBase
+    /////////////////////////////////////////////////////////////////////////////
+    protected void CollidedWithBase()
+    {
+        m_fHealth += 0.5f;
+
+        if ( true == m_bHasFlag )
+        {
+            // Inform the server that we delivered the flag to the base.
+            ServerManager cServer = RoleManager.roleManager as ServerManager;
+            cServer.SendGameMessage( new FlagDelievered() { PlayerName = gameObject.name } );
+
+            Die( false );
+            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
+            CSpawner.SpawnFlag();
+        }
     }
 }

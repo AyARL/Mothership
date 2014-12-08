@@ -36,4 +36,20 @@ namespace MothershipStateMachine
     }
 
     public class EnteredGame : GameMessage { }
+
+    public class FlagPickedUp : GameMessage 
+    {
+        public string PlayerName { get; set; }
+    }
+
+    public class FlagDelievered : GameMessage
+    {
+        public string PlayerName { get; set; }
+    }
+
+    public class AIPlayerKilled : GameMessage
+    {
+        public string PlayerName { get; set; }
+        public string KillerName { get; set; }
+    }
 }

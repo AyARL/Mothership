@@ -355,20 +355,4 @@ public class CWarriorAI : IAIBase {
             }
         } 
     }
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               CollidedWithBase
-    /////////////////////////////////////////////////////////////////////////////
-    private void CollidedWithBase()
-    {
-        m_fHealth += 0.5f;
-
-        if ( true == m_bHasFlag )
-        {
-            m_bHasFlag = false;
-            m_v3Target = Vector3.zero;
-            m_eState = EWarriorState.WARRIOR_IDLE;
-            CSpawner.SpawnFlag();
-        }
-    }
 }
