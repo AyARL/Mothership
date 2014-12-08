@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // If this client is the owner of the avatar then use input to alter it's movement and animation
         if (IsRunningLocally || networkView.isMine)
         {
             // align camera to player
