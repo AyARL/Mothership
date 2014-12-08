@@ -14,6 +14,11 @@ public class PlayerController : MonoBehaviour
 
     bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
 
+    // Data from server if this is running on replication
+    private float errorThreshold = 0.2f;
+    public Vector3 inPosition { get; set; }
+    public Quaternion inRotation { get; set; }
+
     // Use this for initialization
     void Start()
     {
@@ -30,10 +35,11 @@ public class PlayerController : MonoBehaviour
             Camera.main.transform.position = gameObject.transform.position + cameraOffset;
 
             Move();
-
         }
     }
 
+    #region Local
+    
     private void Move()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -92,4 +98,20 @@ public class PlayerController : MonoBehaviour
 
         }
     }
+    #endregion
+
+    #region Remote
+    public void LerpToTarget()
+    {
+        float distance = Vector3.Distance(transform.position, inPosition);
+
+        if(distance >= errorThreshold)
+        {
+            float step = ((1f / distance) * movementSpeed) / 100f;
+            transform.position = Vector3.Lerp(transform.position, inPosition, step);
+            transform.rotation = Quaternion.Slerp(transform.rotation, inRotation, step);
+        }
+    }
+
+    #endregion
 }
