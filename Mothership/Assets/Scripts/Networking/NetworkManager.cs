@@ -26,6 +26,11 @@ public abstract class NetworkManager : MonoBehaviour
         else
         {
             networkManager = this;
+
+            // use local master server
+            MasterServer.ipAddress = "127.0.0.1";
+            MasterServer.port = 23466;
+
             DontDestroyOnLoad(gameObject);
             networkView.group = 0;
         }
