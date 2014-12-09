@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private Vector3 cameraOffset = Vector3.zero;
     [SerializeField]
-    private float movementSpeed = 1f;
+    private float movementSpeed = 30f;
     [SerializeField]
     private float rotateSpeed = 10f;
 
@@ -56,7 +56,6 @@ public class PlayerController : MonoBehaviour
             Vector3 targetDir = new Vector3(hit.point.x, transform.position.y, hit.point.z) - transform.position;
             float step = rotateSpeed * Time.deltaTime;
             Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0f);
-            Debug.DrawRay(transform.position, newDir, Color.red);
             transform.rotation = Quaternion.LookRotation(newDir);
         }
 

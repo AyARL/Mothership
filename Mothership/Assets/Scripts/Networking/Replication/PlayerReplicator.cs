@@ -75,13 +75,14 @@ namespace MothershipReplication
 
                 float interpolationTime = (float)Network.time - clientPing;
 
-                // make sure there is at leas one entry in the buffer
+                // make sure there is at least one entry in the buffer
                 if (stateBuffer[0] == null)
                 {
                     stateBuffer[0] = new PlayerPayload() { Position = observedTransform.position, Rotation = observedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
                 }
 
-                if (stateBuffer[0].Timestamp > interpolationTime)   // lag
+                // Interpolation
+                if (stateBuffer[0].Timestamp > interpolationTime)   
                 {
                     for (int i = 0; i < stateBuffer.Length; i++)
                     {
@@ -112,12 +113,40 @@ namespace MothershipReplication
                         }
                     }
                 }
-                else    // no lag
+                else    
                 {
-                    PlayerPayload latest = stateBuffer[0];
-                    observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
-                    observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
-                    controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+                    //Extrapolation
+                    float extrapolationTime = (interpolationTime - stateBuffer[0].Timestamp);
+                    Debug.Log(extrapolationTime);
+
+                    if(stateBuffer[0] != null && stateBuffer[1] != null)
+                    {
+                        PlayerPayload lastSample = stateBuffer[0];
+                        PlayerPayload prevSample = stateBuffer[1];
+
+                        float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
+                        float lerpTime = 0f;
+
+                        if (timeDiff > 0.0001)
+                        {
+                            lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
+                        }
+
+                        Vector3 predictedPosition = lastSample.Position + prevSample.Position;
+
+                        observedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
+                        observedTransform.rotation = lastSample.Rotation;
+                        controllerScript.CurrentAnimationFlag(lastSample.ActiveAnimatorFlagIndex);
+                    }
+
+
+                    // Updates to latest state - no extrapolation
+                    //PlayerPayload latest = stateBuffer[0];
+                    //observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
+                    //observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
+                    //controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+
+
                 }
             }
         }
