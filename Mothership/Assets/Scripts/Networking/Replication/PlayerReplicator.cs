@@ -25,7 +25,7 @@ namespace MothershipReplication
             Quaternion rotation = observedTransform.rotation;
             int animFlagIndex = -1;
 
-            if(stream.isWriting)    // Executed by owner of the network view
+            if (stream.isWriting)    // Executed by owner of the network view
             {
                 stream.Serialize(ref position);
                 stream.Serialize(ref rotation);
@@ -36,7 +36,7 @@ namespace MothershipReplication
                     {
                         var animState = controllerScript.animatorStates.First(s => s.Value.State == true);
                         animFlagIndex = animState.Key;
-                        
+
                     }
                 }
                 stream.Serialize(ref animFlagIndex);
@@ -49,7 +49,7 @@ namespace MothershipReplication
                 stream.Serialize(ref animFlagIndex);
 
                 //Shift buffer
-                for(int i = stateBuffer.Length -1; i >= 1; i--)
+                for (int i = stateBuffer.Length - 1; i >= 1; i--)
                 {
                     stateBuffer[i] = stateBuffer[i - 1];
                 }
@@ -64,89 +64,97 @@ namespace MothershipReplication
         {
             if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
             {
+                #region RemoteClientReplication
                 if (Network.isClient)
                 {
                     clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
-                }
-                else
-                {
-                    clientPing = (Network.GetAveragePing(Network.connections.First(c => c == networkView.owner)) / 100) + pingMargin; // on server find the ping to the client that owns the networkView
-                }
 
-                float interpolationTime = (float)Network.time - clientPing;
+                    float interpolationTime = (float)Network.time - clientPing;
 
-                // make sure there is at least one entry in the buffer
-                if (stateBuffer[0] == null)
-                {
-                    stateBuffer[0] = new PlayerPayload() { Position = observedTransform.position, Rotation = observedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
-                }
-
-                // Interpolation
-                if (stateBuffer[0].Timestamp > interpolationTime)   
-                {
-                    for (int i = 0; i < stateBuffer.Length; i++)
+                    // make sure there is at least one entry in the buffer
+                    if (stateBuffer[0] == null)
                     {
-                        if (stateBuffer[i] == null)
+                        stateBuffer[0] = new PlayerPayload() { Position = observedTransform.position, Rotation = observedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
+                    }
+
+                    // Interpolation
+                    if (stateBuffer[0].Timestamp > interpolationTime)
+                    {
+                        for (int i = 0; i < stateBuffer.Length; i++)
                         {
-                            continue;
+                            if (stateBuffer[i] == null)
+                            {
+                                continue;
+                            }
+
+                            // Find best fitting state or use the last one available
+                            if (stateBuffer[i].Timestamp <= interpolationTime || i == stateBuffer.Length - 1)
+                            {
+                                PlayerPayload bestTarget = stateBuffer[Mathf.Max(i - 1, 0)];
+                                PlayerPayload bestStart = stateBuffer[i];
+
+                                float timeDiff = bestTarget.Timestamp - bestStart.Timestamp;
+                                float lerpTime = 0f;
+
+                                if (timeDiff > 0.0001)
+                                {
+                                    lerpTime = ((interpolationTime - bestStart.Timestamp) / timeDiff);
+                                }
+
+                                observedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
+                                observedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
+                                controllerScript.CurrentAnimationFlag(bestTarget.ActiveAnimatorFlagIndex);
+
+                                return;
+                            }
                         }
+                    }
+                    else
+                    {
+                        //Extrapolation
+                        float extrapolationTime = (interpolationTime - stateBuffer[0].Timestamp);
 
-                        // Find best fitting state or use the last one available
-                        if (stateBuffer[i].Timestamp <= interpolationTime || i == stateBuffer.Length - 1)
+                        if (stateBuffer[0] != null && stateBuffer[1] != null)
                         {
-                            PlayerPayload bestTarget = stateBuffer[Mathf.Max(i - 1, 0)];
-                            PlayerPayload bestStart = stateBuffer[i];
+                            PlayerPayload lastSample = stateBuffer[0];
+                            PlayerPayload prevSample = stateBuffer[1];
 
-                            float timeDiff = bestTarget.Timestamp - bestStart.Timestamp;
+                            float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
                             float lerpTime = 0f;
 
                             if (timeDiff > 0.0001)
                             {
-                                lerpTime = ((interpolationTime - bestStart.Timestamp) / timeDiff);
+                                lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
                             }
 
-                            observedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
-                            observedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
-                            controllerScript.CurrentAnimationFlag(bestTarget.ActiveAnimatorFlagIndex);
+                            Vector3 predictedPosition = lastSample.Position + prevSample.Position;
 
-                            return;
+                            observedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
+                            observedTransform.rotation = lastSample.Rotation;
+                            controllerScript.CurrentAnimationFlag(lastSample.ActiveAnimatorFlagIndex);
                         }
+
+
+                        // Updates to latest state - no extrapolation
+                        //PlayerPayload latest = stateBuffer[0];
+                        //observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
+                        //observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
+                        //controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+
+
                     }
-                }
-                else    
+                } 
+                #endregion
+
+                #region ServerReplication
+                else if (Network.isServer)
                 {
-                    //Extrapolation
-                    float extrapolationTime = (interpolationTime - stateBuffer[0].Timestamp);
-
-                    if(stateBuffer[0] != null && stateBuffer[1] != null)
-                    {
-                        PlayerPayload lastSample = stateBuffer[0];
-                        PlayerPayload prevSample = stateBuffer[1];
-
-                        float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
-                        float lerpTime = 0f;
-
-                        if (timeDiff > 0.0001)
-                        {
-                            lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
-                        }
-
-                        Vector3 predictedPosition = lastSample.Position + prevSample.Position;
-
-                        observedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
-                        observedTransform.rotation = lastSample.Rotation;
-                        controllerScript.CurrentAnimationFlag(lastSample.ActiveAnimatorFlagIndex);
-                    }
-
-
-                    // Updates to latest state - no extrapolation
-                    //PlayerPayload latest = stateBuffer[0];
-                    //observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
-                    //observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
-                    //controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
-
-
-                }
+                    PlayerPayload latest = stateBuffer[0];
+                    observedTransform.position = latest.Position;
+                    observedTransform.rotation = latest.Rotation;
+                    controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+                } 
+                #endregion
             }
         }
 
