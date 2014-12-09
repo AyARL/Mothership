@@ -140,10 +140,8 @@ namespace MothershipReplication
                         //observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
                         //observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
                         //controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
-
-
                     }
-                } 
+                }
                 #endregion
 
                 #region ServerReplication
@@ -153,7 +151,7 @@ namespace MothershipReplication
                     observedTransform.position = latest.Position;
                     observedTransform.rotation = latest.Rotation;
                     controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
-                } 
+                }
                 #endregion
             }
         }
