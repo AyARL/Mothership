@@ -12,7 +12,7 @@ namespace MothershipReplication
         [SerializeField]
         private bool sendAnimationFlags = true;
         [SerializeField]
-        private PlayerController receiver = null;
+        private PlayerController controllerScript = null;
         [SerializeField]
         private float pingMargin = 0.5f;
 
@@ -32,13 +32,14 @@ namespace MothershipReplication
 
                 if (sendAnimationFlags == true)
                 {
-                    if (receiver.animatorStates.Any(s => s.Value.State == true))
+                    if (controllerScript.animatorStates.Any(s => s.Value.State == true))
                     {
-                        var animState = receiver.animatorStates.First(s => s.Value.State == true);
+                        var animState = controllerScript.animatorStates.First(s => s.Value.State == true);
                         animFlagIndex = animState.Key;
-                        stream.Serialize(ref animFlagIndex);
+                        
                     }
                 }
+                stream.Serialize(ref animFlagIndex);
 
             }
             else    // Executed by everyone else receiving the data
@@ -47,12 +48,10 @@ namespace MothershipReplication
                 stream.Serialize(ref rotation);
                 stream.Serialize(ref animFlagIndex);
 
-                receiver.inPosition = position;
-                receiver.inRotation = rotation;
+                controllerScript.inPosition = position;
+                controllerScript.inRotation = rotation;
 
-                receiver.LerpToTarget();
-                Debug.Log(animFlagIndex);
-                receiver.CurrentAnimationFlag(animFlagIndex);
+                controllerScript.LerpToTarget();
 
                 //Shift buffer
                 for(int i = stateBuffer.Length -1; i >= 1; i--)
@@ -61,7 +60,7 @@ namespace MothershipReplication
                 }
 
                 // Insert latest data at the front of buffer
-                stateBuffer[0] = new PlayerPayload() { Position = position, Rotation = rotation, Timestamp = (float)info.timestamp };
+                stateBuffer[0] = new PlayerPayload() { Position = position, Rotation = rotation, ActiveAnimatorFlagIndex = animFlagIndex, Timestamp = (float)info.timestamp };
             }
         }
 
@@ -69,13 +68,21 @@ namespace MothershipReplication
         {
             if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
             {
-                clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // true on clients only
+                if (Network.isClient)
+                {
+                    clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
+                }
+                else
+                {
+                    clientPing = (Network.GetAveragePing(Network.connections.First(c => c == networkView.owner)) / 100) + pingMargin; // on server find the ping to the client that owns the networkView
+                }
+
                 float interpolationTime = (float)Network.time - clientPing;
 
                 // make sure there is at leas one entry in the buffer
                 if (stateBuffer[0] == null)
                 {
-                    stateBuffer[0] = new PlayerPayload() { Position = observedTransform.position, Rotation = observedTransform.rotation, Timestamp = 0 };
+                    stateBuffer[0] = new PlayerPayload() { Position = observedTransform.position, Rotation = observedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
                 }
 
                 if (stateBuffer[0].Timestamp > interpolationTime)   // lag
@@ -103,6 +110,7 @@ namespace MothershipReplication
 
                             observedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
                             observedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
+                            controllerScript.CurrentAnimationFlag(bestTarget.ActiveAnimatorFlagIndex);
 
                             return;
                         }
@@ -113,6 +121,7 @@ namespace MothershipReplication
                     PlayerPayload latest = stateBuffer[0];
                     observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
                     observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
+                    controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
                 }
             }
         }

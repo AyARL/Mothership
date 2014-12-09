@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     public Quaternion inRotation { get; set; }
 
     // Use this for initialization
-    void Start()
+    void Awake()
     {
         animator = GetComponent<Animator>();
         animatorStates = new Dictionary<int, AnimatorBoolProperty>();
