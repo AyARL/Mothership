@@ -48,11 +48,6 @@ namespace MothershipReplication
                 stream.Serialize(ref rotation);
                 stream.Serialize(ref animFlagIndex);
 
-                controllerScript.inPosition = position;
-                controllerScript.inRotation = rotation;
-
-                controllerScript.LerpToTarget();
-
                 //Shift buffer
                 for(int i = stateBuffer.Length -1; i >= 1; i--)
                 {
@@ -64,6 +59,7 @@ namespace MothershipReplication
             }
         }
 
+        // Update the Player basing on data received from the server
         private void Update()
         {
             if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists

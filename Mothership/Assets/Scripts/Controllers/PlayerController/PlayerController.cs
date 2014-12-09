@@ -118,25 +118,6 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Remote
-    public void LerpToTarget()
-    {
-        float distance = Vector3.Distance(transform.position, inPosition);
-
-        if (distance >= errorThreshold)
-        {
-            float step = ((1f / distance) * movementSpeed) / 100f;
-            transform.position = Vector3.Lerp(transform.position, inPosition, step);
-            transform.rotation = Quaternion.Slerp(transform.rotation, inRotation, step);
-        }
-        else
-        {
-            foreach (var flag in animatorStates)
-            {
-                animatorStates[flag.Key].State = false;
-                animator.SetBool(flag.Value.Name, false);
-            }
-        }
-    }
 
     public void CurrentAnimationFlag(int index)
     {
