@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Mothership;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,8 +13,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float rotateSpeed = 10f;
 
+    [SerializeField]
+    private GameObject gun = null;
+
     public Animator animator { get; private set; }
     public Dictionary<int, AnimatorBoolProperty> animatorStates;
+
+    private static CPowerUpSO itemsResource = null;
+    private Dictionary<string, GameObject> projectilePrefabs = new Dictionary<string, GameObject>();
+
+    float lastFireTime = 0f;
+
+    //private Dictionary<string, int> inventory = new Dictionary<string, int>();
 
     bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
 
@@ -25,6 +36,10 @@ public class PlayerController : MonoBehaviour
         animatorStates.Add(0, new AnimatorBoolProperty() { Name = "bIsMoving", State = false }); // Moving
         animatorStates.Add(1, new AnimatorBoolProperty() { Name = "bIsTurningL", State = false }); // TurnL
         animatorStates.Add(2, new AnimatorBoolProperty() { Name = "bIsTurningR", State = false }); // TurnR
+
+        itemsResource = Resources.Load<CPowerUpSO>(ResourcePacks.RESOURCE_CONTAINER_ITEMS);
+
+        //inventory.Add(Names.NAME_BULLET, 500);
     }
 
     // Update is called once per frame
@@ -37,6 +52,21 @@ public class PlayerController : MonoBehaviour
             Camera.main.transform.position = gameObject.transform.position + cameraOffset;
 
             Move();
+            Debug.DrawLine(transform.position + Vector3.up, transform.position + transform.forward * 50 + Vector3.up, Color.red);
+
+            if(Input.GetButtonDown("Fire1") && lastFireTime <= Time.time - Constants.PROJECTILE_DELAY_BULLET)
+            {
+                if (!IsRunningLocally)
+                {
+                    networkView.RPC("Fire", RPCMode.All, Names.NAME_BULLET, gun.transform.position, transform.forward);
+                }
+                else
+                {
+                    Fire(Names.NAME_BULLET, gun.transform.position, transform.forward);
+                }
+
+                lastFireTime = Time.time;
+            }
         }
     }
 
@@ -136,6 +166,42 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
+    [RPC]
+    protected void Fire(string projectileName, Vector3 position, Vector3 direction)
+    {
+        string strFunction = "PlayerController::Fire()";
+
+        projectilePrefabs = itemsResource.Weapons;
+        if (false == projectilePrefabs.ContainsKey(projectileName))
+        {
+            Debug.LogError(string.Format("{0} {1}: {2}", strFunction, ErrorStrings.ERROR_UNRECOGNIZED_NAME, projectileName));
+            return;
+        }
+
+        GameObject goProjectile = projectilePrefabs[projectileName];
+        if (null == goProjectile)
+        {
+            Debug.LogError(string.Format("{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof(GameObject).ToString()));
+            return;
+        }
+
+        CProjectile cProjectile = goProjectile.GetComponent<CProjectile>();
+        if (null == cProjectile)
+        {
+            Debug.LogError(string.Format("{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof(CProjectile).ToString()));
+            return;
+        }
+
+        cProjectile.Direction = direction;
+        cProjectile.Instantiator = gameObject;
+        cProjectile.Activation = true;
+        goProjectile.name = Names.NAME_BULLET;
+        Instantiate(goProjectile, position, goProjectile.transform.rotation);
+
+        //inventory[projectileName]--;
+    }
+
     #endregion
 }
 
