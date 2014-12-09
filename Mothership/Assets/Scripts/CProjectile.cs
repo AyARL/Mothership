@@ -30,7 +30,7 @@ public class CProjectile : MonoBehaviour {
 
     private bool m_bLeavesTrail;
 
-    private float m_fSpeed;
+    private float m_fForce;
 
     private Vector3 m_v3InitialPosition;
 
@@ -48,19 +48,19 @@ public class CProjectile : MonoBehaviour {
         {
             case EProjectileType.PROJECTILE_BULLET:
 
-                m_fSpeed = Constants.PROJECTILE_SPEED_BULLET;
+                m_fForce = Constants.PROJECTILE_FORCE_BULLET;
 
                 break;
 
             case EProjectileType.PROJECTILE_MISSILE:
 
-                m_fSpeed = Constants.PROJECTILE_SPEED_MISSILE;
+                m_fForce = Constants.PROJECTILE_SPEED_MISSILE;
 
                 break;
 
             case EProjectileType.PROJECTILE_RAY:
 
-                m_fSpeed = Constants.PROJECTILE_SPEED_RAY;
+                m_fForce = Constants.PROJECTILE_SPEED_RAY;
 
                 break;
 
@@ -71,6 +71,8 @@ public class CProjectile : MonoBehaviour {
 
                 break;
         }
+
+       rigidbody.AddForce(m_v3Direction * m_fForce);
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////
@@ -87,7 +89,7 @@ public class CProjectile : MonoBehaviour {
             Destroy( gameObject );
         }
 
-        transform.Translate( m_v3Direction * m_fSpeed * Time.deltaTime );
+        //transform.Translate( m_v3Direction * m_fSpeed * Time.deltaTime );
 	}
 
     /////////////////////////////////////////////////////////////////////////////
