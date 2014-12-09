@@ -117,7 +117,6 @@ namespace MothershipReplication
                 {
                     //Extrapolation
                     float extrapolationTime = (interpolationTime - stateBuffer[0].Timestamp);
-                    Debug.Log(extrapolationTime);
 
                     if(stateBuffer[0] != null && stateBuffer[1] != null)
                     {

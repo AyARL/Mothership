@@ -17,11 +17,6 @@ public class PlayerController : MonoBehaviour
 
     bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
 
-    // Data from server if this is running on replication
-    private float errorThreshold = 0.2f;
-    public Vector3 inPosition { get; set; }
-    public Quaternion inRotation { get; set; }
-
     // Use this for initialization
     void Awake()
     {
