@@ -47,6 +47,7 @@ public class CProjectile : MonoBehaviour {
         transform.forward = m_v3Direction;
         transform.rotation = Quaternion.LookRotation(transform.forward + transform.rotation.eulerAngles);
 
+        Physics.IgnoreCollision(collider, Instantiator.collider);
 
         switch ( m_eProjectileType )
         {
