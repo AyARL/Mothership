@@ -43,6 +43,10 @@ public class CProjectile : MonoBehaviour {
 
         // Initialize the projectile
 	    m_v3InitialPosition = gameObject.transform.position;
+        // Bullet will face the the same direction as it's path
+        transform.forward = m_v3Direction;
+        transform.rotation = Quaternion.LookRotation(transform.forward + transform.rotation.eulerAngles);
+
 
         switch ( m_eProjectileType )
         {
