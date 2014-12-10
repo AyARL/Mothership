@@ -29,7 +29,6 @@ namespace Mothership
         public const float PROJECTILE_SPEED_BULLET = 20f;
         public const float PROJECTILE_SPEED_MISSILE = 15f;
         public const float PROJECTILE_SPEED_RAY = 30f;
-        public const float PROJECTILE_FORCE_BULLET = 2000f;
 
         public const float PROJECTILE_DELAY_BULLET = 0.5f;
         public const float PROJECTILE_DELAY_MISSILE = 2f;

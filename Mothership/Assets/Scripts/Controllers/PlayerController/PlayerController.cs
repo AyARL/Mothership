@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
         animatorStates.Add(2, new AnimatorBoolProperty() { Name = "bIsTurningR", State = false }); // TurnR
 
         itemsResource = Resources.Load<CPowerUpSO>(ResourcePacks.RESOURCE_CONTAINER_ITEMS);
-
+        projectilePrefabs = itemsResource.Weapons;
         //inventory.Add(Names.NAME_BULLET, 500);
     }
 
@@ -170,36 +170,23 @@ public class PlayerController : MonoBehaviour
     [RPC]
     protected void Fire(string projectileName, Vector3 position, Vector3 direction)
     {
-        string strFunction = "PlayerController::Fire()";
-
-        projectilePrefabs = itemsResource.Weapons;
-        if (false == projectilePrefabs.ContainsKey(projectileName))
+        GameObject goProjectile;
+        if(projectilePrefabs.TryGetValue(projectileName, out goProjectile))
         {
-            Debug.LogError(string.Format("{0} {1}: {2}", strFunction, ErrorStrings.ERROR_UNRECOGNIZED_NAME, projectileName));
-            return;
-        }
+            CProjectile cProjectile = goProjectile.GetComponent<CProjectile>();
 
-        GameObject goProjectile = projectilePrefabs[projectileName];
-        if (null == goProjectile)
+            cProjectile.Direction = direction;
+            cProjectile.Instantiator = gameObject;
+            cProjectile.Activation = true;
+            cProjectile.FiringPosition = position;
+            goProjectile.name = Names.NAME_BULLET;
+
+            Instantiate(goProjectile, gun.transform.position, goProjectile.transform.rotation);
+        }
+        else
         {
-            Debug.LogError(string.Format("{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof(GameObject).ToString()));
-            return;
+            Debug.LogError("Unrecognised projectile name");
         }
-
-        CProjectile cProjectile = goProjectile.GetComponent<CProjectile>();
-        if (null == cProjectile)
-        {
-            Debug.LogError(string.Format("{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof(CProjectile).ToString()));
-            return;
-        }
-
-        cProjectile.Direction = direction;
-        cProjectile.Instantiator = gameObject;
-        cProjectile.Activation = true;
-        goProjectile.name = Names.NAME_BULLET;
-        Instantiate(goProjectile, position, goProjectile.transform.rotation);
-
-        //inventory[projectileName]--;
     }
 
     #endregion

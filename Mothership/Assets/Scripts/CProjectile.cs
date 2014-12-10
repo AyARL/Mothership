@@ -24,13 +24,22 @@ public class CProjectile : MonoBehaviour {
     private Vector3 m_v3Direction;
     public Vector3 Direction { get { return m_v3Direction; } set { m_v3Direction = value; } }
 
+    [SerializeField]
+    private Vector3 firingPosition;
+    public Vector3 FiringPosition { get { return firingPosition; } set { firingPosition = value; } }
+    private Vector3 replicationError = Vector3.zero;
+    private float startTime = 0f;
+    private float travelTime = 0f;
+    [SerializeField]
+    private AnimationCurve adjustmentCurve = null;
+
     [ SerializeField ]
     private EProjectileType m_eProjectileType = EProjectileType.PROJECTILE_NONE;
     public EProjectileType ProjectileType { get { return m_eProjectileType; } }
 
     private bool m_bLeavesTrail;
 
-    private float m_fForce;
+    private float m_fSpeed;
 
     private Vector3 m_v3InitialPosition;
 
@@ -43,9 +52,11 @@ public class CProjectile : MonoBehaviour {
 
         // Initialize the projectile
 	    m_v3InitialPosition = gameObject.transform.position;
-        // Bullet will face the the same direction as it's path
-        transform.forward = m_v3Direction;
-        transform.rotation = Quaternion.LookRotation(transform.forward + transform.rotation.eulerAngles);
+        
+        // Calculate replication related values
+        replicationError = FiringPosition - m_v3InitialPosition;
+        startTime = Time.time;
+        travelTime = Vector3.Distance(m_v3InitialPosition, firingPosition + m_v3Direction * Constants.DEFAULT_MAX_PROJECTILE_RANGE) / Constants.PROJECTILE_SPEED_BULLET;
 
         // Ignore collisions with the firing object
         Physics.IgnoreCollision(collider, Instantiator.collider);
@@ -54,19 +65,19 @@ public class CProjectile : MonoBehaviour {
         {
             case EProjectileType.PROJECTILE_BULLET:
 
-                m_fForce = Constants.PROJECTILE_FORCE_BULLET;
+                m_fSpeed = Constants.PROJECTILE_SPEED_BULLET;
 
                 break;
 
             case EProjectileType.PROJECTILE_MISSILE:
 
-                m_fForce = Constants.PROJECTILE_SPEED_MISSILE;
+                m_fSpeed = Constants.PROJECTILE_SPEED_MISSILE;
 
                 break;
 
             case EProjectileType.PROJECTILE_RAY:
 
-                m_fForce = Constants.PROJECTILE_SPEED_RAY;
+                m_fSpeed = Constants.PROJECTILE_SPEED_RAY;
 
                 break;
 
@@ -77,14 +88,12 @@ public class CProjectile : MonoBehaviour {
 
                 break;
         }
-
-       rigidbody.AddForce(m_v3Direction * m_fForce);
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////
     /// Function:               Update
     /////////////////////////////////////////////////////////////////////////////
-	void Update () 
+	void FixedUpdate () 
     {
         if ( false == m_bIsActivated )
             return;
@@ -95,7 +104,21 @@ public class CProjectile : MonoBehaviour {
             Destroy( gameObject );
         }
 
-        //transform.Translate( m_v3Direction * m_fSpeed * Time.deltaTime );
+        float elapsedTime = Time.time - startTime;
+        float normalisedTime = elapsedTime / travelTime;
+        float curveValue = adjustmentCurve.Evaluate(normalisedTime);
+
+        Vector3 adjustment = replicationError * curveValue;
+
+        Vector3 newPos = m_v3InitialPosition + m_v3Direction * m_fSpeed * elapsedTime;
+        newPos += adjustment;
+
+        transform.Translate(newPos - transform.position);
+
+        // Draw some debug stuff
+        Debug.DrawLine(FiringPosition, FiringPosition + m_v3Direction * Constants.DEFAULT_MAX_PROJECTILE_RANGE, Color.green);
+        Debug.DrawLine(transform.position, transform.position + newPos, Color.yellow);
+
 	}
 
     /////////////////////////////////////////////////////////////////////////////
