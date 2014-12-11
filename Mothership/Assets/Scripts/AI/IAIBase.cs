@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Mothership;
 using MothershipStateMachine;
+using MothershipReplication;
 
 [ RequireComponent( typeof( NetworkView ) ) ]
 public class IAIBase : MonoBehaviour 
@@ -119,9 +121,22 @@ public class IAIBase : MonoBehaviour
     bool m_bCanFireMissile = true;
     bool m_bCanFireRay = true;
 
-    public Dictionary<int, AnimatorBoolProperty> m_dictAnimatorStates;
+    protected Dictionary< int, AnimatorBoolProperty > m_dictAnimatorStates;
 
-    bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
+    protected bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
+
+    // Replication variables start here.
+    [SerializeField]
+    private Transform m_trObservedTransform = null;
+    
+    [SerializeField]
+    private bool m_bSendAnimationFlags = true;
+
+    [SerializeField]
+    private float pingMargin = 0.5f;
+
+    private float clientPing;
+    private CAIPayload[] m_rgBuffer = new CAIPayload[ 20 ];
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Start
@@ -182,7 +197,7 @@ public class IAIBase : MonoBehaviour
         }
 
         m_dictAnimatorStates = new Dictionary< int, AnimatorBoolProperty >();
-        m_dictAnimatorStates.Add( 0, new AnimatorBoolProperty() { Name = "bIsMoving", State = false }); // Moving
+        m_dictAnimatorStates.Add( 0, new AnimatorBoolProperty() { Name = AnimatorValues.ANIMATOR_IS_MOVING, State = false }); // Moving
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -233,6 +248,10 @@ public class IAIBase : MonoBehaviour
             // Find the flag.
             if ( null == m_goFlag ) 
                 m_goFlag = FindFlag( m_eTeam );
+
+            // The server will send messages to the clients to inform them
+            //  of AI position and state.
+            UpdateClients();
         }
     }
 
@@ -246,21 +265,6 @@ public class IAIBase : MonoBehaviour
         GameObject goObject = null;
 
         goObject = GameObject.Find( Names.NAME_FLAG );
-
-        //switch ( eTeam )
-        //{
-        //    case ETeam.TEAM_RED:
-
-        //        goObject = GameObject.Find( Names.NAME_MOTHERSHIP_RED );
-
-        //        break;
-        //    case ETeam.TEAM_BLUE:
-
-        //        goObject = GameObject.Find( Names.NAME_MOTHERSHIP_BLUE );
-                
-        //        break;
-        //}
-
         if ( null == goObject )
         {
             // Someone is holding the flag, go towards him.
@@ -640,4 +644,169 @@ public class IAIBase : MonoBehaviour
             Debug.LogError( "Unrecognised projectile name: " + strProjectileName );
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               OnSerializeNetworkView
+    /////////////////////////////////////////////////////////////////////////////
+    private void OnSerializeNetworkView( BitStream stream, NetworkMessageInfo info )
+    {
+        Vector3 v3Position = m_trObservedTransform.position;
+        Quaternion qRotation = m_trObservedTransform.rotation;
+        int iAnimFlagIndex = -1;
+
+        if ( stream.isWriting )    // Executed by owner of the network view
+        {
+            stream.Serialize( ref v3Position );
+            stream.Serialize( ref qRotation );
+
+            if ( m_bSendAnimationFlags == true )
+            {
+                if ( m_dictAnimatorStates.Any( s => s.Value.State == true ) )
+                {
+                    var animState = m_dictAnimatorStates.First( s => s.Value.State == true );
+                    iAnimFlagIndex = animState.Key;
+
+                }
+            }
+            stream.Serialize( ref iAnimFlagIndex );
+
+        }
+        else    // Executed by everyone else receiving the data
+        {
+            stream.Serialize( ref v3Position );
+            stream.Serialize( ref qRotation );
+            stream.Serialize( ref iAnimFlagIndex );
+
+            // Shift buffer
+            for ( int i = m_rgBuffer.Length - 1; i >= 1; i-- )
+            {
+                m_rgBuffer[i] = m_rgBuffer[i - 1];
+            }
+
+            // Insert latest data at the front of buffer
+            m_rgBuffer[ 0 ] = new CAIPayload() { Position = v3Position, Rotation = qRotation, ActiveAnimatorFlagIndex = iAnimFlagIndex, Timestamp = (float)info.timestamp };
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               SetAnimation
+    /////////////////////////////////////////////////////////////////////////////
+    public void SetAnimation( int index )
+    {
+        if( index >= 0 )
+        {
+            m_dictAnimatorStates[ index ].State = true;
+            m_anAnimator.SetBool( m_dictAnimatorStates[ index ].Name, true );
+
+            var otherFlags = m_dictAnimatorStates.Where( s => s.Key != index );
+            foreach( var flag in otherFlags )
+            {
+                m_dictAnimatorStates[ flag.Key ].State = false;
+                m_anAnimator.SetBool( flag.Value.Name, false );
+            }
+        }
+        else
+        {
+            foreach ( var flag in m_dictAnimatorStates )
+            {
+                m_dictAnimatorStates[ flag.Key ].State = false;
+                m_anAnimator.SetBool( flag.Value.Name, false );
+            }
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               UpdateClients
+    /////////////////////////////////////////////////////////////////////////////
+    protected void UpdateClients()
+    {
+            if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
+            {
+                if ( Network.isServer )
+                {
+                    clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
+
+                    float interpolationTime = (float)Network.time - clientPing;
+
+                    // make sure there is at least one entry in the buffer
+                    if (m_rgBuffer[0] == null)
+                    {
+                        m_rgBuffer[0] = new CAIPayload() { Position = m_trObservedTransform.position, Rotation = m_trObservedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
+                    }
+
+                    // Interpolation
+                    if (m_rgBuffer[0].Timestamp > interpolationTime)
+                    {
+                        for (int i = 0; i < m_rgBuffer.Length; i++)
+                        {
+                            if (m_rgBuffer[i] == null)
+                            {
+                                continue;
+                            }
+
+                            // Find best fitting state or use the last one available
+                            if (m_rgBuffer[i].Timestamp <= interpolationTime || i == m_rgBuffer.Length - 1)
+                            {
+                                CAIPayload bestTarget = m_rgBuffer[Mathf.Max(i - 1, 0)];
+                                CAIPayload bestStart = m_rgBuffer[i];
+
+                                float timeDiff = bestTarget.Timestamp - bestStart.Timestamp;
+                                float lerpTime = 0f;
+
+                                if (timeDiff > 0.0001)
+                                {
+                                    lerpTime = ((interpolationTime - bestStart.Timestamp) / timeDiff);
+                                }
+
+                                m_trObservedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
+                                m_trObservedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
+                                //controllerScript.CurrentAnimationFlag(bestTarget.ActiveAnimatorFlagIndex);
+
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //Extrapolation
+                        float extrapolationTime = (interpolationTime - m_rgBuffer[0].Timestamp);
+
+                        if (m_rgBuffer[0] != null && m_rgBuffer[1] != null)
+                        {
+                            CAIPayload lastSample = m_rgBuffer[0];
+                            CAIPayload prevSample = m_rgBuffer[1];
+
+                            float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
+                            float lerpTime = 0f;
+
+                            if (timeDiff > 0.0001)
+                            {
+                                lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
+                            }
+
+                            Vector3 predictedPosition = lastSample.Position + prevSample.Position;
+
+                            m_trObservedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
+                            m_trObservedTransform.rotation = lastSample.Rotation;
+                            //controllerScript.CurrentAnimationFlag(lastSample.ActiveAnimatorFlagIndex);
+                        }
+
+
+                        // Updates to latest state - no extrapolation
+                        //PlayerPayload latest = stateBuffer[0];
+                        //observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
+                        //observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
+                        //controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+                    }
+                }
+
+                else if ( Network.isClient )
+                {
+                    CAIPayload latest = m_rgBuffer[0];
+                    m_trObservedTransform.position = latest.Position;
+                    m_trObservedTransform.rotation = latest.Rotation;
+                    //m_trObservedTransform.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+                }
+            }
+        }
 }

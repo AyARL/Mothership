@@ -105,9 +105,8 @@ public class CDroneAI : IAIBase {
         // Error reporting...
         string strFunction = "CDroneAI::RunIdleState()";
 
-        // Check if the moving animation is on and disable it if it is.
-        if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
-            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, false );
+        // Set the animator to the idle state.
+        SetAnimation( AnimatorValues.ANIMATOR_INDEX_IDLE );
 
         // We only want to set the target if it's unset.
         if ( m_v3Target != Vector3.zero )
@@ -152,7 +151,7 @@ public class CDroneAI : IAIBase {
     {
         // Enable the moving animation if it's not on.
         if ( false == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
-            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, true );
+            SetAnimation( AnimatorValues.ANIMATOR_INDEX_MOVING );
 
         m_fOldTime = m_fElapsedTime + 0.01f;
 
@@ -189,11 +188,10 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     private void RunAttackState()
     {
-        // Get a handle on the closest enemy and calculate distance from it.
-        // Enable the moving animation if it's not on.
-        if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
-            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, false );
+        // We want the animator to play the idle animation while attacking.
+        SetAnimation( AnimatorValues.ANIMATOR_INDEX_IDLE );
 
+        // Get the direction towards the closest enemy and rotate the NPC to face him.
         Vector3 v3Direction = m_goClosestEnemy.transform.position - transform.position;
 
         transform.rotation = Quaternion.LookRotation( v3Direction.normalized );
