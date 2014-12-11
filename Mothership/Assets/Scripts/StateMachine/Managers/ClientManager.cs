@@ -25,6 +25,7 @@ namespace Mothership
 
         // Events
         public UnityAction<TeamList, TeamList> OnUpdateTeamRoster { get; set; }
+        public UnityAction<float> OnMatchStarted {get; set;}
 
         public override void Init(NetworkManager networkManager)
         {

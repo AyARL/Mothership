@@ -17,7 +17,7 @@ namespace MothershipStateMachine
             GamePlayStarted gameStarted = message as GamePlayStarted;
             if(gameStarted != null)
             {
-                clientManager.ChangeState(clientManager.ClientGamePlayState);
+                clientManager.ChangeState(clientManager.ClientGamePlayState, gameStarted);
             }
         }
 

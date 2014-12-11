@@ -49,7 +49,10 @@ namespace MothershipStateMachine
         public NetworkPlayer Player { get; set; }
     }
 
-    public class GamePlayStarted : GameMessage { }
+    public class GamePlayStarted : GameMessage 
+    {
+        public float Delay { get; set; }
+    }
 
     public class FlagPickedUp : GameMessage 
     {
