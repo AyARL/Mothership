@@ -62,6 +62,10 @@ namespace Mothership
         public const string ANIMATOR_IS_MOVING = "bIsMoving";
         public const string ANIMATOR_ENEMY_SEEN = "bEnemySeen";
 
+        // Animation indexes
+        public const int ANIMATOR_INDEX_IDLE = -1;
+        public const int ANIMATOR_INDEX_MOVING = 0;
+
     }
 
     public class Controls
