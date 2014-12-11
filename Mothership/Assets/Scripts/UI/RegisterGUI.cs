@@ -88,7 +88,6 @@ namespace MothershipUI
 
             if (response.error == null)
             {
-                Debug.Log(response.text);
                 if (ReadResponse(response.text))
                 {
                     DisableScreen();
@@ -108,7 +107,6 @@ namespace MothershipUI
             int errorCode;
             if (Int32.TryParse(input, out errorCode))
             {
-                Debug.Log(Enum.GetName(typeof(ResponseEnums.AccountCreationResponse), errorCode));
                 message.text = Enum.GetName(typeof(ResponseEnums.AccountCreationResponse), errorCode);
                 submitButton.interactable = true;
                 return false;

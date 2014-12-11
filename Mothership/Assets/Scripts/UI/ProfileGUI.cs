@@ -92,7 +92,6 @@ namespace MothershipUI
 
             if (loginResponse.error == null)
             {
-                Debug.Log(loginResponse.text);
                 if (ReadProfileResponse(loginResponse.text))
                 {
                     FillProfileData();
@@ -111,7 +110,6 @@ namespace MothershipUI
             int errorCode;
             if (Int32.TryParse(input, out errorCode))
             {
-                Debug.Log(Enum.GetName(typeof(ResponseEnums.GetProfileResponse), errorCode));
                 waitScreen.SetMessage(Enum.GetName(typeof(ResponseEnums.GetProfileResponse), errorCode));
                 return false;
             }
@@ -140,7 +138,6 @@ namespace MothershipUI
 
             if (gameDataResponse.error == null)
             {
-                Debug.Log(gameDataResponse.text);
                 if (ReadGameResponse(gameDataResponse.text))
                 {
                     FillLastGameData();

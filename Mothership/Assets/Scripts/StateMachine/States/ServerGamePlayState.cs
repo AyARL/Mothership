@@ -17,7 +17,6 @@ namespace MothershipStateMachine
             MatchExpired expired = message as MatchExpired;
             if(expired != null)
             {
-                Debug.Log("Match expired: " + serverManager.MatchDuration);
                 serverManager.ChangeState(serverManager.ServerGameEndState);
                 return;
             }

@@ -105,8 +105,6 @@ namespace Mothership
             {
                 yield return new WaitForSeconds(1f);
                 MatchDuration = Time.time - MatchStartTime;
-
-                Debug.Log(Constants.GAME_MATCH_LENGTH - MatchDuration);
             }
 
             SendGameMessage(new MatchExpired());

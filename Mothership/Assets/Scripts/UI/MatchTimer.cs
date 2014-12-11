@@ -34,7 +34,6 @@ namespace MothershipUI
         private void StartCountdown(float messageDelay)
         {
             startTime = Time.time - messageDelay;
-            Debug.Log(messageDelay);
             StartCoroutine(Countdown());
         }
 
