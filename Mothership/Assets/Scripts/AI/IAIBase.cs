@@ -349,6 +349,20 @@ public class IAIBase : MonoBehaviour
     {
         // Get a handle on the gameObject with which we collided. 
         GameObject goObject = cCollision.gameObject;
+        
+        // Check if we collided with a base, and act accordingly depending on the
+        //  team.
+        if ( goObject.tag == Tags.TAG_BASE )
+        {
+            if ( goObject.name == Names.NAME_RED_BASE && m_eTeam == ETeam.TEAM_RED )
+            {
+                CollidedWithBase();
+            }
+            else if ( goObject.name == Names.NAME_BLUE_BASE && m_eTeam == ETeam.TEAM_BLUE )
+            {
+                CollidedWithBase();
+            }
+        }
 
         // Depending on the name of the object, react accordingly.
         switch ( goObject.tag )
@@ -493,7 +507,7 @@ public class IAIBase : MonoBehaviour
                 
                 if ( !IsRunningLocally )
                 {
-                    networkView.RPC( "Fire", RPCMode.All, Names.NAME_BULLET, v3GunPosition, transform.forward );
+                    networkView.RPC( RPCFunctions.RPC_FIRE, RPCMode.All, Names.NAME_BULLET, v3GunPosition, transform.forward );
                 }
                 else
                 {
@@ -511,7 +525,7 @@ public class IAIBase : MonoBehaviour
 
                 if ( !IsRunningLocally )
                 {
-                    networkView.RPC( "Fire", RPCMode.All, Names.NAME_MISSILE, v3GunPosition, transform.forward );
+                    networkView.RPC( RPCFunctions.RPC_FIRE, RPCMode.All, Names.NAME_MISSILE, v3GunPosition, transform.forward );
                 }
                 else
                 {
@@ -529,7 +543,7 @@ public class IAIBase : MonoBehaviour
                 
                 if ( !IsRunningLocally )
                 {
-                    networkView.RPC( "Fire", RPCMode.All, Names.NAME_RAY, v3GunPosition, transform.forward );
+                    networkView.RPC( RPCFunctions.RPC_FIRE, RPCMode.All, Names.NAME_RAY, v3GunPosition, transform.forward );
                 }
                 else
                 {
@@ -547,6 +561,7 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Die
     /////////////////////////////////////////////////////////////////////////////
+    [ RPC ]
     protected void Die( bool bInstantiateFlag = true )
     {
         string strFunction = "IAIBase::Die()";
@@ -575,7 +590,7 @@ public class IAIBase : MonoBehaviour
         // We need to drop the flag if we're holding it.
         if ( true == m_bHasFlag && true == bInstantiateFlag )
         { 
-            GameObject goFlag = (GameObject)Instantiate( m_goFlagPrefab, transform.position, Quaternion.identity );
+            GameObject goFlag = (GameObject)Network.Instantiate( m_goFlagPrefab, transform.position, Quaternion.identity, 0 );
             goFlag.name = Names.NAME_FLAG;
             m_goFlagHolder = null;
         }
@@ -586,7 +601,14 @@ public class IAIBase : MonoBehaviour
 
         Destroy( gameObject );
 
-        CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
+        if ( false == IsRunningLocally )
+        {
+            networkView.RPC( RPCFunctions.RPC_REMOTE_SPAWN_NPC, RPCMode.All, m_eTeam, m_eNPCType );
+        }
+        else
+        {
+            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -601,10 +623,18 @@ public class IAIBase : MonoBehaviour
             // Inform the server that we delivered the flag to the base.
             //ServerManager cServer = RoleManager.roleManager as ServerManager;
             //cServer.SendGameMessage( new FlagDelievered() { PlayerName = gameObject.name } );
-
-            Die( false );
-            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
-            CSpawner.SpawnFlag();
+            if ( !IsRunningLocally )
+            {
+                networkView.RPC( RPCFunctions.RPC_DIE, RPCMode.All, false );
+                networkView.RPC( RPCFunctions.RPC_REMOTE_SPAWN_NPC, RPCMode.All, m_eTeam, m_eNPCType );
+                networkView.RPC( RPCFunctions.RPC_REMOTE_SPAWN_FLAG, RPCMode.All );
+            }
+            else
+            {
+                Die( false );
+                CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
+                CSpawner.SpawnFlag();
+            }
         }
     }
 
@@ -720,93 +750,113 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     protected void UpdateClients()
     {
-            if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
+        if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
+        {
+            if ( Network.isServer )
             {
-                if ( Network.isServer )
+                clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
+
+                float interpolationTime = (float)Network.time - clientPing;
+
+                // make sure there is at least one entry in the buffer
+                if (m_rgBuffer[0] == null)
                 {
-                    clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
+                    m_rgBuffer[0] = new CAIPayload() { Position = m_trObservedTransform.position, Rotation = m_trObservedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
+                }
 
-                    float interpolationTime = (float)Network.time - clientPing;
-
-                    // make sure there is at least one entry in the buffer
-                    if (m_rgBuffer[0] == null)
+                // Interpolation
+                if (m_rgBuffer[0].Timestamp > interpolationTime)
+                {
+                    for (int i = 0; i < m_rgBuffer.Length; i++)
                     {
-                        m_rgBuffer[0] = new CAIPayload() { Position = m_trObservedTransform.position, Rotation = m_trObservedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
-                    }
-
-                    // Interpolation
-                    if (m_rgBuffer[0].Timestamp > interpolationTime)
-                    {
-                        for (int i = 0; i < m_rgBuffer.Length; i++)
+                        if (m_rgBuffer[i] == null)
                         {
-                            if (m_rgBuffer[i] == null)
-                            {
-                                continue;
-                            }
-
-                            // Find best fitting state or use the last one available
-                            if (m_rgBuffer[i].Timestamp <= interpolationTime || i == m_rgBuffer.Length - 1)
-                            {
-                                CAIPayload bestTarget = m_rgBuffer[Mathf.Max(i - 1, 0)];
-                                CAIPayload bestStart = m_rgBuffer[i];
-
-                                float timeDiff = bestTarget.Timestamp - bestStart.Timestamp;
-                                float lerpTime = 0f;
-
-                                if (timeDiff > 0.0001)
-                                {
-                                    lerpTime = ((interpolationTime - bestStart.Timestamp) / timeDiff);
-                                }
-
-                                m_trObservedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
-                                m_trObservedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
-                                //controllerScript.CurrentAnimationFlag(bestTarget.ActiveAnimatorFlagIndex);
-
-                                return;
-                            }
+                            continue;
                         }
-                    }
-                    else
-                    {
-                        //Extrapolation
-                        float extrapolationTime = (interpolationTime - m_rgBuffer[0].Timestamp);
 
-                        if (m_rgBuffer[0] != null && m_rgBuffer[1] != null)
+                        // Find best fitting state or use the last one available
+                        if (m_rgBuffer[i].Timestamp <= interpolationTime || i == m_rgBuffer.Length - 1)
                         {
-                            CAIPayload lastSample = m_rgBuffer[0];
-                            CAIPayload prevSample = m_rgBuffer[1];
+                            CAIPayload bestTarget = m_rgBuffer[Mathf.Max(i - 1, 0)];
+                            CAIPayload bestStart = m_rgBuffer[i];
 
-                            float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
+                            float timeDiff = bestTarget.Timestamp - bestStart.Timestamp;
                             float lerpTime = 0f;
 
                             if (timeDiff > 0.0001)
                             {
-                                lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
+                                lerpTime = ((interpolationTime - bestStart.Timestamp) / timeDiff);
                             }
 
-                            Vector3 predictedPosition = lastSample.Position + prevSample.Position;
+                            m_trObservedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
+                            m_trObservedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
+                            //controllerScript.CurrentAnimationFlag(bestTarget.ActiveAnimatorFlagIndex);
 
-                            m_trObservedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
-                            m_trObservedTransform.rotation = lastSample.Rotation;
-                            //controllerScript.CurrentAnimationFlag(lastSample.ActiveAnimatorFlagIndex);
+                            return;
                         }
-
-
-                        // Updates to latest state - no extrapolation
-                        //PlayerPayload latest = stateBuffer[0];
-                        //observedTransform.position = Vector3.Lerp(observedTransform.position, latest.Position, 0.5f);
-                        //observedTransform.rotation = Quaternion.Slerp(observedTransform.rotation, latest.Rotation, 0.5f);
-                        //controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
                     }
                 }
-
-                else if ( Network.isClient )
+                else
                 {
-                    CAIPayload latest = m_rgBuffer[0];
-                    m_trObservedTransform.position = latest.Position;
-                    m_trObservedTransform.rotation = latest.Rotation;
-                    //m_trObservedTransform.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+                    //Extrapolation
+                    float extrapolationTime = (interpolationTime - m_rgBuffer[0].Timestamp);
+
+                    if (m_rgBuffer[0] != null && m_rgBuffer[1] != null)
+                    {
+                        CAIPayload lastSample = m_rgBuffer[0];
+                        CAIPayload prevSample = m_rgBuffer[1];
+
+                        float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
+                        float lerpTime = 0f;
+
+                        if (timeDiff > 0.0001)
+                        {
+                            lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
+                        }
+
+                        Vector3 predictedPosition = lastSample.Position + prevSample.Position;
+
+                        m_trObservedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
+                        m_trObservedTransform.rotation = lastSample.Rotation;
+                        //controllerScript.CurrentAnimationFlag(lastSample.ActiveAnimatorFlagIndex);
+                    }
                 }
             }
+
+            else if ( Network.isClient )
+            {
+                CAIPayload latest = m_rgBuffer[0];
+                m_trObservedTransform.position = latest.Position;
+                m_trObservedTransform.rotation = latest.Rotation;
+                //m_trObservedTransform.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+            }
         }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               RemoteSpawnNPC
+    /////////////////////////////////////////////////////////////////////////////
+    [ RPC ]
+    protected void RemoteSpawnNPC( ETeam eTeam, ENPCType eType )
+    {
+        CSpawner.SpawnNPC( eTeam, eType );
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               RemoteSpawnItem
+    /////////////////////////////////////////////////////////////////////////////
+    [ RPC ]
+    protected void RemoteSpawnItem( CPowerUp.EItemType eType )
+    {
+        CSpawner.SpawnPowerUp( eType );
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               RemoteSpawnFlag
+    /////////////////////////////////////////////////////////////////////////////
+    [ RPC ]
+    protected void RemoteSpawnFlag()
+    {
+        CSpawner.SpawnFlag();
+    }
 }
