@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Mothership;
 using MothershipStateMachine;
 
+[ RequireComponent( typeof( NetworkView ) ) ]
 public class IAIBase : MonoBehaviour 
 {
     public enum ETeam
@@ -118,6 +119,11 @@ public class IAIBase : MonoBehaviour
     bool m_bCanFireMissile = true;
     bool m_bCanFireRay = true;
 
+    public Animator AIAnimator { get; private set; }
+    public Dictionary<int, AnimatorBoolProperty> m_dictAnimatorStates;
+
+    bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
+
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Start
     /////////////////////////////////////////////////////////////////////////////
@@ -126,6 +132,18 @@ public class IAIBase : MonoBehaviour
         // Error reporting.
         string strFunction = "IAIBase::Start()";
 
+        AIAnimator = GetComponent< Animator >();
+        if ( null == AIAnimator )
+        {
+            // We're going to complain about the missing component and return.
+            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( Animator ).ToString() ) );
+            return;      
+        }
+
+        m_dictAnimatorStates = new Dictionary< int, AnimatorBoolProperty >();
+        m_dictAnimatorStates.Add( 0, new AnimatorBoolProperty() { Name = "bIsMoving", State = false }); // Moving
+
+        // Load the items resource.
         if ( null == m_ItemsResource )
         {
             m_ItemsResource = Resources.Load< CPowerUpSO >( ResourcePacks.RESOURCE_CONTAINER_ITEMS );
@@ -135,6 +153,9 @@ public class IAIBase : MonoBehaviour
                 return;
             }
         }
+
+        // Load in the projectile prefabs.
+        m_dictProjectilePrefabs = m_ItemsResource.Weapons;
 
         // Add this NPC to the correct list depending on its team.
         switch ( m_eTeam )
@@ -411,8 +432,8 @@ public class IAIBase : MonoBehaviour
             m_bHasFlag = true;
 
             // Send message to the server manager.
-            ServerManager cServer = RoleManager.roleManager as ServerManager;
-            cServer.SendGameMessage( new FlagPickedUp() { PlayerName = gameObject.name } );
+            //ServerManager cServer = RoleManager.roleManager as ServerManager;
+            //cServer.SendGameMessage( new FlagPickedUp() { PlayerName = gameObject.name } );
         }
     }
 
@@ -466,26 +487,59 @@ public class IAIBase : MonoBehaviour
     {
         while ( true == m_bTargetInRange )
         {
+            // We're going to supply this vector as a firing position.
+            Vector3 v3GunPosition = m_rggoGuns[ Random.Range( 0, m_rggoGuns.Length - 1 ) ].transform.position;
+
+            // Check if we have any bullets in our inventory and fire.
             if ( m_dictInventory[ Names.NAME_BULLET ] > 0 && true == m_bCanFireBullet )
             { 
                 m_bCanFireBullet = false;
-                Fire( Names.NAME_BULLET, trEnemy );
+                
+                if ( !IsRunningLocally )
+                {
+                    networkView.RPC( "Fire", RPCMode.All, Names.NAME_BULLET, v3GunPosition, transform.forward );
+                }
+                else
+                {
+                    Fire( Names.NAME_BULLET, v3GunPosition, transform.forward );
+                }
+
                 yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_BULLET );
                 m_bCanFireBullet = true;
             }
 
+            // Check if we have any missiles in our inventory and fire.
             if ( m_dictInventory[ Names.NAME_MISSILE ] > 0 && true == m_bCanFireMissile )
             { 
                 m_bCanFireMissile = false;
-                Fire( Names.NAME_MISSILE, trEnemy );
+
+                if ( !IsRunningLocally )
+                {
+                    networkView.RPC( "Fire", RPCMode.All, Names.NAME_MISSILE, v3GunPosition, transform.forward );
+                }
+                else
+                {
+                    Fire( Names.NAME_MISSILE, v3GunPosition, transform.forward );
+                }
+
                 yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_MISSILE );
                 m_bCanFireMissile = true;
             }
 
+            // Check if we have any rays in our inventory and fire.
             if ( m_dictInventory[ Names.NAME_RAY ] > 0 && true == m_bCanFireRay )
             { 
                 m_bCanFireRay = false;
-                Fire( Names.NAME_RAY, trEnemy );
+                
+                if ( !IsRunningLocally )
+                {
+                    networkView.RPC( "Fire", RPCMode.All, Names.NAME_RAY, v3GunPosition, transform.forward );
+                }
+                else
+                {
+                    Fire( Names.NAME_RAY, v3GunPosition, transform.forward );
+                }
+
                 yield return new WaitForSeconds( Constants.PROJECTILE_DELAY_RAY );
                 m_bCanFireRay = true;
             }
@@ -493,47 +547,6 @@ public class IAIBase : MonoBehaviour
             yield return null;
         }
     } 
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               Fire
-    /////////////////////////////////////////////////////////////////////////////
-    protected void Fire( string strProjectileName, Transform trEnemy )
-    {
-        string strFunction = "IAIBase::Fire()";
-        
-        m_dictProjectilePrefabs = m_ItemsResource.Weapons;
-        if ( false == m_dictProjectilePrefabs.ContainsKey( strProjectileName ) )
-        {
-            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_UNRECOGNIZED_NAME, strProjectileName ) );
-            return;
-        }
-
-        GameObject goProjectile = m_dictProjectilePrefabs[ strProjectileName ];
-        if ( null == goProjectile )
-        {
-            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof( GameObject ).ToString() ) );
-            return;
-        }
-
-        CProjectile cProjectile = goProjectile.GetComponent< CProjectile >();
-        if ( null == cProjectile )
-        {
-            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( CProjectile ).ToString() ) );
-            return;
-        }
-
-        // Select a gun position.
-        Vector3 v3GunPosition = m_rggoGuns[ Random.Range( 0, m_rggoGuns.Length - 1 ) ].transform.position;
-
-        Vector3 v3Direction = trEnemy.position - v3GunPosition;
-        cProjectile.Direction = v3Direction.normalized;
-        cProjectile.Instantiator = gameObject;
-        cProjectile.Activation = true;
-        goProjectile.name = Names.NAME_BULLET;
-        Instantiate( goProjectile, v3GunPosition, Quaternion.identity );
-
-        m_dictInventory[ strProjectileName ]--;
-    }
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Die
@@ -572,8 +585,8 @@ public class IAIBase : MonoBehaviour
         }
 
         // Inform the server who killed this AI character.
-        ServerManager cServer = RoleManager.roleManager as ServerManager;
-        cServer.SendGameMessage( new AIPlayerKilled() { PlayerName = gameObject.name, KillerName = m_strAttackerName } );
+        //ServerManager cServer = RoleManager.roleManager as ServerManager;
+        //cServer.SendGameMessage( new AIPlayerKilled() { PlayerName = gameObject.name, KillerName = m_strAttackerName } );
 
         Destroy( gameObject );
 
@@ -590,12 +603,49 @@ public class IAIBase : MonoBehaviour
         if ( true == m_bHasFlag )
         {
             // Inform the server that we delivered the flag to the base.
-            ServerManager cServer = RoleManager.roleManager as ServerManager;
-            cServer.SendGameMessage( new FlagDelievered() { PlayerName = gameObject.name } );
+            //ServerManager cServer = RoleManager.roleManager as ServerManager;
+            //cServer.SendGameMessage( new FlagDelievered() { PlayerName = gameObject.name } );
 
             Die( false );
             CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
             CSpawner.SpawnFlag();
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               Fire
+    /////////////////////////////////////////////////////////////////////////////
+    [RPC]
+    protected void Fire( string strProjectileName, Vector3 position, Vector3 direction )
+    {
+        string strFunction = "IAIBase::Fire()";
+
+        GameObject goProjectile;
+        if( m_dictProjectilePrefabs.TryGetValue( strProjectileName, out goProjectile ) )
+        {
+            CProjectile cProjectile = goProjectile.GetComponent< CProjectile >();
+            if ( null == cProjectile )
+            {
+                Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( CProjectile ).ToString() ) );
+                return;
+            }
+
+            cProjectile.Direction = direction;
+            cProjectile.Instantiator = gameObject;
+            cProjectile.Activation = true;
+            cProjectile.FiringPosition = position;
+            goProjectile.name = strProjectileName;
+
+             // Select a gun position.
+            Vector3 v3GunPosition = m_rggoGuns[ Random.Range( 0, m_rggoGuns.Length - 1 ) ].transform.position;
+
+            Instantiate( goProjectile, v3GunPosition, goProjectile.transform.rotation );
+
+            m_dictInventory[ strProjectileName ]--;
+        }
+        else
+        {
+            Debug.LogError( "Unrecognised projectile name: " + strProjectileName );
         }
     }
 }

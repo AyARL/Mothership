@@ -124,6 +124,7 @@ public class CSpawner : MonoBehaviour {
             if ( cSpawner.Team == eTeam && true == cSpawner.CanSpawn )
             {
                 cSpawner.Spawn( NPCResource.GetObjectByType( eTeam, eType ) );
+                break;
             }
         }
     }

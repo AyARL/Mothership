@@ -126,7 +126,7 @@ public class CProjectile : MonoBehaviour {
     /////////////////////////////////////////////////////////////////////////////
     void OnCollisionEnter( Collision cCollision )
     {
-        if ( false == m_bIsActivated || cCollision.gameObject == m_goInstantiator )
+        if ( false == m_bIsActivated || cCollision.gameObject.name == Names.NAME_BULLET + "(Clone)" )
             return;
 
         Destroy( gameObject );
