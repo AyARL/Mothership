@@ -109,6 +109,10 @@ namespace Mothership
             networkView.RPC("RPCGamePlayStarted", RPCMode.Others);
         }
 
+        public void MatchExpired()
+        {
+            networkView.RPC("RPCMatchExpired", RPCMode.Others);
+        }
     }
     
 }

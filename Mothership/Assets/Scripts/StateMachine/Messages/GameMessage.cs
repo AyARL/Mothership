@@ -66,4 +66,6 @@ namespace MothershipStateMachine
         public string PlayerName { get; set; }
         public string KillerName { get; set; }
     }
+
+    public class MatchExpired : GameMessage { }
 }

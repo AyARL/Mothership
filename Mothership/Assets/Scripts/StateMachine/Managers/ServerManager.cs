@@ -14,6 +14,9 @@ namespace Mothership
         private List<ClientDataOnServer> registeredClients;
         public IEnumerable<ClientDataOnServer> RegisteredClients { get { return registeredClients; } }
 
+        public float MatchStartTime { get; private set; }
+        public float MatchDuration { get; private set; }
+
         // States
         public ServerLobbyState ServerLobbyState { get; private set; }
         public ServerGameSetupState ServerGameSetupState { get; private set; }
@@ -22,6 +25,7 @@ namespace Mothership
 
         // Events
         public UnityAction OnClientRegistered { get; set; }
+
 
         public override void Init(NetworkManager networkManager)
         {
@@ -39,7 +43,7 @@ namespace Mothership
 
         public bool RegisterClient(RegisterClient registerMessage, out IAIBase.ETeam team, out int teamOrder)
         {
-            if (registeredClients.Count < Constants.MAX_PLAYERS_IN_GAME)
+            if (registeredClients.Count < Constants.GAME_MAX_PLAYERS)
             {
                 team = GetTeamForNextClient(out teamOrder);
 
@@ -86,6 +90,24 @@ namespace Mothership
         public IEnumerable<ClientDataOnServer> GetTeam(IAIBase.ETeam teamColour)
         {
             return registeredClients.Where(c => c.ClientTeam == teamColour);
+        }
+
+        public void StartGameTimer()
+        {
+            MatchStartTime = Time.time;
+            StartCoroutine(TimeGame());
+        }
+
+        private IEnumerator TimeGame()
+        {
+            MatchDuration = 0f;
+            while (MatchDuration < Constants.GAME_MATCH_LENGTH)
+            {
+                yield return new WaitForSeconds(1f);
+                MatchDuration = Time.time - MatchStartTime;
+            }
+
+            SendGameMessage(new MatchExpired());
         }
     }
     

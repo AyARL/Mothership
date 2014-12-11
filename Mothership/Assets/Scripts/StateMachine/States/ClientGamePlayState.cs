@@ -14,6 +14,14 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
+
+            MatchExpired expired = message as MatchExpired;
+            if(expired != null)
+            {
+                clientManager.ChangeState(clientManager.ClientGameEndState);
+                return;
+            }
+
             base.OnGameMessage(message);
         }
 

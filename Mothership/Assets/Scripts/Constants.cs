@@ -2,8 +2,8 @@
 using System.Collections;
 
 namespace Mothership
-{ 
-    public class Constants 
+{
+    public class Constants
     {
         public const string GAME_MOTHERSHIP = "MotherShip";
 
@@ -17,7 +17,7 @@ namespace Mothership
         public const float DEFAULT_HEALTH_DRONE = 100f;
         public const float DEFAULT_HEALTH_WARRIOR = 200f;
         public const float DEFAULT_HEALTH_TANK = 400f;
-        
+
         public const float DEFAULT_ATTACK_RANGE = 40f;
         public const float DEFAULT_MAX_PROJECTILE_RANGE = 50f;
 
@@ -35,8 +35,9 @@ namespace Mothership
         public const float PROJECTILE_DELAY_RAY = 5f;
 
         // Game related constants
-        public const int MIN_PLAYERS_IN_GAME = 2;
-        public const int MAX_PLAYERS_IN_GAME = 8;
+        public const int GAME_MIN_PLAYERS = 2;
+        public const int GAME_MAX_PLAYERS = 8;
+        public const float GAME_MATCH_LENGTH = 60f; // seconds
     }
 
     public class DefaultPaths
@@ -47,7 +48,7 @@ namespace Mothership
         public const string SO_AUDIO = "Audio";
         public const string SO_NPC = "NPCs";
         public const string SO_ITEMS = "Items";
-        
+
         // Asset paths
         public const string PATH_RESOURCES = "Resources/";
 

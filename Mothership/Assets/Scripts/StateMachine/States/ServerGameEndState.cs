@@ -18,7 +18,12 @@ namespace MothershipStateMachine
 
         public override void OnStateMessage(StateMessage message)
         {
-
+            OnEnterState enter = message as OnEnterState;
+            if(enter != null)
+            {
+                serverManager.networkManager.MatchExpired();
+                return;
+            }
         }
     }
     

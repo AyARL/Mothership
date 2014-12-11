@@ -99,9 +99,16 @@ namespace Mothership
             Application.LoadLevel(level);
         }
 
+        [RPC]
         private void RPCGamePlayStarted()
         {
             clientManager.SendGameMessage(new GamePlayStarted());
+        }
+
+        [RPC]
+        private void RPCMatchExpired()
+        {
+            clientManager.SendGameMessage(new MatchExpired());
         }
         #endregion
 
