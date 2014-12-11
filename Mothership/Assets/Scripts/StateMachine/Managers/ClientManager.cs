@@ -17,8 +17,8 @@ namespace Mothership
         public ClientGamePlayState ClientGamePlayState { get; private set; }
         public ClientGameEndState ClientGameEndState { get; private set; }
 
-        public IAIBase.ETeam Team { get; set; }
-        public int TeamOrder { get; set; }
+        public IAIBase.ETeam team = IAIBase.ETeam.TEAM_NONE;
+        public int teamOrder = -1;
 
         private PlayerPrefabResourceSO prefabResource = null;
         public PlayerController playerController { get; private set; }
@@ -39,12 +39,18 @@ namespace Mothership
             ChangeState(ClientLobbyState);
         }
 
+        public void UpdateTeamDetails(IAIBase.ETeam team, int teamOrder)
+        {
+            this.team = team;
+            this.teamOrder = teamOrder;
+        }
+
         public bool SpawnInGame()
         {
             GameObject spawnPoint;
             if (LoadPrefabs() && FindSpawnPoints(out spawnPoint))
             {
-                switch (Team)
+                switch (team)
                 {
                     case IAIBase.ETeam.TEAM_RED:
                         playerController = Network.Instantiate(prefabResource.RedDrone, spawnPoint.transform.position, spawnPoint.transform.rotation, 0) as PlayerController;
@@ -81,10 +87,10 @@ namespace Mothership
             GameObject group = GameObject.FindGameObjectWithTag("SpawnPoint");
             if (group != null)
             {
-                var spawnPoints = group.transform.GetComponentsInChildren<SpawnPoint>().Where(s => s.Team == this.Team).Select(s => s.gameObject).ToList();
-                if (spawnPoints.Count > TeamOrder)
+                var spawnPoints = group.transform.GetComponentsInChildren<SpawnPoint>().Where(s => s.Team == this.team).Select(s => s.gameObject).ToList();
+                if (spawnPoints.Count > teamOrder)
                 {
-                    spawnPoint = spawnPoints[TeamOrder];
+                    spawnPoint = spawnPoints[teamOrder];
                     return true;
                 }
                 else

@@ -20,7 +20,9 @@ namespace MothershipStateMachine
             RegisterClient registerClient = message as RegisterClient;
             if(registerClient != null)
             {
-                if(manager.RegisterClient(registerClient))
+                IAIBase.ETeam team;
+                int teamOrder;
+                if(manager.RegisterClient(registerClient, out team, out teamOrder))
                 {
                     IEnumerable<ClientDataOnServer> redTeam = manager.GetTeam(IAIBase.ETeam.TEAM_RED);
                     TeamList redList = new TeamList(IAIBase.ETeam.TEAM_RED, redTeam.Select(c => c.Profile.DisplayName).ToArray());
@@ -28,6 +30,7 @@ namespace MothershipStateMachine
                     IEnumerable<ClientDataOnServer> blueTeam = manager.GetTeam(IAIBase.ETeam.TEAM_BLUE);
                     TeamList blueList = new TeamList(IAIBase.ETeam.TEAM_BLUE, blueTeam.Select(c => c.Profile.DisplayName).ToArray());
 
+                    manager.networkManager.SendClientRegistration(registerClient.NetworkPlayer, team, teamOrder);
                     manager.networkManager.SendTeamSetupUpdate(redList, blueList);
                     return;
                 }

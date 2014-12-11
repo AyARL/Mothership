@@ -37,11 +37,13 @@ namespace Mothership
             ChangeState(ServerLobbyState);
         }
 
-        public bool RegisterClient(RegisterClient registerMessage)
+        public bool RegisterClient(RegisterClient registerMessage, out IAIBase.ETeam team, out int teamOrder)
         {
             if (registeredClients.Count < Constants.MAX_PLAYERS_IN_GAME)
             {
-                ClientDataOnServer client = new ClientDataOnServer(registerMessage.User, registerMessage.Profile, registerMessage.NetworkPlayer, GetTeamForNextClient());
+                team = GetTeamForNextClient(out teamOrder);
+
+                ClientDataOnServer client = new ClientDataOnServer(registerMessage.User, registerMessage.Profile, registerMessage.NetworkPlayer, team);
                 registeredClients.Add(client);
 
                 if (OnClientRegistered != null)
@@ -54,16 +56,31 @@ namespace Mothership
             else
             {
                 Debug.LogError("Maximum number of players reached, cannot register");
+                team = IAIBase.ETeam.TEAM_NONE;
+                teamOrder = -1;
                 return false;
             }
         }
 
-        private IAIBase.ETeam GetTeamForNextClient()
+        private IAIBase.ETeam GetTeamForNextClient(out int teamOrder)
         {
             int redCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_RED);
             int blueCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_BLUE);
 
-            return redCount <= blueCount ? IAIBase.ETeam.TEAM_RED : IAIBase.ETeam.TEAM_BLUE;
+            IAIBase.ETeam team = redCount <= blueCount ? IAIBase.ETeam.TEAM_RED : IAIBase.ETeam.TEAM_BLUE;
+            switch(team)
+            {
+                case IAIBase.ETeam.TEAM_RED:
+                    teamOrder = redCount;
+                    break;
+                case IAIBase.ETeam.TEAM_BLUE:
+                    teamOrder = blueCount;
+                    break;
+                default:
+                    teamOrder = 0;
+                    break;
+            }
+            return team;
         }
 
         public IEnumerable<ClientDataOnServer> GetTeam(IAIBase.ETeam teamColour)

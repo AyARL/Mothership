@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.Events;
 using MothershipUtility;
 using MothershipStateMachine;
+using System.Linq;
 
 namespace Mothership
 {
@@ -74,6 +75,12 @@ namespace Mothership
         private void OnPlayerDisconnected(NetworkPlayer player)
         {
             serverManager.SendGameMessage(new ClientDisconnected() { NetworkPlayer = player });
+        }
+
+        public void SendClientRegistration(NetworkPlayer player, IAIBase.ETeam team, int teamOrder)
+        {
+            int teamInt = (int)team;
+            networkView.RPC("RPCSendClientRegistrationData", player, teamInt, teamOrder);
         }
 
         public void SendTeamSetupUpdate(TeamList redTeam, TeamList blueTeam)

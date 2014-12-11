@@ -19,6 +19,12 @@ namespace MothershipStateMachine
         public NetworkPlayer NetworkPlayer { get; set; }
     }
 
+    public class RegistrationOnServer : GameMessage
+    {
+        public IAIBase.ETeam Team { get; set; }
+        public int TeamOrder { get; set; }
+    }
+
     public class UpdateTeamRoster : GameMessage
     {
         public TeamList RedTeam { get; set; }

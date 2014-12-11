@@ -72,6 +72,13 @@ namespace Mothership
 
         #region Server->Client
         [RPC]
+        private void RPCSendClientRegistrationData(int team, int teamOrder)
+        {
+            IAIBase.ETeam teamVal = (IAIBase.ETeam)team;
+            clientManager.SendGameMessage(new RegistrationOnServer() { Team = teamVal, TeamOrder = teamOrder });
+        }
+
+        [RPC]
         private void RPCSendTeamData(string redTeamData, string blueTeamData)
         {
             TeamList redTeam = JsonUtility.ValidateJsonData<TeamList>(redTeamData);
