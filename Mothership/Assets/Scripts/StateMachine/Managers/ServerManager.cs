@@ -14,7 +14,10 @@ public class ServerManager : RoleManager
     public int MinPlayersInGame { get; private set; }   // number of players required before a game can be started
 
     // States
-    public ServerLobbyState ServerLobbyState { get; set; }
+    public ServerLobbyState ServerLobbyState { get; private set; }
+    public ServerGameSetupState ServerGameSetupState { get; private set; }
+    public ServerGamePlayState ServerGamePlayState { get; private set; }
+    public ServerGameEndState ServerGameEndState { get; private set; }
 
     // Events
     public UnityAction OnClientRegistered { get; set; }
@@ -27,6 +30,9 @@ public class ServerManager : RoleManager
 
         // Initialise all states
         ServerLobbyState = new ServerLobbyState(this);
+        ServerGameSetupState = new ServerGameSetupState(this);
+        ServerGamePlayState = new ServerGamePlayState(this);
+        ServerGameEndState = new ServerGameEndState(this);
         
         ChangeState(ServerLobbyState);
     }

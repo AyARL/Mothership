@@ -12,6 +12,8 @@ public class ClientManager : RoleManager
     // States
     public ClientLobbyState ClientLobbyState { get; private set; }
     public ClientGameSetupState ClientGameSetupState { get; private set; }
+    public ClientGamePlayState ClientGamePlayState { get; private set; }
+    public ClientGameEndState ClientGameEndState { get; private set; }
 
     public IAIBase.ETeam Team { get; set; }
     public int TeamOrder { get; set; }
@@ -26,10 +28,13 @@ public class ClientManager : RoleManager
     {
         NetworkManager = networkManager as ClientNetworkManager;
 
+        //Init all states
         ClientLobbyState = new ClientLobbyState(this);
         ClientGameSetupState = new ClientGameSetupState(this);
+        ClientGamePlayState = new ClientGamePlayState(this);
+        ClientGameEndState = new ClientGameEndState(this);
 
-        activeState = ClientLobbyState;
+        ChangeState(ClientLobbyState);
     }
 
     public bool SpawnInGame()
