@@ -12,6 +12,7 @@ namespace Mothership
         public IAIBase.ETeam ClientTeam { get; private set; }
 
         public bool ReadyToPlay { get; set; }
+        public bool Spawned { get; set; }
 
         public ClientDataOnServer(User user, Profile profile, NetworkPlayer networkPlayer, IAIBase.ETeam team)
         {

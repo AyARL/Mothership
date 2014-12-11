@@ -104,6 +104,11 @@ namespace Mothership
             Network.maxConnections = -1; // allow connections equal to current count
         }
 
+        public void GamePlayStarted()
+        {
+            networkView.RPC("RPCGamePlayStarted", RPCMode.Others);
+        }
+
     }
     
 }

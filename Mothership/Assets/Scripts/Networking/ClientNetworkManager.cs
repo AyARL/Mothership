@@ -89,7 +89,10 @@ namespace Mothership
             networkView.RPC("RPCClientReadyToPlay", RPCMode.Server);
         }
 
-
+        public void PlayerSpawned()
+        {
+            networkView.RPC("RPCPlayerSpawned", RPCMode.Server);
+        }
     }
     
 }

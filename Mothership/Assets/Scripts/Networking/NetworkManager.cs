@@ -98,6 +98,11 @@ namespace Mothership
             Network.SetLevelPrefix(LastLevelPrefix);
             Application.LoadLevel(level);
         }
+
+        private void RPCGamePlayStarted()
+        {
+            clientManager.SendGameMessage(new GamePlayStarted());
+        }
         #endregion
 
         #region Client->Server
@@ -121,6 +126,12 @@ namespace Mothership
         {
             serverManager.SendGameMessage(new ClientLoadedLevel() { Player = info.sender, Level = level });
             Debug.Log("client Loaded level");
+        }
+
+        [RPC]
+        private void RPCPlayerSpawned(NetworkMessageInfo info)
+        {
+            serverManager.SendGameMessage(new ClientSpawned() { Player = info.sender });
         }
         #endregion
 

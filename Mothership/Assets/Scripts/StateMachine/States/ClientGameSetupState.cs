@@ -14,7 +14,11 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
-
+            GamePlayStarted gameStarted = message as GamePlayStarted;
+            if(gameStarted != null)
+            {
+                clientManager.ChangeState(clientManager.ClientGamePlayState);
+            }
         }
 
         public override void OnStateMessage(StateMessage message)
@@ -24,7 +28,7 @@ namespace MothershipStateMachine
             {
                 if(clientManager.SpawnInGame())
                 {
-
+                    clientManager.NetworkManager.PlayerSpawned();
                 }
             }
         }
