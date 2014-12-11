@@ -2,61 +2,65 @@
 using System.Collections;
 using MothershipStateMachine;
 
-public abstract class RoleManager : MonoBehaviour
+namespace Mothership
 {
-    public static RoleManager roleManager = null;
-
-    protected IState activeState = null;
-
-    protected virtual void Awake()
+    public abstract class RoleManager : MonoBehaviour
     {
-        if (roleManager != null)
+        public static RoleManager roleManager = null;
+
+        protected IState activeState = null;
+
+        protected virtual void Awake()
         {
-            Destroy(gameObject);
-        }
-        else
-        {
-            roleManager = this;
-            DontDestroyOnLoad(gameObject);
-        }
-    }
-
-    public abstract void Init(NetworkManager networkManager);
-
-    public void SendGameMessage(GameMessage message)
-    {
-        activeState.OnGameMessage(message);
-    }
-
-    protected void SendStateMessage(StateMessage message)
-    {
-        activeState.OnStateMessage(message);
-    }
-
-    public void ChangeState(IState newState)
-    {
-        if (activeState != null)
-        {
-            SendStateMessage(new OnExitState());
+            if (roleManager != null)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                roleManager = this;
+                DontDestroyOnLoad(gameObject);
+            }
         }
 
-        activeState = newState;
-        SendStateMessage(new OnEnterState());
-    }
+        public abstract void Init(NetworkManager networkManager);
 
-    public void ChangeState(IState newState, GameMessage enterMessage)
-    {
-        if (activeState != null)
+        public void SendGameMessage(GameMessage message)
         {
-            SendStateMessage(new OnExitState());
+            activeState.OnGameMessage(message);
         }
 
-        activeState = newState;
-        SendStateMessage(new OnEnterState() { Message = enterMessage });
-    }
+        protected void SendStateMessage(StateMessage message)
+        {
+            activeState.OnStateMessage(message);
+        }
 
-    protected void OnDestroy()
-    {
-        roleManager = null;
+        public void ChangeState(IState newState)
+        {
+            if (activeState != null)
+            {
+                SendStateMessage(new OnExitState());
+            }
+
+            activeState = newState;
+            SendStateMessage(new OnEnterState());
+        }
+
+        public void ChangeState(IState newState, GameMessage enterMessage)
+        {
+            if (activeState != null)
+            {
+                SendStateMessage(new OnExitState());
+            }
+
+            activeState = newState;
+            SendStateMessage(new OnEnterState() { Message = enterMessage });
+        }
+
+        protected void OnDestroy()
+        {
+            roleManager = null;
+        }
     }
+    
 }

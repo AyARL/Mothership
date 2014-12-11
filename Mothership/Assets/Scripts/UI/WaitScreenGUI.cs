@@ -3,51 +3,55 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
-public class WaitScreenGUI : MonoBehaviour
+namespace MothershipUI
 {
-    [SerializeField]
-    private GameObject contents = null;
-    [SerializeField]
-    private Text message = null;
-    [SerializeField]
-    private GameObject loadingIndicator = null;
-
-    public void Enable(string message = "Processing...") 
+    public class WaitScreenGUI : MonoBehaviour
     {
-        contents.SetActive(true);
-        this.message.text = message;
-        StartCoroutine(AnimateIndicator());
-    }
+        [SerializeField]
+        private GameObject contents = null;
+        [SerializeField]
+        private Text message = null;
+        [SerializeField]
+        private GameObject loadingIndicator = null;
 
-    public void Disable()
-    {
-        StopAllCoroutines();
-        contents.SetActive(false);
-    }
-
-    public void SetMessage(string message)
-    {
-        this.message.text = message;
-    }
-
-    private IEnumerator AnimateIndicator()
-    {
-        var anims = loadingIndicator.GetComponentsInChildren<Animation>();
-        foreach (Animation a in anims)
+        public void Enable(string message = "Processing...")
         {
-            a.Play();
-            yield return new WaitForSeconds(0.10f);
+            contents.SetActive(true);
+            this.message.text = message;
+            StartCoroutine(AnimateIndicator());
+        }
+
+        public void Disable()
+        {
+            StopAllCoroutines();
+            contents.SetActive(false);
+        }
+
+        public void SetMessage(string message)
+        {
+            this.message.text = message;
+        }
+
+        private IEnumerator AnimateIndicator()
+        {
+            var anims = loadingIndicator.GetComponentsInChildren<Animation>();
+            foreach (Animation a in anims)
+            {
+                a.Play();
+                yield return new WaitForSeconds(0.10f);
 
 
+            }
+        }
+
+        private void StopIndicatorAnimation()
+        {
+            var anims = loadingIndicator.GetComponentsInChildren<Animation>();
+            foreach (Animation a in anims)
+            {
+                a.Stop();
+            }
         }
     }
-
-    private void StopIndicatorAnimation()
-    {
-        var anims = loadingIndicator.GetComponentsInChildren<Animation>();
-        foreach (Animation a in anims)
-        {
-            a.Stop();
-        }
-    }
+    
 }

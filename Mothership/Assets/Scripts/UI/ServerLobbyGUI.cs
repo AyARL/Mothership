@@ -1,44 +1,48 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using Mothership;
 
-public class ServerLobbyGUI : MonoBehaviour
+namespace MothershipUI
 {
-    [SerializeField]
-    private GameObject content = null;
-    [SerializeField]
-    private GameObject clientList = null;
-    [SerializeField]
-    private Text clientLabelPrefab = null;
-    private Text[] clientLabels = null;
-
-    public void Enable()
+    public class ServerLobbyGUI : MonoBehaviour
     {
-        content.SetActive(true);
+        [SerializeField]
+        private GameObject content = null;
+        [SerializeField]
+        private GameObject clientList = null;
+        [SerializeField]
+        private Text clientLabelPrefab = null;
+        private Text[] clientLabels = null;
 
-        clientLabels = new Text[Network.maxConnections];
-        for(int i = 0; i < clientLabels.Length; i++)
+        public void Enable()
         {
-            Text t = Instantiate(clientLabelPrefab) as Text;
-            t.transform.SetParent(clientList.transform);
+            content.SetActive(true);
+
+            clientLabels = new Text[Network.maxConnections];
+            for (int i = 0; i < clientLabels.Length; i++)
+            {
+                Text t = Instantiate(clientLabelPrefab) as Text;
+                t.transform.SetParent(clientList.transform);
+            }
         }
-    }
 
-    public void Disable()
-    {
-        content.SetActive(false);
-    }
-
-    public void AddClient()
-    {
-
-    }
-
-    private void CloseServer()
-    {
-        if (NetworkManager.networkManager != null)
+        public void Disable()
         {
-            NetworkManager.networkManager.RemoveNetworkManager();
+            content.SetActive(false);
+        }
+
+        public void AddClient()
+        {
+
+        }
+
+        private void CloseServer()
+        {
+            if (NetworkManager.networkManager != null)
+            {
+                NetworkManager.networkManager.RemoveNetworkManager();
+            }
         }
     }
 }

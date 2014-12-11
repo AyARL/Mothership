@@ -5,69 +5,73 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Events;
 
-public class ServerManager : RoleManager
+namespace Mothership
 {
-    public ServerNetworkManager networkManager = null;
-
-    private List<ClientDataOnServer> registeredClients;
-    public IEnumerable<ClientDataOnServer> RegisteredClients { get { return registeredClients; } }
-    public int MinPlayersInGame { get; private set; }   // number of players required before a game can be started
-
-    // States
-    public ServerLobbyState ServerLobbyState { get; private set; }
-    public ServerGameSetupState ServerGameSetupState { get; private set; }
-    public ServerGamePlayState ServerGamePlayState { get; private set; }
-    public ServerGameEndState ServerGameEndState { get; private set; }
-
-    // Events
-    public UnityAction OnClientRegistered { get; set; }
-
-    public override void Init(NetworkManager networkManager)
+    public class ServerManager : RoleManager
     {
-        this.networkManager = networkManager as ServerNetworkManager;
-        registeredClients = new List<ClientDataOnServer>();
-        MinPlayersInGame = 2;
+        public ServerNetworkManager networkManager = null;
 
-        // Initialise all states
-        ServerLobbyState = new ServerLobbyState(this);
-        ServerGameSetupState = new ServerGameSetupState(this);
-        ServerGamePlayState = new ServerGamePlayState(this);
-        ServerGameEndState = new ServerGameEndState(this);
-        
-        ChangeState(ServerLobbyState);
-    }
+        private List<ClientDataOnServer> registeredClients;
+        public IEnumerable<ClientDataOnServer> RegisteredClients { get { return registeredClients; } }
+        public int MinPlayersInGame { get; private set; }   // number of players required before a game can be started
 
-    public bool RegisterClient(RegisterClient registerMessage)
-    {
-        if (registeredClients.Count < 8)
+        // States
+        public ServerLobbyState ServerLobbyState { get; private set; }
+        public ServerGameSetupState ServerGameSetupState { get; private set; }
+        public ServerGamePlayState ServerGamePlayState { get; private set; }
+        public ServerGameEndState ServerGameEndState { get; private set; }
+
+        // Events
+        public UnityAction OnClientRegistered { get; set; }
+
+        public override void Init(NetworkManager networkManager)
         {
-            ClientDataOnServer client = new ClientDataOnServer(registerMessage.User, registerMessage.Profile, registerMessage.NetworkPlayer, GetTeamForNextClient());
-            registeredClients.Add(client);
+            this.networkManager = networkManager as ServerNetworkManager;
+            registeredClients = new List<ClientDataOnServer>();
+            MinPlayersInGame = 2;
 
-            if(OnClientRegistered != null)
+            // Initialise all states
+            ServerLobbyState = new ServerLobbyState(this);
+            ServerGameSetupState = new ServerGameSetupState(this);
+            ServerGamePlayState = new ServerGamePlayState(this);
+            ServerGameEndState = new ServerGameEndState(this);
+
+            ChangeState(ServerLobbyState);
+        }
+
+        public bool RegisterClient(RegisterClient registerMessage)
+        {
+            if (registeredClients.Count < 8)
             {
-                OnClientRegistered();
+                ClientDataOnServer client = new ClientDataOnServer(registerMessage.User, registerMessage.Profile, registerMessage.NetworkPlayer, GetTeamForNextClient());
+                registeredClients.Add(client);
+
+                if (OnClientRegistered != null)
+                {
+                    OnClientRegistered();
+                }
+
+                return true;
             }
-
-            return true;
+            else
+            {
+                Debug.LogError("Maximum number of players reached, cannot register");
+                return false;
+            }
         }
-        else
+
+        private IAIBase.ETeam GetTeamForNextClient()
         {
-            Debug.LogError("Maximum number of players reached, cannot register");
-            return false;
+            int redCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_RED);
+            int blueCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_BLUE);
+
+            return redCount <= blueCount ? IAIBase.ETeam.TEAM_RED : IAIBase.ETeam.TEAM_BLUE;
+        }
+
+        public IEnumerable<ClientDataOnServer> GetTeam(IAIBase.ETeam teamColour)
+        {
+            return registeredClients.Where(c => c.ClientTeam == teamColour);
         }
     }
-
-    private IAIBase.ETeam GetTeamForNextClient()
-    {
-        int redCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_RED);
-        int blueCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_BLUE);
-
-        return redCount <= blueCount ? IAIBase.ETeam.TEAM_RED : IAIBase.ETeam.TEAM_BLUE;
-    }
-
-    public IEnumerable<ClientDataOnServer> GetTeam(IAIBase.ETeam teamColour)
-    {
-        return registeredClients.Where(c => c.ClientTeam == teamColour);
-    }
+    
 }

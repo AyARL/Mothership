@@ -5,87 +5,91 @@ using MothershipUtility;
 using MothershipOS;
 using MothershipStateMachine;
 
-public class ClientNetworkManager : NetworkManager
+namespace Mothership
 {
-    private float timeOut = 5.0f;
-
-    public UnityAction<bool, HostData[]> OnHostListFetchCompleted { get; set; }
-    private HostData[] availableHosts;
-
-    public UnityAction ConnectedToServer { get; set; }
-    public HostData ServerHostData { get; private set; }
-
-    public void FetchServerList(UnityAction<bool, HostData[]> onFetchCompleted)
+    public class ClientNetworkManager : NetworkManager
     {
-        OnHostListFetchCompleted += onFetchCompleted;
-        StartCoroutine(FetchHostsFromMasterServer());
-    }
+        private float timeOut = 5.0f;
 
-    private IEnumerator FetchHostsFromMasterServer()
-    {
-        MasterServer.ClearHostList();
-        MasterServer.RequestHostList(gameTypeName);
-        float timeOutTime = Time.time + timeOut;
+        public UnityAction<bool, HostData[]> OnHostListFetchCompleted { get; set; }
+        private HostData[] availableHosts;
 
-        while (Time.time < timeOutTime)
+        public UnityAction ConnectedToServer { get; set; }
+        public HostData ServerHostData { get; private set; }
+
+        public void FetchServerList(UnityAction<bool, HostData[]> onFetchCompleted)
         {
-            availableHosts = MasterServer.PollHostList();
-            if (availableHosts.Length > 0)
+            OnHostListFetchCompleted += onFetchCompleted;
+            StartCoroutine(FetchHostsFromMasterServer());
+        }
+
+        private IEnumerator FetchHostsFromMasterServer()
+        {
+            MasterServer.ClearHostList();
+            MasterServer.RequestHostList(gameTypeName);
+            float timeOutTime = Time.time + timeOut;
+
+            while (Time.time < timeOutTime)
             {
-                if (OnHostListFetchCompleted != null)
+                availableHosts = MasterServer.PollHostList();
+                if (availableHosts.Length > 0)
                 {
-                    OnHostListFetchCompleted(true, availableHosts);
+                    if (OnHostListFetchCompleted != null)
+                    {
+                        OnHostListFetchCompleted(true, availableHosts);
+                    }
+
+                    yield break;
                 }
 
-                yield break;
+                yield return new WaitForSeconds(1f);
             }
 
-            yield return new WaitForSeconds(1f);
+            Debug.Log("Timed out waiting for host list");
+            if (OnHostListFetchCompleted != null)
+            {
+                OnHostListFetchCompleted(false, null);
+            }
         }
 
-        Debug.Log("Timed out waiting for host list");
-        if (OnHostListFetchCompleted != null)
+        public void ConnectToServer(HostData host)
         {
-            OnHostListFetchCompleted(false, null);
+            NetworkConnectionError error = Network.Connect(host);
+            if (error == NetworkConnectionError.NoError)
+            {
+                ServerHostData = host;
+            }
         }
-    }
 
-    public void ConnectToServer(HostData host)
-    {
-        NetworkConnectionError error = Network.Connect(host);
-        if (error == NetworkConnectionError.NoError)
+        private void OnConnectedToServer()
         {
-            ServerHostData = host;
+            InitialiseRoleManager();
+            if (ConnectedToServer != null)
+            {
+                ConnectedToServer();
+            }
         }
-    }
 
-    private void OnConnectedToServer()
-    {
-        InitialiseRoleManager();
-        if (ConnectedToServer != null)
+        private void InitialiseRoleManager()
         {
-            ConnectedToServer();
+            GameObject roleManagerObj = new GameObject(roleManagerObjectName);
+            clientManager = roleManagerObj.AddComponent<ClientManager>();
+            clientManager.Init(this);
         }
-    }
 
-    private void InitialiseRoleManager()
-    {
-        GameObject roleManagerObj = new GameObject(roleManagerObjectName);
-        clientManager = roleManagerObj.AddComponent<ClientManager>();
-        clientManager.Init(this);
-    }
+        public void RegisterOnServer()
+        {
+            string serializedUser = JsonUtility.SerializeToJson<User>(UserDataManager.userData.User);
+            string serializedProfile = JsonUtility.SerializeToJson<Profile>(UserDataManager.userData.Profile);
+            networkView.RPC("RPCRegisterClient", RPCMode.Server, serializedUser, serializedProfile);
+        }
 
-    public void RegisterOnServer()
-    {
-        string serializedUser = JsonUtility.SerializeToJson<User>(UserDataManager.userData.User);
-        string serializedProfile = JsonUtility.SerializeToJson<Profile>(UserDataManager.userData.Profile);
-        networkView.RPC("RPCRegisterClient", RPCMode.Server, serializedUser, serializedProfile);
-    }
+        public void ReadyToPlay()
+        {
+            networkView.RPC("RPCClientReadyToPlay", RPCMode.Server);
+        }
 
-    public void ReadyToPlay()
-    {
-        networkView.RPC("RPCClientReadyToPlay", RPCMode.Server);
-    }
 
+    }
     
 }

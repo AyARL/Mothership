@@ -33,6 +33,10 @@ namespace Mothership
         public const float PROJECTILE_DELAY_BULLET = 0.5f;
         public const float PROJECTILE_DELAY_MISSILE = 2f;
         public const float PROJECTILE_DELAY_RAY = 5f;
+
+        // Game related constants
+        public const int MIN_PLAYERS_IN_GAME = 2;
+        public const int MAX_PLAYERS_IN_GAME = 8;
     }
 
     public class DefaultPaths

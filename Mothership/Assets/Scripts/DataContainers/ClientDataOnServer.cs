@@ -2,22 +2,25 @@
 using System.Collections;
 using MothershipOS;
 
-public class ClientDataOnServer
+namespace Mothership
 {
-    public User User { get; private set; }
-    public Profile Profile { get; private set; }
-    public NetworkPlayer NetworkPlayer { get; private set; }
-    public IAIBase.ETeam ClientTeam { get; private set; }
-
-    public bool ReadyToPlay { get; set; }
-
-    public ClientDataOnServer(User user, Profile profile, NetworkPlayer networkPlayer, IAIBase.ETeam team)
+    public class ClientDataOnServer
     {
-        User = user;
-        Profile = profile;
-        NetworkPlayer = networkPlayer;
-        ClientTeam = team;
+        public User User { get; private set; }
+        public Profile Profile { get; private set; }
+        public NetworkPlayer NetworkPlayer { get; private set; }
+        public IAIBase.ETeam ClientTeam { get; private set; }
 
-        ReadyToPlay = false;
-    }
+        public bool ReadyToPlay { get; set; }
+
+        public ClientDataOnServer(User user, Profile profile, NetworkPlayer networkPlayer, IAIBase.ETeam team)
+        {
+            User = user;
+            Profile = profile;
+            NetworkPlayer = networkPlayer;
+            ClientTeam = team;
+
+            ReadyToPlay = false;
+        }
+    } 
 }

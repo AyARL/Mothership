@@ -1,82 +1,87 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using Mothership;
 
-public class ServerSetupGUI : MonoBehaviour
+namespace MothershipUI
 {
-    [SerializeField]
-    private InputField serverName = null;
-    [SerializeField]
-    private InputField serverDescription = null;
-    [SerializeField]
-    private Button startServerButton = null;
-    [SerializeField]
-    private Button backButton = null;
-
-    [SerializeField]
-    private MainMenuGUI mainMenu = null;
-    [SerializeField]
-    private WaitScreenGUI waitScreen = null;
-    [SerializeField]
-    private ServerLobbyGUI serverLobby = null;
-
-    private ServerNetworkManager networkManager = null;
-   
-
-    private void Start()
+    public class ServerSetupGUI : MonoBehaviour
     {
-        serverName.characterValidation = InputField.CharacterValidation.Alphanumeric;
-        InputField.SubmitEvent submitEvent = new InputField.SubmitEvent();
-        submitEvent.AddListener(OnServerNameSet);
-        serverName.onEndEdit = submitEvent;
+        [SerializeField]
+        private InputField serverName = null;
+        [SerializeField]
+        private InputField serverDescription = null;
+        [SerializeField]
+        private Button startServerButton = null;
+        [SerializeField]
+        private Button backButton = null;
 
-        startServerButton.onClick.AddListener(StartServer);
-    }
+        [SerializeField]
+        private MainMenuGUI mainMenu = null;
+        [SerializeField]
+        private WaitScreenGUI waitScreen = null;
+        [SerializeField]
+        private ServerLobbyGUI serverLobby = null;
 
-    public void EnableScreen()
-    {
-        serverName.interactable = true;
-        serverDescription.interactable = true;
-        backButton.interactable = true;
-        OnServerNameSet(serverName.text);
-    }
+        private ServerNetworkManager networkManager = null;
 
-    public void DisableScreen()
-    {
-        foreach(Transform t in transform)
+
+        private void Start()
         {
-            Selectable s = t.GetComponent<Selectable>();
-            if(s != null)
+            serverName.characterValidation = InputField.CharacterValidation.Alphanumeric;
+            InputField.SubmitEvent submitEvent = new InputField.SubmitEvent();
+            submitEvent.AddListener(OnServerNameSet);
+            serverName.onEndEdit = submitEvent;
+
+            startServerButton.onClick.AddListener(StartServer);
+        }
+
+        public void EnableScreen()
+        {
+            serverName.interactable = true;
+            serverDescription.interactable = true;
+            backButton.interactable = true;
+            OnServerNameSet(serverName.text);
+        }
+
+        public void DisableScreen()
+        {
+            foreach (Transform t in transform)
             {
-                s.interactable = false;
+                Selectable s = t.GetComponent<Selectable>();
+                if (s != null)
+                {
+                    s.interactable = false;
+                }
             }
         }
-    }
 
-    private void StartServer()
-    {
-        GameObject managerObj = GameObject.FindGameObjectWithTag("NetworkManager");
-        if (managerObj == null)
+        private void StartServer()
         {
-            managerObj = new GameObject("NetworkManager");
-            managerObj.tag = "NetworkManager";
+            GameObject managerObj = GameObject.FindGameObjectWithTag("NetworkManager");
+            if (managerObj == null)
+            {
+                managerObj = new GameObject("NetworkManager");
+                managerObj.tag = "NetworkManager";
+            }
+
+            networkManager = managerObj.AddComponent<ServerNetworkManager>();
+
+            mainMenu.DisableScreen();
+            waitScreen.Enable("Waiting for Master Server");
+            networkManager.OnServerReady += () => { waitScreen.Disable(); serverLobby.Enable(); };
+
+            networkManager.StartServer(serverName.text, serverDescription.text);
         }
 
-        networkManager = managerObj.AddComponent<ServerNetworkManager>();
-
-        mainMenu.DisableScreen();
-        waitScreen.Enable("Waiting for Master Server");
-        networkManager.OnServerReady += () => { waitScreen.Disable(); serverLobby.Enable(); };
-
-        networkManager.StartServer(serverName.text, serverDescription.text);
-    }
-
-    private void OnServerNameSet(string name)
-    {
-        if(name.Length > 0)
+        private void OnServerNameSet(string name)
         {
-            startServerButton.interactable = true;
+            if (name.Length > 0)
+            {
+                startServerButton.interactable = true;
+            }
         }
-    }
 
+    }
+    
 }

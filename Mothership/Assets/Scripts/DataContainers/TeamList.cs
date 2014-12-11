@@ -1,16 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class TeamList
+namespace Mothership
 {
-    public IAIBase.ETeam TeamColour { get; private set; }
-    public string[] TeamDisplayNames { get; private set; }
-
-    public TeamList() { }
-
-    public TeamList(IAIBase.ETeam colour, string[] playerNames)
+    public class TeamList
     {
-        TeamColour = colour;
-        TeamDisplayNames = playerNames;
+        public IAIBase.ETeam TeamColour { get; private set; }
+        public string[] TeamDisplayNames { get; private set; }
+
+        public TeamList() { }
+
+        public TeamList(IAIBase.ETeam colour, string[] playerNames)
+        {
+            TeamColour = colour;
+            TeamDisplayNames = playerNames;
+        }
     }
+    
 }
