@@ -119,7 +119,6 @@ public class IAIBase : MonoBehaviour
     bool m_bCanFireMissile = true;
     bool m_bCanFireRay = true;
 
-    public Animator AIAnimator { get; private set; }
     public Dictionary<int, AnimatorBoolProperty> m_dictAnimatorStates;
 
     bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
@@ -131,17 +130,6 @@ public class IAIBase : MonoBehaviour
     {
         // Error reporting.
         string strFunction = "IAIBase::Start()";
-
-        AIAnimator = GetComponent< Animator >();
-        if ( null == AIAnimator )
-        {
-            // We're going to complain about the missing component and return.
-            Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( Animator ).ToString() ) );
-            return;      
-        }
-
-        m_dictAnimatorStates = new Dictionary< int, AnimatorBoolProperty >();
-        m_dictAnimatorStates.Add( 0, new AnimatorBoolProperty() { Name = "bIsMoving", State = false }); // Moving
 
         // Load the items resource.
         if ( null == m_ItemsResource )
@@ -190,7 +178,11 @@ public class IAIBase : MonoBehaviour
         {
             // Shit happened
             Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( Animator ).ToString() ) );
+            return;
         }
+
+        m_dictAnimatorStates = new Dictionary< int, AnimatorBoolProperty >();
+        m_dictAnimatorStates.Add( 0, new AnimatorBoolProperty() { Name = "bIsMoving", State = false }); // Moving
     }
 
     /////////////////////////////////////////////////////////////////////////////

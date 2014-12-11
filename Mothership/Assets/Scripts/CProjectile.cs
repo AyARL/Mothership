@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Mothership;
 
 public class CProjectile : MonoBehaviour {
@@ -11,6 +12,13 @@ public class CProjectile : MonoBehaviour {
         PROJECTILE_MISSILE,
         PROJECTILE_RAY,
     }
+
+    private List< string > m_liProjectileNames = new List< string >
+    {
+        Names.NAME_BULLET + "(Clone)",
+        Names.NAME_MISSILE + "(Clone)",
+        Names.NAME_RAY + "(Clone)",
+    };
 
     [ SerializeField ]
     private bool m_bIsActivated = false;
@@ -126,7 +134,7 @@ public class CProjectile : MonoBehaviour {
     /////////////////////////////////////////////////////////////////////////////
     void OnCollisionEnter( Collision cCollision )
     {
-        if ( false == m_bIsActivated || cCollision.gameObject.name == Names.NAME_BULLET + "(Clone)" )
+        if ( false == m_bIsActivated || true == m_liProjectileNames.Contains( cCollision.gameObject.name ) )
             return;
 
         Destroy( gameObject );
