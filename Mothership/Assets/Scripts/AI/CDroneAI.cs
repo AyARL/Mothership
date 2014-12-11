@@ -45,11 +45,14 @@ public class CDroneAI : IAIBase {
         // Call in the interface update function.
         base.Update();
 
-        // Will check if we need to transition to a new state
-        CheckForTransitions();
+        if ( Network.isServer )
+        { 
+            // Will check if we need to transition to a new state
+            CheckForTransitions();
 
-        // Will run the NPCs State machines logic.
-        RunStates();
+            // Will run the NPCs State machines logic.
+            RunStates();
+        }
 	}
 
     /////////////////////////////////////////////////////////////////////////////
@@ -90,7 +93,14 @@ public class CDroneAI : IAIBase {
                 case EDroneState.DRONE_DEAD:
 
                     // The drone is dead, we have to clean up and get rid of it.
-                    Die();
+                    if ( false == IsRunningLocally )
+                    {
+                        networkView.RPC( RPCFunctions.RPC_DIE, RPCMode.All );
+                    }
+                    else
+                    {
+                        Die();
+                    }
 
                     break;
 			}
@@ -307,23 +317,6 @@ public class CDroneAI : IAIBase {
     {
         // Run the base IAIBase collision logic.
         base.OnCollisionEnter( cCollision );
-
-        // Get a handle on the gameobject we collided with.
-        GameObject goCollisionObject = cCollision.gameObject;
-        
-        // Check if we collided with a base, and act accordingly depending on the
-        //  team.
-        if ( goCollisionObject.tag == Tags.TAG_BASE )
-        {
-            if ( goCollisionObject.name == Names.NAME_RED_BASE && m_eTeam == ETeam.TEAM_RED )
-            {
-                CollidedWithBase();
-            }
-            else if ( goCollisionObject.name == Names.NAME_BLUE_BASE && m_eTeam == ETeam.TEAM_BLUE )
-            {
-                CollidedWithBase();
-            }
-        }
     }
 
     /////////////////////////////////////////////////////////////////////////////

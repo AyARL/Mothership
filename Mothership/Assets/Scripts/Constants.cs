@@ -40,6 +40,16 @@ namespace Mothership
         public const float GAME_MATCH_LENGTH = 60f; // seconds
     }
 
+    public class RPCFunctions
+    {
+        // Frequently used RPC function names.
+        public const string RPC_FIRE = "Fire";
+        public const string RPC_DIE = "Die";
+        public const string RPC_REMOTE_SPAWN_NPC = "RemoteSpawnNPC";
+        public const string RPC_REMOTE_SPAWN_ITEM = "RemoteSpawnItem";
+        public const string RPC_REMOTE_SPAWN_FLAG = "RemoteSpawnFlag";
+    }
+
     public class DefaultPaths
     {
         // Editor Custom Menu Items paths.

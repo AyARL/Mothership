@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Mothership;
 
+[ RequireComponent( typeof( NetworkView ) ) ]
 public class CSpawner : MonoBehaviour {
 
     public enum ESpawnerType
@@ -44,12 +45,14 @@ public class CSpawner : MonoBehaviour {
     private bool m_bCanSpawn = true;
     public bool CanSpawn { get { return m_bCanSpawn; } }
 
+    private bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
+
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Spawn
     /////////////////////////////////////////////////////////////////////////////
 	private void Spawn ( GameObject goObject ) 
     {
-        GameObject goInstantiatedObject = ( GameObject )Instantiate ( goObject, transform.position, Quaternion.identity );
+        GameObject goInstantiatedObject = ( GameObject )Network.Instantiate( goObject, transform.position, Quaternion.identity, 0 );
         goInstantiatedObject.name = goObject.name;
 	    StartCoroutine( InitiateSpawnCountDown() );
 	}
