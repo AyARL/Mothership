@@ -13,7 +13,6 @@ namespace Mothership
 
         private List<ClientDataOnServer> registeredClients;
         public IEnumerable<ClientDataOnServer> RegisteredClients { get { return registeredClients; } }
-        public int MinPlayersInGame { get; private set; }   // number of players required before a game can be started
 
         // States
         public ServerLobbyState ServerLobbyState { get; private set; }
@@ -28,7 +27,6 @@ namespace Mothership
         {
             this.networkManager = networkManager as ServerNetworkManager;
             registeredClients = new List<ClientDataOnServer>();
-            MinPlayersInGame = 2;
 
             // Initialise all states
             ServerLobbyState = new ServerLobbyState(this);
@@ -41,7 +39,7 @@ namespace Mothership
 
         public bool RegisterClient(RegisterClient registerMessage)
         {
-            if (registeredClients.Count < 8)
+            if (registeredClients.Count < Constants.MAX_PLAYERS_IN_GAME)
             {
                 ClientDataOnServer client = new ClientDataOnServer(registerMessage.User, registerMessage.Profile, registerMessage.NetworkPlayer, GetTeamForNextClient());
                 registeredClients.Add(client);

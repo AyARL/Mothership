@@ -37,7 +37,7 @@ namespace MothershipStateMachine
             if(clientReady != null)
             {
                 manager.RegisteredClients.First(c => c.NetworkPlayer == clientReady.Player).ReadyToPlay = true;
-                if(manager.RegisteredClients.Count() >= manager.MinPlayersInGame &&  manager.RegisteredClients.All(c => c.ReadyToPlay == true))
+                if(manager.RegisteredClients.Count() >= Constants.MIN_PLAYERS_IN_GAME &&  manager.RegisteredClients.All(c => c.ReadyToPlay == true))
                 {
                     manager.networkManager.StartMission();
                 }
