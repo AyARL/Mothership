@@ -1,15 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ServerGameState : MonoBehaviour {
+namespace MothershipStateMachine
+{
+    /// <summary>
+    /// Base Game State - only process messages here that will be aplicable to all game states
+    /// </summary>
+    public abstract class ServerGameState : IState
+    {
+        protected ServerManager serverManager = null;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+        public ServerGameState(ServerManager manager)
+        {
+            serverManager = manager;
+        }
+
+        public virtual void OnGameMessage(GameMessage message)
+        {
+            // TODO: common tasks for client disconnections
+        }
+
+        public virtual void OnStateMessage(StateMessage message)
+        {
+
+        }
+    }
 }

@@ -17,7 +17,7 @@ namespace MothershipStateMachine
 
         public virtual void OnGameMessage(GameMessage message)
         {
-
+            // TODO: Process disconnect
         }
 
         public virtual void OnStateMessage(StateMessage message)
