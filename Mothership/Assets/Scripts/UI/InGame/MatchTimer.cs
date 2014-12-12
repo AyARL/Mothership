@@ -23,6 +23,7 @@ namespace MothershipUI
             else
             {
                 Destroy(gameObject);
+                return;
             }
         }
 
