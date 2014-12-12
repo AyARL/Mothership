@@ -19,8 +19,6 @@ public class CWarriorAI : IAIBase {
     private EWarriorState m_eState = EWarriorState.WARRIOR_IDLE;
     public EWarriorState DroneState { get { return m_eState; } }
 
-    private GameObject m_goClosestEnemy;
-
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Start
     /////////////////////////////////////////////////////////////////////////////
@@ -204,7 +202,7 @@ public class CWarriorAI : IAIBase {
         if ( false == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_ENEMY_SEEN ) )
             m_anAnimator.SetBool( AnimatorValues.ANIMATOR_ENEMY_SEEN, true );
 
-        Vector3 v3Direction = m_goClosestEnemy.transform.position - transform.position;
+        Vector3 v3Direction = m_trClosestEnemy.transform.position - transform.position;
 
         transform.rotation = Quaternion.LookRotation( v3Direction.normalized );
     }
@@ -236,10 +234,10 @@ public class CWarriorAI : IAIBase {
         }
 
         // Get a handle on the closest enemy and calculate distance from it.
-        m_goClosestEnemy = GetClosestEnemy();
-        if ( null != m_goClosestEnemy )
+        m_trClosestEnemy = GetClosestEnemy();
+        if ( null != m_trClosestEnemy )
         { 
-            float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
+            float fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
 
             if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
             {
@@ -287,7 +285,7 @@ public class CWarriorAI : IAIBase {
                 
             case EWarriorState.WARRIOR_ATTACKING:
 
-                if ( null == m_goClosestEnemy )
+                if ( null == m_trClosestEnemy )
                 {
                     // The enemy has been destroyed, switch back to idle.
                     m_eState = EWarriorState.WARRIOR_IDLE;
@@ -297,13 +295,13 @@ public class CWarriorAI : IAIBase {
                     break;
                 }
 
-                StartCoroutine( AttackTarget( m_goClosestEnemy.transform ) );
+                StartCoroutine( AttackTarget( m_trClosestEnemy.transform ) );
 
-                float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
+                float fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
 
                 if ( fDistance > Constants.DEFAULT_ATTACK_RANGE + 20f )
                 {
-                    m_v3Target = m_goClosestEnemy.transform.position;
+                    m_v3Target = m_trClosestEnemy.transform.position;
                     m_eState = EWarriorState.WARRIOR_MOVING;
                     m_bTargetInRange = false;
                 }

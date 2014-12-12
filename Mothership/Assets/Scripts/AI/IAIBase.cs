@@ -135,8 +135,12 @@ public class IAIBase : MonoBehaviour
     [SerializeField]
     private float pingMargin = 0.5f;
 
+    protected Transform m_trClosestEnemy;
+
     private float clientPing;
     private CAIPayload[] m_rgBuffer = new CAIPayload[ 20 ];
+
+    private List< GameObject > m_liEnemyPlayers = new List< GameObject >();
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Start
@@ -248,6 +252,8 @@ public class IAIBase : MonoBehaviour
             // Find the flag.
             if ( null == m_goFlag ) 
                 m_goFlag = FindFlag( m_eTeam );
+
+            m_liEnemyPlayers = GetEnemyPlayers( m_eTeam ); 
 
             // The server will send messages to the clients to inform them
             //  of AI position and state.
@@ -438,7 +444,7 @@ public class IAIBase : MonoBehaviour
             // Set the flag's parent.
             m_goFlagHolder = gameObject;
             m_bReachedTarget = true;
-            Destroy( cCollider.gameObject );
+            Network.Destroy( cCollider.gameObject );
             m_bHasFlag = true;
 
             // Send message to the server manager.
@@ -448,9 +454,38 @@ public class IAIBase : MonoBehaviour
     }
 
     /////////////////////////////////////////////////////////////////////////////
+    /// Function:               GetEnemyPlayers
+    /////////////////////////////////////////////////////////////////////////////
+    protected List< GameObject > GetEnemyPlayers( ETeam eMyTeam )
+    {
+        List< PlayerController > liControllers = PlayerController.PlayerControllers;
+        List< GameObject > liEnemyPlayers = new List< GameObject >();
+        foreach ( PlayerController cPlayerController in liControllers )
+        {
+            switch ( eMyTeam )
+            {
+                case ETeam.TEAM_BLUE:
+                    
+                    if ( cPlayerController.gameObject.name == Names.NAME_PLAYER_RED_DRONE + "(Clone)" )
+                        liEnemyPlayers.Add( cPlayerController.gameObject );
+
+                    break;
+                case ETeam.TEAM_RED:
+
+                    if ( cPlayerController.gameObject.name == Names.NAME_PLAYER_BLUE_DRONE + "(Clone)" )
+                        liEnemyPlayers.Add( cPlayerController.gameObject );
+
+                    break;
+            }
+        }
+
+        return liEnemyPlayers;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
     /// Function:               GetClosestEnemy
     /////////////////////////////////////////////////////////////////////////////
-    protected GameObject GetClosestEnemy()
+    protected Transform GetClosestEnemy()
     {
         // Loop through the enemy list and get a reference to the closest enemy.
         List< GameObject > liEnemies = new List< GameObject >();
@@ -466,7 +501,29 @@ public class IAIBase : MonoBehaviour
         }
 
         float fLowestDistance = -1;
-        GameObject goClosestEnemy = null;
+        Transform trClosestEnemy = null;
+
+        m_liEnemyPlayers= GetEnemyPlayers( m_eTeam );
+
+        int iCounter = 0;
+        foreach ( GameObject goPlayer in m_liEnemyPlayers )
+        {
+            float fDistance = Vector3.Distance( goPlayer.transform.position, transform.position );
+            // Check if the variable hasn't been set yet.
+            if ( fLowestDistance == -1 )
+            { 
+                fLowestDistance = fDistance ;
+                trClosestEnemy = goPlayer.transform;
+                continue;
+            }
+
+            // Current enemy is closer than previous enemies.
+            if ( fLowestDistance > fDistance )
+            {
+                fLowestDistance = fDistance;
+                trClosestEnemy = goPlayer.transform;
+            }
+        }
 
         foreach ( GameObject goEnemy in liEnemies )
         {
@@ -475,7 +532,7 @@ public class IAIBase : MonoBehaviour
             if ( fLowestDistance == -1 )
             { 
                 fLowestDistance = fDistance ;
-                goClosestEnemy = goEnemy;
+                trClosestEnemy = goEnemy.transform;
                 continue;
             }
 
@@ -483,11 +540,11 @@ public class IAIBase : MonoBehaviour
             if ( fLowestDistance > fDistance )
             {
                 fLowestDistance = fDistance;
-                goClosestEnemy = goEnemy;
+                trClosestEnemy = goEnemy.transform;
             }
         }
 
-        return goClosestEnemy;
+        return trClosestEnemy;
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -561,7 +618,6 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Die
     /////////////////////////////////////////////////////////////////////////////
-    [ RPC ]
     protected void Die( bool bInstantiateFlag = true )
     {
         string strFunction = "IAIBase::Die()";
@@ -599,16 +655,8 @@ public class IAIBase : MonoBehaviour
         //ServerManager cServer = RoleManager.roleManager as ServerManager;
         //cServer.SendGameMessage( new AIPlayerKilled() { PlayerName = gameObject.name, KillerName = m_strAttackerName } );
 
-        Destroy( gameObject );
-
-        if ( false == IsRunningLocally )
-        {
-            networkView.RPC( RPCFunctions.RPC_REMOTE_SPAWN_NPC, RPCMode.All, m_eTeam, m_eNPCType );
-        }
-        else
-        {
-            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
-        }
+        Network.Destroy( gameObject );
+        CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -623,18 +671,8 @@ public class IAIBase : MonoBehaviour
             // Inform the server that we delivered the flag to the base.
             //ServerManager cServer = RoleManager.roleManager as ServerManager;
             //cServer.SendGameMessage( new FlagDelievered() { PlayerName = gameObject.name } );
-            if ( !IsRunningLocally )
-            {
-                networkView.RPC( RPCFunctions.RPC_DIE, RPCMode.All, false );
-                networkView.RPC( RPCFunctions.RPC_REMOTE_SPAWN_NPC, RPCMode.All, m_eTeam, m_eNPCType );
-                networkView.RPC( RPCFunctions.RPC_REMOTE_SPAWN_FLAG, RPCMode.All );
-            }
-            else
-            {
-                Die( false );
-                CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
-                CSpawner.SpawnFlag();
-            }
+            Die( false );
+            CSpawner.SpawnFlag();
         }
     }
 
@@ -831,32 +869,5 @@ public class IAIBase : MonoBehaviour
                 //m_trObservedTransform.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
             }
         }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               RemoteSpawnNPC
-    /////////////////////////////////////////////////////////////////////////////
-    [ RPC ]
-    protected void RemoteSpawnNPC( ETeam eTeam, ENPCType eType )
-    {
-        CSpawner.SpawnNPC( eTeam, eType );
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               RemoteSpawnItem
-    /////////////////////////////////////////////////////////////////////////////
-    [ RPC ]
-    protected void RemoteSpawnItem( CPowerUp.EItemType eType )
-    {
-        CSpawner.SpawnPowerUp( eType );
-    }
-
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               RemoteSpawnFlag
-    /////////////////////////////////////////////////////////////////////////////
-    [ RPC ]
-    protected void RemoteSpawnFlag()
-    {
-        CSpawner.SpawnFlag();
     }
 }

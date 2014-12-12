@@ -23,6 +23,9 @@ namespace Mothership
         private static CPowerUpSO itemsResource = null;
         private Dictionary<string, GameObject> projectilePrefabs = new Dictionary<string, GameObject>();
 
+        private static List< PlayerController > m_liControllers = new List< PlayerController >();
+        public static List<PlayerController> PlayerControllers { get { return m_liControllers; } }
+
         float lastFireTime = 0f;
 
         //private Dictionary<string, int> inventory = new Dictionary<string, int>();
@@ -32,6 +35,9 @@ namespace Mothership
         // Use this for initialization
         void Awake()
         {
+            if( Network.isServer )
+                m_liControllers.Add( this );
+
             animator = GetComponent<Animator>();
             animatorStates = new Dictionary<int, AnimatorBoolProperty>();
             animatorStates.Add(0, new AnimatorBoolProperty() { Name = "bIsMoving", State = false }); // Moving

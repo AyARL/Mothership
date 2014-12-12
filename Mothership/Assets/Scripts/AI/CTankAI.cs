@@ -19,8 +19,6 @@ public class CTankAI : IAIBase {
     private ETankState m_eState = ETankState.TANK_IDLE;
     public ETankState DroneState { get { return m_eState; } }
 
-    private GameObject m_goClosestEnemy;
-
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Start
     /////////////////////////////////////////////////////////////////////////////
@@ -193,7 +191,7 @@ public class CTankAI : IAIBase {
         if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
             m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, false );
 
-        Vector3 v3Direction = m_goClosestEnemy.transform.position - transform.position;
+        Vector3 v3Direction = m_trClosestEnemy.transform.position - transform.position;
 
         transform.rotation = Quaternion.LookRotation( v3Direction.normalized );
     }
@@ -225,10 +223,10 @@ public class CTankAI : IAIBase {
         }
 
         // Get a handle on the closest enemy and calculate distance from it.
-        m_goClosestEnemy = GetClosestEnemy();
-        if ( null != m_goClosestEnemy )
+        m_trClosestEnemy = GetClosestEnemy();
+        if ( null != m_trClosestEnemy )
         { 
-            float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
+            float fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
 
             if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
             {
@@ -276,7 +274,7 @@ public class CTankAI : IAIBase {
                 
             case ETankState.TANK_ATTACKING:
 
-                if ( null == m_goClosestEnemy )
+                if ( null == m_trClosestEnemy )
                 {
                     // The enemy has been destroyed, switch back to idle.
                     m_eState = ETankState.TANK_IDLE;
@@ -286,13 +284,13 @@ public class CTankAI : IAIBase {
                     break;
                 }
 
-                StartCoroutine( AttackTarget( m_goClosestEnemy.transform ) );
+                StartCoroutine( AttackTarget( m_trClosestEnemy.transform ) );
 
-                float fDistance = Vector3.Distance( m_goClosestEnemy.transform.position, transform.position );
+                float fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
 
                 if ( fDistance > Constants.DEFAULT_ATTACK_RANGE + 20f )
                 {
-                    m_v3Target = m_goClosestEnemy.transform.position;
+                    m_v3Target = m_trClosestEnemy.transform.position;
                     m_eState = ETankState.TANK_MOVING;
                     m_bTargetInRange = false;
                 }
