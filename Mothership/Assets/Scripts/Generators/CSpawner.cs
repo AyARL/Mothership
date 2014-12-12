@@ -54,7 +54,7 @@ public class CSpawner : MonoBehaviour {
     {
         GameObject goInstantiatedObject = ( GameObject )Network.Instantiate( goObject, transform.position, Quaternion.identity, 0 );
         goInstantiatedObject.name = goObject.name;
-	    //StartCoroutine( InitiateSpawnCountDown() );
+	    StartCoroutine( InitiateSpawnCountDown() );
 	}
 
     /////////////////////////////////////////////////////////////////////////////

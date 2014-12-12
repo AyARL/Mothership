@@ -9,6 +9,9 @@ namespace Mothership
 {
     public class ServerNetworkManager : NetworkManager
     {
+        // Going to use the below to teamlist variables to figure out how many AI NPCs are needed.
+        private TeamList RedTeam { get; set; }
+        private TeamList BlueTeam { get; set; }
         private string GameName { get; set; }
         private string GameDescription { get; set; }
 
@@ -88,6 +91,9 @@ namespace Mothership
             string redTeamString = JsonUtility.SerializeToJson<TeamList>(redTeam);
             string blueTeamString = JsonUtility.SerializeToJson<TeamList>(blueTeam);
 
+            RedTeam = redTeam;
+            BlueTeam = blueTeam;
+
             networkView.RPC("RPCSendTeamData", RPCMode.Others, redTeamString, blueTeamString);
         }
 
@@ -107,6 +113,22 @@ namespace Mothership
         public void GamePlayStarted()
         {
             networkView.RPC("RPCGamePlayStarted", RPCMode.Others);
+            // Spawn the flag.
+            CSpawner.SpawnFlag();
+
+            // Get the number of required red AI characters.
+            int iNumberOfRequiredNPCs = Constants.GAME_MAX_PLAYERS_PER_TEAM - RedTeam.TeamDisplayNames.Length;
+            for ( int i = 0; i < iNumberOfRequiredNPCs; ++i )
+            {
+                CSpawner.SpawnNPC( IAIBase.ETeam.TEAM_RED, IAIBase.ENPCType.TYPE_DRONE );
+            }
+
+            // Get the number of required blue AI characters.
+            iNumberOfRequiredNPCs = Constants.GAME_MAX_PLAYERS_PER_TEAM - BlueTeam.TeamDisplayNames.Length;
+            for ( int i = 0; i < iNumberOfRequiredNPCs; ++i )
+            {
+                CSpawner.SpawnNPC( IAIBase.ETeam.TEAM_BLUE, IAIBase.ENPCType.TYPE_DRONE );
+            }    
         }
 
         public void MatchExpired()
