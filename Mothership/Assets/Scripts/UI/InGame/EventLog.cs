@@ -26,6 +26,8 @@ namespace MothershipUI
             if (clientManager != null)
             {
                 clientManager.OnPlayerDrivenEvent += ShowPlayerDrivenMessage;
+                clientManager.OnGameDrivenEvent += ShowGameDrivenMessage;
+                clientManager.OnKillEvent += ShowKillMessage;
             }
             else
             {
@@ -46,6 +48,8 @@ namespace MothershipUI
             SetTeamColourOnText(playerTeam, textComponents[0]);
             textComponents[0].text = playerName;
             textComponents[1].text = message;
+
+            AddToLogList(go);
         }
 
         private void ShowGameDrivenMessage(string message)
@@ -55,6 +59,8 @@ namespace MothershipUI
 
             Text text = go.GetComponentInChildren<Text>();
             text.text = message;
+
+            AddToLogList(go);
         }
 
         private void ShowKillMessage(string killerName, IAIBase.ETeam killerTeam, string victimName, IAIBase.ETeam victimTeam)
@@ -68,6 +74,8 @@ namespace MothershipUI
             textComponents[0].text = killerName;
             SetTeamColourOnText(victimTeam, textComponents[2]);
             textComponents[2].text = victimName;
+
+            AddToLogList(go);
         }
 
 
@@ -82,6 +90,14 @@ namespace MothershipUI
                     textComponent.color = Color.blue;
                     break;
             }
+
         }
+
+
+        private void AddToLogList(GameObject go)
+        {
+            logMessages.Add(go);
+        }
+
     }
 }
