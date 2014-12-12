@@ -7,10 +7,14 @@ namespace Mothership
 {
     public class PlayerController : MonoBehaviour
     {
+        public float CurrentHealth { get; set; }
+        public int KillCount { get; set; }
+        public int DeathCount { get; set; }
+        public int CaptureCount { get; set; }
+        public int EXP { get; set; }
+
         [SerializeField]
         private Vector3 cameraOffset = Vector3.zero;
-        [SerializeField]
-        private float movementSpeed = 30f;
         [SerializeField]
         private float rotateSpeed = 10f;
 
@@ -30,6 +34,7 @@ namespace Mothership
 
         //private Dictionary<string, int> inventory = new Dictionary<string, int>();
 
+        // For debug
         bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
 
         // Use this for initialization
@@ -47,6 +52,8 @@ namespace Mothership
             itemsResource = Resources.Load<CPowerUpSO>(ResourcePacks.RESOURCE_CONTAINER_ITEMS);
             projectilePrefabs = itemsResource.Weapons;
             //inventory.Add(Names.NAME_BULLET, 500);
+
+            CurrentHealth = Constants.DEFAULT_HEALTH_DRONE;
         }
 
         // Update is called once per frame
@@ -91,8 +98,8 @@ namespace Mothership
                 transform.rotation = Quaternion.LookRotation(newDir);
             }
 
-            float fTranslation = Input.GetAxis("Vertical") * movementSpeed * Time.deltaTime;
-            float sTranslation = Input.GetAxis("Horizontal") * movementSpeed * Time.deltaTime;
+            float fTranslation = Input.GetAxis("Vertical") * Constants.DEFAULT_SPEED_DRONE * Time.deltaTime;
+            float sTranslation = Input.GetAxis("Horizontal") * Constants.DEFAULT_SPEED_DRONE * Time.deltaTime;
 
             if (fTranslation != 0 && sTranslation != 0)
             {
