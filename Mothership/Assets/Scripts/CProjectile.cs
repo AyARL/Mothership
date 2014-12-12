@@ -64,7 +64,7 @@ public class CProjectile : MonoBehaviour {
         // Calculate replication related values
         replicationError = FiringPosition - m_v3InitialPosition;
         startTime = Time.time;
-        travelTime = Vector3.Distance(m_v3InitialPosition, firingPosition + m_v3Direction * Constants.DEFAULT_MAX_PROJECTILE_RANGE) / Constants.PROJECTILE_SPEED_BULLET;
+        travelTime = Vector3.Distance(m_v3InitialPosition, firingPosition + m_v3Direction * Constants.DEFAULT_MAX_PROJECTILE_RANGE * 0.5f) / Constants.PROJECTILE_SPEED_BULLET;
 
         // Ignore collisions with the firing object
         Physics.IgnoreCollision(collider, Instantiator.collider);
