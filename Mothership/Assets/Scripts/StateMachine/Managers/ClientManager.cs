@@ -24,13 +24,21 @@ namespace Mothership
         public PlayerController playerController { get; private set; }
 
         // Events
-        public UnityAction<TeamList, TeamList> OnUpdateTeamRoster { get; set; } 
+        public UnityAction<TeamList, TeamList> OnUpdateTeamRoster { get; set; }
         public UnityAction<float> OnMatchStarted { get; set; }    // Passes the time value for network latency, so a timer can be started with an adjusted value
         public UnityAction<IAIBase.ETeam, int> OnTeamScoreChanged { get; set; } // Passes the team colour and their current score
+        public UnityAction<string, IAIBase.ETeam> OnPlayerDied { get; set; }    // Passes name and team for the killing player
+        public UnityAction OnMatchEnded { get; set; }
         // Log Events
         public UnityAction<string, IAIBase.ETeam, string, IAIBase.ETeam> OnKillEvent { get; set; } // Passes the killing player name and team follwed by killed player name and team
         public UnityAction<string, IAIBase.ETeam, string> OnPlayerDrivenEvent { get; set; } // Passes player name, player team and message to be displayed 
         public UnityAction<string> OnGameDrivenEvent { get; set; } // Passes the message to be displayed
+        //Player Stat Events
+        public UnityAction<int> OnHealthChanged { get; set; } // Passes new health value
+        public UnityAction<int> OnKillCountChanged { get; set; } // Passes new kill count
+        public UnityAction<int> OnDeathCountChanged { get; set; } // Passes new death count
+        public UnityAction<int> OnCaptureCountChanged { get; set; } // Passes new capture count
+        public UnityAction<int> OnEXPValueChanged { get; set; } // Passes new value for earned EXP
 
         public override void Init(NetworkManager networkManager)
         {
@@ -114,5 +122,5 @@ namespace Mothership
         }
 
     }
-    
+
 }
