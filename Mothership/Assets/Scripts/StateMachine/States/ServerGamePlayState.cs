@@ -1,11 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 using Mothership;
 
 namespace MothershipStateMachine
 {
     public class ServerGamePlayState : ServerGameState
     {
+        private int m_iBlueScore = 0;
+
+        private int m_iRedScore = 0;
+
         public ServerGamePlayState(ServerManager manager)
             : base(manager)
         {
@@ -14,11 +19,92 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
+            // Please not that the messages have been segmented intentionally as both
+            //  clients and AI characters are sending messages and the serverManager
+            //  does not differentiate between messages sent by AI or clients.
+            //  
+            //  For example, score should always be updated when an AI character has scored
+            //  a point, but as the AI has no ClientDataOnServer object there's no point
+            //  in updating client stats.
+            //  
+            //  Additionally, sometimes we may not want to forward certain messages to the clients,
+            //  therefore message forwarding is a separate RPC.
             MatchExpired expired = message as MatchExpired;
             if(expired != null)
             {
                 serverManager.ChangeState(serverManager.ServerGameEndState);
                 return;
+            }
+
+            MsgFlagPickedUp msgFlagPickedUp = (MsgFlagPickedUp) message;
+            if ( null != msgFlagPickedUp )
+            {
+                // Forward this message to the clients so they log the event.
+                serverManager.networkManager.ForwardMessage( message );
+            }
+
+            MsgPlayerDied msgPlayerDied = (MsgPlayerDied) message;
+            if ( null != msgPlayerDied )
+            {
+                // Try to find the client data object for the scoring player and update his stats.
+                foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
+                {
+                    if ( clientData.Profile.DisplayName == msgPlayerDied.PlayerName )
+                    {
+                        clientData.DeathCount += 1;
+                        clientData.CurrentHealth = 0;
+                        serverManager.networkManager.UpdateClientStats( clientData );
+                    }
+
+                    if ( clientData.Profile.DisplayName == msgPlayerDied.KillerName )
+                    {
+                        clientData.KillCount += 1;
+                        clientData.EXP += Constants.POINTS_ON_KILL;
+                        serverManager.networkManager.UpdateClientStats( clientData );
+                    }
+                }
+
+                // Forward this message to the clients so they log the event.
+                serverManager.networkManager.ForwardMessage( message );
+            }
+
+            MsgFlagDelivered msgFlagDelivered = (MsgFlagDelivered) message;
+            if ( null != msgFlagDelivered )
+            {
+                // Increase score depending on the player's team.
+                switch ( msgFlagDelivered.PlayerTeam )
+                {
+                    case IAIBase.ETeam.TEAM_BLUE:
+
+                        m_iBlueScore += 1;
+
+                        break;
+                    case IAIBase.ETeam.TEAM_RED:
+
+                        m_iRedScore += 1;
+
+                        break;
+                }
+
+                // Update the score on the network.
+                serverManager.networkManager.UpdateScore( m_iRedScore, m_iBlueScore );
+
+                // Try to find the client data object for the scoring player and update his stats.
+                foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
+                {
+                    if ( clientData.Profile.DisplayName == msgFlagDelivered.PlayerName )
+                    {
+                        clientData.CaptureCount += 1;
+                        clientData.EXP += Constants.POINTS_ON_CAPTURE;
+
+                        serverManager.networkManager.UpdateClientStats( clientData );
+
+                        break;
+                    }
+                }
+
+                // Forward this message to the clients so they log the event.
+                serverManager.networkManager.ForwardMessage( message );
             }
 
             base.OnGameMessage(message);

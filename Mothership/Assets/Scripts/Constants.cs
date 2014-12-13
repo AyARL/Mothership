@@ -40,6 +40,10 @@ namespace Mothership
         public const int GAME_MAX_PLAYERS = 8;
         public const int GAME_MAX_PLAYERS_PER_TEAM = GAME_MAX_PLAYERS / 2;
         public const float GAME_MATCH_LENGTH = 60f; // seconds
+
+        // Points related constants
+        public const int POINTS_ON_KILL = 20;
+        public const int POINTS_ON_CAPTURE = 100;
     }
 
     public class RPCFunctions
@@ -47,6 +51,14 @@ namespace Mothership
         // Frequently used RPC function names.
         public const string RPC_FIRE = "Fire";
         public const string RPC_DIE = "Die";
+        public const string RPC_UPDATE_SCORE = "RPCScoreUpdate";
+        public const string RPC_UPDATE_CLIENT_STATS = "RPCUpdateClientStats";
+        public const string RPC_FORWARD_TO_CLIENTS = "RPCForwardToClients";
+    }
+
+    public class LogEventMessages
+    {
+        public const string EVENT_FLAG_DELIVERED = "A point has been scored.";
     }
 
     public class DefaultPaths
@@ -139,6 +151,8 @@ namespace Mothership
         public const string NAME_FLAG = "Flag";
         public const string NAME_PLAYER_RED_DRONE = "PlayerRedDrone";
         public const string NAME_PLAYER_BLUE_DRONE = "PlayerBlueDrone";
+        public const string NAME_AI_DRONE_BLUE = "AIBlueDrone";
+        public const string NAME_AI_DRONE_RED = "AIRedDrone";
     }
 
     public class ErrorStrings

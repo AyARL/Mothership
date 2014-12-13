@@ -140,6 +140,22 @@ namespace Mothership
         {
             networkView.RPC("RPCMatchExpired", RPCMode.Others);
         }
+
+        public void UpdateScore( int iRedScore, int iBlueScore )
+        {
+            networkView.RPC( RPCFunctions.RPC_UPDATE_SCORE , RPCMode.Others, iRedScore, iBlueScore );
+        }
+
+        public void UpdateClientStats( ClientDataOnServer clientData )
+        {
+            networkView.RPC( RPCFunctions.RPC_UPDATE_CLIENT_STATS , RPCMode.Others, clientData );
+        }
+
+        public void ForwardMessage( GameMessage cMessage )
+        {
+            networkView.RPC( RPCFunctions.RPC_FORWARD_TO_CLIENTS, RPCMode.Others, cMessage );
+        }
+
     }
     
 }
