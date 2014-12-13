@@ -138,8 +138,9 @@ namespace Mothership
         }
 
         [RPC]
-        private void RPCForwardToClients( GameMessage cMessage )
+        private void RPCForwardToClients( string strMessage )
         {
+            GameMessage cMessage = JsonUtility.ValidateJsonData<GameMessage>(strMessage);
             clientManager.SendGameMessage( cMessage );
         }
         #endregion

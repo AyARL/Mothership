@@ -48,6 +48,8 @@ public class CProjectile : MonoBehaviour {
     private bool m_bLeavesTrail;
 
     private float m_fSpeed;
+    private float m_fDamage;
+    public float Damage { get { return m_fDamage; } }
 
     private Vector3 m_v3InitialPosition;
 
@@ -74,18 +76,21 @@ public class CProjectile : MonoBehaviour {
             case EProjectileType.PROJECTILE_BULLET:
 
                 m_fSpeed = Constants.PROJECTILE_SPEED_BULLET;
+                m_fDamage = Constants.PROJECTILE_DAMAGE_BULLET;
 
                 break;
 
             case EProjectileType.PROJECTILE_MISSILE:
 
                 m_fSpeed = Constants.PROJECTILE_SPEED_MISSILE;
+                m_fDamage = Constants.PROJECTILE_DAMAGE_MISSILE;
 
                 break;
 
             case EProjectileType.PROJECTILE_RAY:
 
                 m_fSpeed = Constants.PROJECTILE_SPEED_RAY;
+                m_fDamage = Constants.PROJECTILE_DAMAGE_RAY;
 
                 break;
 

@@ -4,6 +4,7 @@ using UnityEngine.Events;
 using MothershipUtility;
 using MothershipStateMachine;
 using System.Linq;
+using MothershipOS;
 
 namespace Mothership
 {
@@ -153,7 +154,8 @@ namespace Mothership
 
         public void ForwardMessage( GameMessage cMessage )
         {
-            networkView.RPC( RPCFunctions.RPC_FORWARD_TO_CLIENTS, RPCMode.Others, cMessage );
+            string strSerializedMessage = JsonUtility.SerializeToJson<GameMessage>(UserDataManager.userData.Message);
+            networkView.RPC( RPCFunctions.RPC_FORWARD_TO_CLIENTS, RPCMode.Others, strSerializedMessage );
         }
 
     }

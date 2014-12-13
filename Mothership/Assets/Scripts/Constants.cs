@@ -22,7 +22,7 @@ namespace Mothership
         public const float DEFAULT_MAX_PROJECTILE_RANGE = 50f;
 
         // Weapons related constants.
-        public const float PROJECTILE_DAMAGE_BULLET = 5f;
+        public const float PROJECTILE_DAMAGE_BULLET = 10f;
         public const float PROJECTILE_DAMAGE_MISSILE = 25f;
         public const float PROJECTILE_DAMAGE_RAY = 100f;
 

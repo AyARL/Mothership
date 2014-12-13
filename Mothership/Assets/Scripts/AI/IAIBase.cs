@@ -107,8 +107,7 @@ public class IAIBase : MonoBehaviour
 
     protected GameObject m_goFlag = null;
 
-    protected CAttacker m_Attacker;
-    public CAttacker Attacker { get { return m_Attacker; } }
+    protected CAttacker m_Attacker = null;
 
     protected Vector3 m_v3CurrNode;
 	protected int m_iNodeIndex;
@@ -202,6 +201,7 @@ public class IAIBase : MonoBehaviour
 
         m_dictAnimatorStates = new Dictionary< int, AnimatorBoolProperty >();
         m_dictAnimatorStates.Add( 0, new AnimatorBoolProperty() { Name = AnimatorValues.ANIMATOR_IS_MOVING, State = false }); // Moving
+        m_trObservedTransform = transform;    
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -378,32 +378,27 @@ public class IAIBase : MonoBehaviour
                 // Get the name and team of the attacker using its projectile.
                 CProjectile cProjectile = goObject.GetComponent< CProjectile >();
 
-                // Set the name.
-                m_Attacker.m_strAttackerName = cProjectile.Instantiator.gameObject.name;
-                
-                // Find the team using the attacker's name.
-                if ( m_Attacker.m_strAttackerName == Names.NAME_AI_DRONE_BLUE + "(Clone)" )
-                    m_Attacker.m_eTeam = ETeam.TEAM_BLUE;
-
-                else if ( m_Attacker.m_strAttackerName == Names.NAME_AI_DRONE_RED + "(Clone)" )
-                    m_Attacker.m_eTeam = ETeam.TEAM_RED;
-
-                else
-                    m_Attacker.m_eTeam = ETeam.TEAM_NONE;
-
-                // Reduce the NPCs health depending on the type of projectile.
-                if ( goObject.name == Names.NAME_MISSILE + "(Clone)" )
-                    m_fHealth -= Constants.PROJECTILE_DAMAGE_MISSILE;
-
-                else if ( goObject.name == Names.NAME_BULLET + "(Clone)" )
-                    m_fHealth -= Constants.PROJECTILE_DAMAGE_BULLET;
-
-                else if ( goObject.name == Names.NAME_RAY + "(Clone)" )
-                    m_fHealth -= Constants.PROJECTILE_DAMAGE_RAY;
+                m_fHealth -= cProjectile.Damage;
 
                 // We've been attacked by an enemy, flag this fact.
                 m_bIsBeingAttacked = true;
+
+                if ( null == cProjectile.Instantiator.gameObject )
+                    return;
+
+                // Set the name.
+                string strAttackerName = cProjectile.Instantiator.gameObject.name;
+                ETeam eTeam = ETeam.TEAM_NONE;
+
+                // Find the team using the attacker's name.
+                if ( strAttackerName == Names.NAME_AI_DRONE_BLUE + "(Clone)" )
+                    eTeam = ETeam.TEAM_BLUE;
+
+                else if ( strAttackerName == Names.NAME_AI_DRONE_RED + "(Clone)" )
+                    eTeam = ETeam.TEAM_RED;
                 
+                m_Attacker = new CAttacker() { AttackerName = strAttackerName, Team = eTeam };
+
                 break;
         }
     }
@@ -460,8 +455,8 @@ public class IAIBase : MonoBehaviour
             m_bHasFlag = true;
 
             // Send message to the server manager.
-            //ServerManager cServer = RoleManager.roleManager as ServerManager;
-            //cServer.SendGameMessage( new MsgFlagPickedUp() { PlayerName = gameObject.name } );
+            ServerManager cServer = RoleManager.roleManager as ServerManager;
+            cServer.SendGameMessage( new MsgFlagPickedUp() { PlayerName = gameObject.name } );
         }
     }
 
@@ -664,11 +659,11 @@ public class IAIBase : MonoBehaviour
         }
 
         // Inform the server who killed this AI character.
-        //ServerManager cServer = RoleManager.roleManager as ServerManager;
-        //cServer.SendGameMessage( new MsgPlayerDied() { PlayerName = gameObject.name, 
-        //                                            KillerName = m_Attacker.m_strAttackerName,
-        //                                            PlayerTeam = m_eTeam,
-        //                                            KillerTeam = m_Attacker.m_eTeam });
+        ServerManager cServer = RoleManager.roleManager as ServerManager;
+        cServer.SendGameMessage( new MsgPlayerDied() { PlayerName = gameObject.name, 
+                                                    KillerName = m_Attacker.AttackerName,
+                                                    PlayerTeam = m_eTeam,
+                                                    KillerTeam = m_Attacker.Team });
 
         Network.Destroy( gameObject );
         CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
@@ -684,8 +679,8 @@ public class IAIBase : MonoBehaviour
         if ( true == m_bHasFlag )
         {
             // Inform the server that we delivered the flag to the base.
-            //ServerManager cServer = RoleManager.roleManager as ServerManager;
-            //cServer.SendGameMessage( new MsgFlagDelivered() { PlayerName = gameObject.name } );
+            ServerManager cServer = RoleManager.roleManager as ServerManager;
+            cServer.SendGameMessage( new MsgFlagDelivered() { PlayerName = gameObject.name, PlayerTeam = m_eTeam } );
 
             Die( false );
             CSpawner.SpawnFlag();
@@ -804,7 +799,7 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     protected void UpdateClients()
     {
-        if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
+        //if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
         {
             if ( Network.isServer )
             {
@@ -890,6 +885,6 @@ public class IAIBase : MonoBehaviour
 
 public class CAttacker
 {
-    public string m_strAttackerName;
-    public IAIBase.ETeam m_eTeam;
+    public string AttackerName { get; set; }
+    public IAIBase.ETeam Team { get; set; }
 }
