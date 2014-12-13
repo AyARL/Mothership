@@ -77,6 +77,7 @@ public class CProjectile : MonoBehaviour {
 
                 m_fSpeed = Constants.PROJECTILE_SPEED_BULLET;
                 m_fDamage = Constants.PROJECTILE_DAMAGE_BULLET;
+                CAudioControl.CreateAndPlayAudio( transform.position, Audio.AUDIO_EFFECT_GUNSHOT, false, true, false, 1.0f );
 
                 break;
 

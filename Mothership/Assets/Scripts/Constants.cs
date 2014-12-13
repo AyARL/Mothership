@@ -113,6 +113,7 @@ namespace Mothership
         public const string AUDIO_EFFECT_GAMEOVER = "LevelFailed";
         public const string AUDIO_EFFECT_MENU_SELECT = "Menu_Select";
         public const string AUDIO_EFFECT_LEVEL_COMPLETED = "LevelCompleted";
+        public const string AUDIO_EFFECT_GUNSHOT = "Gunshot";
 
         // Valid file extensions.
         public const string FILE_TYPE_MP3 = ".mp3";
