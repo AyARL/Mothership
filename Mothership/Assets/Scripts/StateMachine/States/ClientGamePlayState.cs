@@ -18,7 +18,16 @@ namespace MothershipStateMachine
             if (statsUpdate != null)
             {
                 clientManager.ClientStats.UpdateStats(statsUpdate);
-                clientManager.OnStatsChaned(clientManager.ClientStats);
+                if (clientManager.OnStatsChaned != null)
+                {
+                    clientManager.OnStatsChaned(clientManager.ClientStats);
+                }
+
+                // If player is dead
+                if(statsUpdate.CurrentHealth <= 0)
+                {
+                    clientManager.Die();
+                }
                 return;
             }
 

@@ -94,6 +94,11 @@ namespace Mothership
             }
         }
 
+        public void Die()
+        {
+            Network.Destroy(PlayerController.gameObject);
+        }
+
         public bool LoadPrefabs()
         {
             prefabResource = Resources.Load<PlayerPrefabResourceSO>("PlayerPrefabResource");

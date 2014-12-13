@@ -48,12 +48,15 @@ namespace MothershipStateMachine
             {
                 ClientDataOnServer clientData = serverManager.RegisteredClients.First(c => c.NetworkPlayer == playerDamage.Player);
                 clientData.CurrentHealth -= playerDamage.Damage;
-                serverManager.networkManager.UpdateClientStats(clientData);
 
                 // If client is dead
                 if(clientData.CurrentHealth <= 0)
                 {
                     serverManager.SendGameMessage(new MsgPlayerDied() { PlayerName = clientData.Profile.DisplayName, PlayerTeam = clientData.ClientTeam, KillerName = playerDamage.Attacker, KillerTeam = playerDamage.AttackerTeam });
+                }
+                else // otherwise just send the updated stats
+                {
+                    serverManager.networkManager.UpdateClientStats(clientData);
                 }
             }
 
