@@ -156,6 +156,12 @@ namespace Mothership
                                                                  KillerTeam = cMessage.KillerTeam });
         }
 
+        [RPC]
+        private void RPCRespawnPlayer()
+        {
+            clientManager.SendGameMessage(new PlayerRespawn());
+        }
+
         #endregion
 
         #region Client->Server

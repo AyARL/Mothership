@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Mothership;
+using MothershipOS;
 
 namespace MothershipStateMachine
 {
@@ -38,6 +39,14 @@ namespace MothershipStateMachine
                 {
                     clientManager.OnKillEvent(playerDead.KillerName, playerDead.KillerTeam, playerDead.PlayerName, playerDead.PlayerTeam);
                 }
+
+                if(playerDead.PlayerName == UserDataManager.userData.Profile.DisplayName)
+                {
+                    if(clientManager.OnPlayerDied != null)
+                    {
+                        clientManager.OnPlayerDied(playerDead.KillerName, playerDead.KillerTeam);
+                    }
+                }
                 return;
             }
 
@@ -60,6 +69,16 @@ namespace MothershipStateMachine
                     clientManager.OnPlayerDrivenEvent(flagDelivered.PlayerName, flagDelivered.PlayerTeam, LogEventMessages.EVENT_PLAYER_FLAG_DROP_OFF);
                 }
                 return;
+            }
+
+            PlayerRespawn respawn = message as PlayerRespawn;
+            if(respawn != null)
+            {
+                if(clientManager.OnPlayerRespawn != null)
+                {
+                    clientManager.OnPlayerRespawn();
+                }
+                clientManager.Spawn();
             }
 
             MatchExpired expired = message as MatchExpired;

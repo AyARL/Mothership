@@ -103,6 +103,12 @@ namespace MothershipStateMachine
                 serverManager.networkManager.ForwardCharacterDied( msgPlayerDied );
             }
 
+            PlayerRespawn playerRespawn = message as PlayerRespawn;
+            if(playerRespawn != null)
+            {
+                serverManager.networkManager.RespawnPlayer(playerRespawn.Player);
+            }
+
             MsgFlagDelivered msgFlagDelivered = message as MsgFlagDelivered;
             if ( null != msgFlagDelivered )
             {

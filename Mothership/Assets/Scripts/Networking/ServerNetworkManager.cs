@@ -171,6 +171,11 @@ namespace Mothership
             string strSerializedMessage = JsonUtility.SerializeToJson< MsgPlayerDied > ( msg );
             networkView.RPC( RPCFunctions.RPC_FORWARD_CHARACTER_DIED, RPCMode.Others, strSerializedMessage );
         }
+
+        public void RespawnPlayer(NetworkPlayer player)
+        {
+            networkView.RPC("RPCRespawnPlayer", player);
+        }
     }
     
 }

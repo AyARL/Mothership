@@ -120,6 +120,17 @@ namespace Mothership
 
             SendGameMessage(new MatchExpired());
         }
+
+        public void CountdownToPlayerRespawn(NetworkPlayer client)
+        {
+            StartCoroutine(PlayerRespawnCountdown(client));
+        }
+
+        private IEnumerator PlayerRespawnCountdown(NetworkPlayer client)
+        {
+            yield return new WaitForSeconds(Constants.GAME_PLAYER_RESPAWN_COUNTDOWN);
+            SendGameMessage(new PlayerRespawn() { Player = client });
+        }
     }
     
 }

@@ -90,6 +90,11 @@ namespace MothershipStateMachine
         public IAIBase.ETeam KillerTeam { get; set; }
     }
 
+    public class PlayerRespawn : GameMessage
+    {
+        public NetworkPlayer Player { get; set; }
+    }
+
     public class MsgScoreUpdate : GameMessage
     {
         public int RedScore { get; set; }

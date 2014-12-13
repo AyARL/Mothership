@@ -32,7 +32,7 @@ namespace Mothership
         public UnityAction<float> OnMatchStarted { get; set; }    // Passes the time value for network latency, so a timer can be started with an adjusted value
         public UnityAction<IAIBase.ETeam, int> OnTeamScoreChanged { get; set; } // Passes the team colour and their current score
         public UnityAction<string, IAIBase.ETeam> OnPlayerDied { get; set; }    // Passes name and team for the killing player
-        public UnityAction OnPlayerRespawnTime { get; set; } // Called when server gives the player all clear to respawn
+        public UnityAction OnPlayerRespawn { get; set; } // Called when server gives the player all clear to respawn
         public UnityAction OnMatchEnded { get; set; }   // Called when match has ended
         // Log Events
         public UnityAction<string, IAIBase.ETeam, string, IAIBase.ETeam> OnKillEvent { get; set; } // Passes the killing player name and team follwed by killed player name and team
