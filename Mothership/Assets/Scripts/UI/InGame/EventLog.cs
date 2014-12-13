@@ -89,6 +89,9 @@ namespace MothershipUI
                 case IAIBase.ETeam.TEAM_BLUE:
                     textComponent.color = Color.blue;
                     break;
+                default:
+                    textComponent.color = Color.white;
+                    break;
             }
 
         }
