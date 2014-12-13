@@ -149,7 +149,7 @@ namespace Mothership
 
         public void UpdateClientStats( ClientDataOnServer clientData )
         {
-            networkView.RPC( RPCFunctions.RPC_UPDATE_CLIENT_STATS , RPCMode.Others, clientData );
+            networkView.RPC( RPCFunctions.RPC_UPDATE_CLIENT_STATS , clientData.NetworkPlayer, clientData );
         }
 
         public void ForwardMessage( GameMessage cMessage )
