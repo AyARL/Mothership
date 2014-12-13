@@ -40,10 +40,14 @@ namespace Mothership
         public const int GAME_MAX_PLAYERS = 8;
         public const int GAME_MAX_PLAYERS_PER_TEAM = GAME_MAX_PLAYERS / 2;
         public const float GAME_MATCH_LENGTH = 60f; // seconds
+        public const bool DEBUG_MODE = true;
 
         // Points related constants
         public const int POINTS_ON_KILL = 20;
         public const int POINTS_ON_CAPTURE = 100;
+
+        // Collision layer constants.
+        public const int COLLISION_LAYER_BULLETS = 10;
     }
 
     public class RPCFunctions
@@ -53,7 +57,9 @@ namespace Mothership
         public const string RPC_DIE = "Die";
         public const string RPC_UPDATE_SCORE = "RPCScoreUpdate";
         public const string RPC_UPDATE_CLIENT_STATS = "RPCUpdateClientStats";
-        public const string RPC_FORWARD_TO_CLIENTS = "RPCForwardToClients";
+        public const string RPC_FORWARD_FLAG_COLLECTED = "RPCForwardFlagCollected";
+        public const string RPC_FORWARD_CHARACTER_DIED = "RPCForwardCharacterDied";
+        public const string RPC_FORWARD_FLAG_CAPTURED = "RPCForwardFlagCaptured";
     }
 
     public class LogEventMessages

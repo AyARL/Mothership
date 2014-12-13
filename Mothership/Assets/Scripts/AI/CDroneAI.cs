@@ -43,7 +43,7 @@ public class CDroneAI : IAIBase {
         // Call in the interface update function.
         base.Update();
 
-        if ( Network.isServer )
+        if ( Network.isServer || true == Constants.DEBUG_MODE )
         { 
             // Will check if we need to transition to a new state
             CheckForTransitions();

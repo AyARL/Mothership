@@ -321,7 +321,7 @@ public class CNodeController : MonoBehaviour {
         else
 		{
             // We did not manage to find a path, report the issue and return null
-            Debug.LogError( string.Format( "{0} {1}", strFunction, ErrorStrings.ERROR_PATHFINDING_NO_VALID_PATH ) );
+            //Debug.LogError( string.Format( "{0} {1}", strFunction, ErrorStrings.ERROR_PATHFINDING_NO_VALID_PATH ) );
 			return null;
 		}
 	}

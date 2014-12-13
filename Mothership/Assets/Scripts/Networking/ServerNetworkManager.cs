@@ -152,12 +152,23 @@ namespace Mothership
             networkView.RPC( RPCFunctions.RPC_UPDATE_CLIENT_STATS , RPCMode.Others, clientData );
         }
 
-        public void ForwardMessage( GameMessage cMessage )
+        public void ForwardFlagPickedUp( MsgFlagPickedUp msg )
         {
-            string strSerializedMessage = JsonUtility.SerializeToJson<GameMessage>(UserDataManager.userData.Message);
-            networkView.RPC( RPCFunctions.RPC_FORWARD_TO_CLIENTS, RPCMode.Others, strSerializedMessage );
+            string strSerializedMessage = JsonUtility.SerializeToJson< MsgFlagPickedUp > (msg );
+            networkView.RPC( RPCFunctions.RPC_FORWARD_FLAG_COLLECTED, RPCMode.Others, strSerializedMessage );
         }
 
+        public void ForwardFlagCaptured( MsgFlagDelivered msg )
+        {
+            string strSerializedMessage = JsonUtility.SerializeToJson< MsgFlagDelivered > ( msg );
+            networkView.RPC( RPCFunctions.RPC_FORWARD_FLAG_CAPTURED, RPCMode.Others, strSerializedMessage );
+        }
+
+        public void ForwardCharacterDied( MsgPlayerDied msg )
+        {
+            string strSerializedMessage = JsonUtility.SerializeToJson< MsgPlayerDied > ( msg );
+            networkView.RPC( RPCFunctions.RPC_FORWARD_CHARACTER_DIED, RPCMode.Others, strSerializedMessage );
+        }
     }
     
 }

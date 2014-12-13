@@ -327,6 +327,12 @@ public class IAIBase : MonoBehaviour
 	protected void SetTarget()
 	{
 		m_liPath = CNodeController.FindPath( transform.position, m_v3Target );
+        if ( null == m_liPath )
+        {
+            // This drone has no idea where he is, kill the sucker.
+            Die();
+        }
+
 		m_iNodeIndex = 0;
 	}
 	

@@ -11,7 +11,6 @@ namespace MothershipOS
 
         public User User { get; set; }
         public Profile Profile { get; set; }
-        public GameMessage Message { get; set; }
 
         // Use this for initialization
         void Start()
@@ -31,7 +30,6 @@ namespace MothershipOS
         {
             User = null;
             Profile = null;
-            Message = null;
         }
 
     }

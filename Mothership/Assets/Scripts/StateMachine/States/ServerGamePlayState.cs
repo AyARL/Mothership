@@ -58,7 +58,7 @@ namespace MothershipStateMachine
             if ( null != msgFlagPickedUp )
             {
                 // Forward this message to the clients so they log the event.
-                serverManager.networkManager.ForwardMessage( message );
+                serverManager.networkManager.ForwardFlagPickedUp( msgFlagPickedUp );
             }
 
             MsgPlayerDied msgPlayerDied = message as MsgPlayerDied;
@@ -83,7 +83,7 @@ namespace MothershipStateMachine
                 }
 
                 // Forward this message to the clients so they log the event.
-                serverManager.networkManager.ForwardMessage( message );
+                serverManager.networkManager.ForwardCharacterDied( msgPlayerDied );
             }
 
             MsgFlagDelivered msgFlagDelivered = message as MsgFlagDelivered;
@@ -122,7 +122,7 @@ namespace MothershipStateMachine
                 }
 
                 // Forward this message to the clients so they log the event.
-                serverManager.networkManager.ForwardMessage( message );
+                serverManager.networkManager.ForwardFlagCaptured( msgFlagDelivered );
             }
 
             base.OnGameMessage(message);
