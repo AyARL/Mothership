@@ -7,12 +7,6 @@ namespace Mothership
 {
     public class PlayerController : MonoBehaviour
     {
-        public float CurrentHealth { get; set; }
-        public int KillCount { get; set; }
-        public int DeathCount { get; set; }
-        public int CaptureCount { get; set; }
-        public int EXP { get; set; }
-
         [SerializeField]
         private Vector3 cameraOffset = Vector3.zero;
         [SerializeField]
@@ -52,8 +46,6 @@ namespace Mothership
             itemsResource = Resources.Load<CPowerUpSO>(ResourcePacks.RESOURCE_CONTAINER_ITEMS);
             projectilePrefabs = itemsResource.Weapons;
             //inventory.Add(Names.NAME_BULLET, 500);
-
-            CurrentHealth = Constants.DEFAULT_HEALTH_DRONE;
         }
 
         // Update is called once per frame

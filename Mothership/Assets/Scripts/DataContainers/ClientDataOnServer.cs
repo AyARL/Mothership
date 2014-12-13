@@ -12,7 +12,13 @@ namespace Mothership
         public IAIBase.ETeam ClientTeam { get; private set; }
 
         public bool ReadyToPlay { get; set; }
-        public bool Spawned { get; set; }
+        public bool LoadedLevel { get; set; }
+
+        public float CurrentHealth { get; set; }
+        public int KillCount { get; set; }
+        public int DeathCount { get; set; }
+        public int CaptureCount { get; set; }
+        public int EXP { get; set; }
 
         public ClientDataOnServer(User user, Profile profile, NetworkPlayer networkPlayer, IAIBase.ETeam team)
         {
@@ -20,8 +26,6 @@ namespace Mothership
             Profile = profile;
             NetworkPlayer = networkPlayer;
             ClientTeam = team;
-
-            ReadyToPlay = false;
         }
     } 
 }
