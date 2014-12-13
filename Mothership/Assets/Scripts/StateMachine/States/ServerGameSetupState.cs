@@ -15,18 +15,27 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
-            ClientSpawned spawned = message as ClientSpawned;
-            if (spawned != null)
+            ClientLoadedLevel loaded = message as ClientLoadedLevel;
+            if(loaded != null)
             {
-                ClientDataOnServer client = serverManager.RegisteredClients.FirstOrDefault(c => c.NetworkPlayer == spawned.Player);
+                ClientDataOnServer client = serverManager.RegisteredClients.FirstOrDefault(c => c.NetworkPlayer == loaded.Player);
                 if (client != null)
                 {
-                    client.Spawned = true;
-                    if(serverManager.RegisteredClients.All(c => c.Spawned == true))
+                    client.LoadedLevel = true;
+                    if (serverManager.RegisteredClients.All(c => c.LoadedLevel == true))
                     {
-                        serverManager.ChangeState(serverManager.ServerGamePlayState);
+                        serverManager.CountdownToMatch();
+                        serverManager.networkManager.StartMatchCountdown();
                     }
                 }
+                return;
+            }
+
+            MatchCountdownEnded countdownEnded = message as MatchCountdownEnded;
+            if(countdownEnded != null)
+            {
+                serverManager.ChangeState(serverManager.ServerGamePlayState);
+                return;
             }
 
             base.OnGameMessage(message);

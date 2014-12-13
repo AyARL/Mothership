@@ -97,7 +97,7 @@ namespace Mothership
             networkView.RPC("RPCSendTeamData", RPCMode.Others, redTeamString, blueTeamString);
         }
 
-        public void StartMission()
+        public void StartMatch()
         {
             LastLevelPrefix += 1;
             Network.RemoveRPCsInGroup(networkView.group);
@@ -108,6 +108,11 @@ namespace Mothership
         {
             MasterServer.UnregisterHost(); // don't advertise on Master Server
             Network.maxConnections = -1; // allow connections equal to current count
+        }
+
+        public void StartMatchCountdown()
+        {
+            networkView.RPC("RPCMatchCountdown", RPCMode.Others);
         }
 
         public void GamePlayStarted()

@@ -21,10 +21,12 @@ namespace Mothership
         public int teamOrder = -1;
 
         private PlayerPrefabResourceSO prefabResource = null;
-        public PlayerController playerController { get; private set; }
+        public ClientStats ClientStats { get; private set; }
+        public PlayerController PlayerController { get; private set; }
 
         // Events
         public UnityAction<TeamList, TeamList> OnUpdateTeamRoster { get; set; }
+        public UnityAction<float> OnMatchCountdownStarted { get; set; } // Passes the time value for network latency, so a timer can be started with an adjusted value
         public UnityAction<float> OnMatchStarted { get; set; }    // Passes the time value for network latency, so a timer can be started with an adjusted value
         public UnityAction<IAIBase.ETeam, int> OnTeamScoreChanged { get; set; } // Passes the team colour and their current score
         public UnityAction<string, IAIBase.ETeam> OnPlayerDied { get; set; }    // Passes name and team for the killing player
@@ -59,18 +61,22 @@ namespace Mothership
             this.teamOrder = teamOrder;
         }
 
-        public bool SpawnInGame()
+        public bool Spawn()
         {
+            if (ClientStats == null)
+            {
+                ClientStats = new ClientStats();
+            }
             GameObject spawnPoint;
-            if (LoadPrefabs() && FindSpawnPoints(out spawnPoint))
+            if (FindSpawnPoints(out spawnPoint))
             {
                 switch (team)
                 {
                     case IAIBase.ETeam.TEAM_RED:
-                        playerController = Network.Instantiate(prefabResource.RedDrone, spawnPoint.transform.position, spawnPoint.transform.rotation, 0) as PlayerController;
+                        PlayerController = Network.Instantiate(prefabResource.RedDrone, spawnPoint.transform.position, spawnPoint.transform.rotation, 0) as PlayerController;
                         return true;
                     case IAIBase.ETeam.TEAM_BLUE:
-                        playerController = Network.Instantiate(prefabResource.BlueDrone, spawnPoint.transform.position, spawnPoint.transform.rotation, 0) as PlayerController;
+                        PlayerController = Network.Instantiate(prefabResource.BlueDrone, spawnPoint.transform.position, spawnPoint.transform.rotation, 0) as PlayerController;
                         return true;
                     default:
                         return false;
@@ -82,7 +88,7 @@ namespace Mothership
             }
         }
 
-        private bool LoadPrefabs()
+        public bool LoadPrefabs()
         {
             prefabResource = Resources.Load<PlayerPrefabResourceSO>("PlayerPrefabResource");
             if (prefabResource != null)

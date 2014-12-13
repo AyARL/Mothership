@@ -14,23 +14,29 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
+            MatchCountdownStarted countdownStarted = message as MatchCountdownStarted;
+            if(countdownStarted != null)
+            {
+                if(clientManager.OnMatchCountdownStarted != null)
+                {
+                    clientManager.OnMatchCountdownStarted(countdownStarted.Delay);
+                }
+            }
+
             GamePlayStarted gameStarted = message as GamePlayStarted;
             if(gameStarted != null)
             {
-                clientManager.ChangeState(clientManager.ClientGamePlayState, gameStarted);
+                if (clientManager.LoadPrefabs() && clientManager.Spawn())
+                {
+                    //clientManager.NetworkManager.PlayerSpawned();
+                    clientManager.ChangeState(clientManager.ClientGamePlayState, gameStarted);
+                }
             }
         }
 
         public override void OnStateMessage(StateMessage message)
         {
-            OnEnterState enter = message as OnEnterState;
-            if(enter != null)
-            {
-                if(clientManager.SpawnInGame())
-                {
-                    clientManager.NetworkManager.PlayerSpawned();
-                }
-            }
+
         }
 
     }

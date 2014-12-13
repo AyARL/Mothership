@@ -44,6 +44,13 @@ namespace MothershipStateMachine
 
     public class EnteredGame : GameMessage { }
 
+    public class MatchCountdownStarted : GameMessage
+    {
+        public float Delay { get; set; }
+    }
+
+    public class MatchCountdownEnded : GameMessage { }
+
     public class ClientSpawned : GameMessage
     {
         public NetworkPlayer Player { get; set; }

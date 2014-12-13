@@ -100,6 +100,13 @@ namespace Mothership
         }
 
         [RPC]
+        private void RPCMatchCountdown(NetworkMessageInfo info)
+        {
+            float delay = (float)(Network.time - info.timestamp);
+            clientManager.SendGameMessage(new MatchCountdownStarted() { Delay = delay });
+        }
+
+        [RPC]
         private void RPCGamePlayStarted(NetworkMessageInfo info)
         {
             float delay = (float)(Network.time - info.timestamp);

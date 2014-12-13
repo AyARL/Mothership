@@ -35,6 +35,7 @@ namespace Mothership
         public const float PROJECTILE_DELAY_RAY = 5f;
 
         // Game related constants
+        public const float GAME_PREMATCH_COUNTDOWN = 5f; // seconds
         public const int GAME_MIN_PLAYERS = 2;
         public const int GAME_MAX_PLAYERS = 8;
         public const int GAME_MAX_PLAYERS_PER_TEAM = GAME_MAX_PLAYERS / 2;

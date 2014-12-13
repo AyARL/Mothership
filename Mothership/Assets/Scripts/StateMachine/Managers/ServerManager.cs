@@ -92,6 +92,17 @@ namespace Mothership
             return registeredClients.Where(c => c.ClientTeam == teamColour);
         }
 
+        public void CountdownToMatch()
+        {
+            StartCoroutine(MatchCountdown());
+        }
+
+        private IEnumerator MatchCountdown()
+        {
+            yield return new WaitForSeconds(Constants.GAME_PREMATCH_COUNTDOWN);
+            SendGameMessage(new MatchCountdownEnded());
+        }
+
         public void StartGameTimer()
         {
             MatchStartTime = Time.time;

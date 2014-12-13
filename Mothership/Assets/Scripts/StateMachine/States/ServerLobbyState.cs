@@ -42,7 +42,7 @@ namespace MothershipStateMachine
                 manager.RegisteredClients.First(c => c.NetworkPlayer == clientReady.Player).ReadyToPlay = true;
                 if(manager.RegisteredClients.Count() >= Constants.GAME_MIN_PLAYERS &&  manager.RegisteredClients.All(c => c.ReadyToPlay == true))
                 {
-                    manager.networkManager.StartMission();
+                    manager.networkManager.StartMatch();
                     manager.ChangeState(manager.ServerGameSetupState);
                 }
                 return;
