@@ -118,6 +118,30 @@ namespace Mothership
         {
             clientManager.SendGameMessage(new MatchExpired());
         }
+
+        [RPC]
+        private void RPCScoreUpdate( int iRedScore, int iBlueScore )
+        {
+            clientManager.SendGameMessage( new MsgScoreUpdate() { RedScore = iRedScore, BlueScore = iBlueScore });
+        }
+
+        [RPC]
+        private void RPCUpdateClientStats( ClientDataOnServer clientData )
+        {
+            clientManager.SendGameMessage( new MsgClientStatsUpdate() { UserName = clientData.Profile.DisplayName,
+                                                                        Team = clientData.ClientTeam,
+                                                                        CurrentHealth = clientData.CurrentHealth,
+                                                                        KillCount = clientData.KillCount,
+                                                                        DeathCount = clientData.DeathCount,
+                                                                        CaptureCount = clientData.CaptureCount,
+                                                                        EXP = clientData.EXP });
+        }
+
+        [RPC]
+        private void RPCForwardToClients( GameMessage cMessage )
+        {
+            clientManager.SendGameMessage( cMessage );
+        }
         #endregion
 
         #region Client->Server

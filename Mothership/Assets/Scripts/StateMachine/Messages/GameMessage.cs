@@ -61,20 +61,42 @@ namespace MothershipStateMachine
         public float Delay { get; set; }
     }
 
-    public class FlagPickedUp : GameMessage 
+    public class MsgFlagPickedUp : GameMessage 
     {
         public string PlayerName { get; set; }
+        public IAIBase.ETeam PlayerTeam { get; set; }
     }
 
-    public class FlagDelievered : GameMessage
+    public class MsgFlagDelivered : GameMessage
     {
         public string PlayerName { get; set; }
+        public IAIBase.ETeam PlayerTeam { get; set; }
     }
 
-    public class AIPlayerKilled : GameMessage
+    public class MsgPlayerDied : GameMessage
     {
         public string PlayerName { get; set; }
+        public IAIBase.ETeam PlayerTeam { get; set; }
+
         public string KillerName { get; set; }
+        public IAIBase.ETeam KillerTeam { get; set; }
+    }
+
+    public class MsgScoreUpdate : GameMessage
+    {
+        public int RedScore { get; set; }
+        public int BlueScore { get; set; }
+    }
+
+    public class MsgClientStatsUpdate : GameMessage
+    {
+        public string UserName { get; set; }
+        public IAIBase.ETeam Team { get; set; }
+        public float CurrentHealth { get; set; }
+        public int KillCount { get; set; }
+        public int DeathCount { get; set; }
+        public int CaptureCount { get; set; }
+        public int EXP { get; set; }  
     }
 
     public class MatchExpired : GameMessage { }
