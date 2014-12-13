@@ -126,15 +126,10 @@ namespace Mothership
         }
 
         [RPC]
-        private void RPCUpdateClientStats( ClientDataOnServer clientData )
+        private void RPCUpdateClientStats( string updateMessage )
         {
-            clientManager.SendGameMessage( new MsgClientStatsUpdate() { UserName = clientData.Profile.DisplayName,
-                                                                        Team = clientData.ClientTeam,
-                                                                        CurrentHealth = clientData.CurrentHealth,
-                                                                        KillCount = clientData.KillCount,
-                                                                        DeathCount = clientData.DeathCount,
-                                                                        CaptureCount = clientData.CaptureCount,
-                                                                        EXP = clientData.EXP });
+            MsgClientStatsUpdate update = JsonUtility.ValidateJsonData<MsgClientStatsUpdate>(updateMessage);
+            clientManager.SendGameMessage(update);
         }
 
         [RPC]

@@ -149,7 +149,9 @@ namespace Mothership
 
         public void UpdateClientStats( ClientDataOnServer clientData )
         {
-            networkView.RPC( RPCFunctions.RPC_UPDATE_CLIENT_STATS , clientData.NetworkPlayer, clientData );
+            MsgClientStatsUpdate update = new MsgClientStatsUpdate() { CurrentHealth = clientData.CurrentHealth, KillCount = clientData.KillCount, DeathCount = clientData.DeathCount, CaptureCount = clientData.CaptureCount, EXP = clientData.EXP };
+            string serializedMessage = JsonUtility.SerializeToJson<MsgClientStatsUpdate>(update);
+            networkView.RPC( RPCFunctions.RPC_UPDATE_CLIENT_STATS , clientData.NetworkPlayer, serializedMessage );
         }
 
         public void ForwardMessage( GameMessage cMessage )

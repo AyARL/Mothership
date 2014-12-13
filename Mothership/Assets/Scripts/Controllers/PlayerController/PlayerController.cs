@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MothershipStateMachine;
 
 namespace Mothership
 {
@@ -21,8 +22,10 @@ namespace Mothership
         private static CPowerUpSO itemsResource = null;
         private Dictionary<string, GameObject> projectilePrefabs = new Dictionary<string, GameObject>();
 
-        private static List< PlayerController > m_liControllers = new List< PlayerController >();
+        private static List<PlayerController> m_liControllers = new List<PlayerController>();
         public static List<PlayerController> PlayerControllers { get { return m_liControllers; } }
+
+        private ServerManager serverManager = null;
 
         float lastFireTime = 0f;
 
@@ -34,8 +37,13 @@ namespace Mothership
         // Use this for initialization
         void Awake()
         {
-            if( Network.isServer )
-                m_liControllers.Add( this );
+            if (Network.isServer)
+                m_liControllers.Add(this);
+
+            if(Network.isServer)
+            {
+                serverManager = RoleManager.roleManager as ServerManager;
+            }
 
             animator = GetComponent<Animator>();
             animatorStates = new Dictionary<int, AnimatorBoolProperty>();
@@ -195,6 +203,62 @@ namespace Mothership
             }
         }
 
+        private void OnCollisionEnter(Collision cCollision)
+        {
+            // Only react on server and results will be send to client when processed
+            if (Network.isServer)
+            {
+                // Get a handle on the gameObject with which we collided. 
+                GameObject goObject = cCollision.gameObject;
+
+                // Check if we collided with a base
+                if (goObject.tag == Tags.TAG_BASE)
+                {
+                    // Base collision logic - deliver flag / heal if own base
+                }
+
+                // Depending on the name of the object, react accordingly.
+                switch (goObject.tag)
+                {
+                    case Tags.TAG_WEAPON:
+
+                        // Get the name and team of the attacker using its projectile.
+                        CProjectile cProjectile = goObject.GetComponent<CProjectile>();
+
+                        if (null == cProjectile.Instantiator.gameObject)
+                            return;
+
+                        //// Set the name.
+                        string strAttackerName = "";
+                        IAIBase.ETeam eTeam = IAIBase.ETeam.TEAM_NONE;
+
+                        // Check if attacker is another client
+                        GameObject goAttacker = cProjectile.Instantiator;
+                        PlayerController aPC = goAttacker.GetComponent<PlayerController>();
+                        if (aPC != null)
+                        {
+                            ClientDataOnServer cd = serverManager.RegisteredClients.First(c => c.NetworkPlayer == aPC.networkView.owner);
+                            strAttackerName = cd.Profile.DisplayName;
+                            eTeam = cd.ClientTeam;
+                        }
+                        else // attacker is an AI
+                        {
+                            strAttackerName = "AI";
+                            //// Find the team using the attacker's name.
+                            if (strAttackerName == Names.NAME_AI_DRONE_BLUE + "(Clone)")
+                                eTeam = IAIBase.ETeam.TEAM_BLUE;
+
+                            else if (strAttackerName == Names.NAME_AI_DRONE_RED + "(Clone)")
+                                eTeam = IAIBase.ETeam.TEAM_RED;
+                        }
+
+                        serverManager.SendGameMessage(new PlayerTakenDamage() { Player = networkView.owner, Damage = (int)cProjectile.Damage, Attacker = strAttackerName, AttackerTeam = eTeam });
+
+                        break;
+                }
+            }
+        }
+
         #endregion
     }
 
@@ -202,5 +266,5 @@ namespace Mothership
     {
         public string Name { get; set; }
         public bool State { get; set; }
-    } 
+    }
 }

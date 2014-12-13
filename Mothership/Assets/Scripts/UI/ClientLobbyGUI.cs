@@ -105,7 +105,10 @@ namespace MothershipUI
 
         private void OnDestroy()
         {
-            clientManager.OnUpdateTeamRoster -= OnUpdateTeamRoster;
+            if (clientManager != null)
+            {
+                clientManager.OnUpdateTeamRoster -= OnUpdateTeamRoster;
+            }
         }
     }
 }
