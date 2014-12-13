@@ -17,7 +17,10 @@ namespace MothershipStateMachine
             UpdateTeamRoster updateTeams = message as UpdateTeamRoster;
             if (updateTeams != null)
             {
-                clientManager.OnUpdateTeamRoster(updateTeams.RedTeam, updateTeams.BlueTeam);
+                if (clientManager.OnUpdateTeamRoster != null)
+                {
+                    clientManager.OnUpdateTeamRoster(updateTeams.RedTeam, updateTeams.BlueTeam);
+                }
                 return;
             }
 

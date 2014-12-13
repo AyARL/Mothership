@@ -43,14 +43,21 @@ namespace MothershipUI
             title.text = clientManager.NetworkManager.ServerHostData.gameName + " - Lobby";
 
             waitScreen.Enable("Waiting For Server");
-            clientManager.OnUpdateTeamRoster += (team1, team2) => { waitScreen.Disable(); UpdateTeamRoster(team1, team2); };
+            clientManager.OnUpdateTeamRoster += OnUpdateTeamRoster;
             clientManager.NetworkManager.RegisterOnServer();
             content.SetActive(true);
         }
 
         public void DisableScreen()
         {
+            clientManager.OnUpdateTeamRoster -= OnUpdateTeamRoster;
             content.SetActive(false);
+        }
+
+        private void OnUpdateTeamRoster(TeamList team1, TeamList team2)
+        {
+            waitScreen.Disable(); 
+            UpdateTeamRoster(team1, team2);
         }
 
         private void UpdateTeamRoster(TeamList team1, TeamList team2)
@@ -94,6 +101,11 @@ namespace MothershipUI
 
                     break;
             }
+        }
+
+        private void OnDestroy()
+        {
+            clientManager.OnUpdateTeamRoster -= OnUpdateTeamRoster;
         }
     }
 }
