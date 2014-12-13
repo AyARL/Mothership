@@ -14,6 +14,13 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
+            UpdateTeamRoster updateTeams = message as UpdateTeamRoster;
+            if (updateTeams != null)
+            {
+                clientManager.OnUpdateTeamRoster(updateTeams.RedTeam, updateTeams.BlueTeam);
+                return;
+            }
+
             MatchCountdownStarted countdownStarted = message as MatchCountdownStarted;
             if(countdownStarted != null)
             {

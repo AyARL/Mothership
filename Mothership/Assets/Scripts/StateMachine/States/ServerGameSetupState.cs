@@ -2,6 +2,7 @@
 using System.Collections;
 using Mothership;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace MothershipStateMachine
 {
@@ -22,6 +23,15 @@ namespace MothershipStateMachine
                 if (client != null)
                 {
                     client.LoadedLevel = true;
+
+                    IEnumerable<ClientDataOnServer> redTeam = serverManager.GetTeam(IAIBase.ETeam.TEAM_RED);
+                    TeamList redList = new TeamList(IAIBase.ETeam.TEAM_RED, redTeam.ToArray());
+
+                    IEnumerable<ClientDataOnServer> blueTeam = serverManager.GetTeam(IAIBase.ETeam.TEAM_BLUE);
+                    TeamList blueList = new TeamList(IAIBase.ETeam.TEAM_BLUE, blueTeam.ToArray());
+
+                    serverManager.networkManager.SendTeamSetupUpdate(redList, blueList);
+
                     if (serverManager.RegisteredClients.All(c => c.LoadedLevel == true))
                     {
                         serverManager.CountdownToMatch();

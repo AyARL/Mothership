@@ -24,6 +24,8 @@ namespace Mothership
         public ClientStats ClientStats { get; private set; }
         public PlayerController PlayerController { get; private set; }
 
+        public TeamList[] TeamRoster { get; private set; }
+
         // Events
         public UnityAction<TeamList, TeamList> OnUpdateTeamRoster { get; set; }
         public UnityAction<float> OnMatchCountdownStarted { get; set; } // Passes the time value for network latency, so a timer can be started with an adjusted value
@@ -45,6 +47,9 @@ namespace Mothership
         public override void Init(NetworkManager networkManager)
         {
             NetworkManager = networkManager as ClientNetworkManager;
+
+            TeamRoster = new TeamList[2];
+            OnUpdateTeamRoster += (red, blue) => { TeamRoster[0] = red; TeamRoster[1] = blue; };
 
             //Init all states
             ClientLobbyState = new ClientLobbyState(this);
