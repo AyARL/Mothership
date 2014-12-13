@@ -36,6 +36,25 @@ namespace MothershipStateMachine
                 return;
             }
 
+            MsgDamageClient msgDamageClient = message as MsgDamageClient;
+            if ( null != msgDamageClient )
+            {
+                // A client has been hit, we want to damage the client which the 
+                //  message specifies.
+                // Try to find the client data object for the scoring player and update his stats.
+                foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
+                {
+                    if ( clientData.Profile.DisplayName == msgDamageClient.UserName )
+                    {
+                        clientData.CurrentHealth -= msgDamageClient.Damage;
+
+                        serverManager.networkManager.UpdateClientStats( clientData );
+
+                        break;
+                    }
+                }
+            }
+
             MsgFlagPickedUp msgFlagPickedUp = message as MsgFlagPickedUp;
             if ( null != msgFlagPickedUp )
             {

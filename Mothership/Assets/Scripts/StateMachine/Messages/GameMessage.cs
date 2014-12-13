@@ -99,5 +99,11 @@ namespace MothershipStateMachine
         public int EXP { get; set; }  
     }
 
+    public class MsgDamageClient : GameMessage
+    {
+        public string UserName { get; set; }
+        public float Damage { get; set; }
+    }
+
     public class MatchExpired : GameMessage { }
 }
