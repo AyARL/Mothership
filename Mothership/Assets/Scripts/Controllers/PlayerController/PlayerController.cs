@@ -38,10 +38,8 @@ namespace Mothership
         void Awake()
         {
             if (Network.isServer)
-                m_liControllers.Add(this);
-
-            if(Network.isServer)
             {
+                m_liControllers.Add(this);
                 serverManager = RoleManager.roleManager as ServerManager;
             }
 
@@ -257,6 +255,11 @@ namespace Mothership
                         break;
                 }
             }
+        }
+
+        private void OnDestroy()
+        {
+            m_liControllers.Remove(this);
         }
 
         #endregion

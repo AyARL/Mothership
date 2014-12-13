@@ -70,6 +70,7 @@ namespace MothershipStateMachine
                 // If client is dead
                 if(clientData.CurrentHealth <= 0)
                 {
+                    serverManager.CountdownToPlayerRespawn(clientData.NetworkPlayer);
                     serverManager.SendGameMessage(new MsgPlayerDied() { PlayerName = clientData.Profile.DisplayName, PlayerTeam = clientData.ClientTeam, KillerName = playerDamage.Attacker, KillerTeam = playerDamage.AttackerTeam });
                 }
                 else // otherwise just send the updated stats
@@ -81,6 +82,7 @@ namespace MothershipStateMachine
             MsgPlayerDied msgPlayerDied = message as MsgPlayerDied;
             if ( null != msgPlayerDied )
             {
+
                 // Try to find the client data object for the scoring player and update his stats.
                 foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
                 {

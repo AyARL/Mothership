@@ -39,7 +39,7 @@ namespace Mothership
         public UnityAction<string, IAIBase.ETeam, string> OnPlayerDrivenEvent { get; set; } // Passes player name, player team and message to be displayed 
         public UnityAction<string> OnGameDrivenEvent { get; set; } // Passes the message to be displayed
         //Player Stat Events
-        public UnityAction<ClientStats> OnStatsChaned { get; set; }
+        public UnityAction<ClientStats> OnStatsChanged { get; set; }
 
         public override void Init(NetworkManager networkManager)
         {
@@ -68,11 +68,17 @@ namespace Mothership
             if (ClientStats == null)
             {
                 ClientStats = new ClientStats() { CurrentHealth = Constants.DEFAULT_HEALTH_DRONE };
-                if(OnStatsChaned != null)
-                {
-                    OnStatsChaned(ClientStats);
-                }
             }
+            else
+            {
+                ClientStats.CurrentHealth = Constants.DEFAULT_HEALTH_DRONE;
+            }
+
+            if (OnStatsChanged != null)
+            {
+                OnStatsChanged(ClientStats);
+            }
+
             GameObject spawnPoint;
             if (FindSpawnPoints(out spawnPoint))
             {

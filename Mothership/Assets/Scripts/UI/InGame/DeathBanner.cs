@@ -62,7 +62,7 @@ namespace MothershipUI
             {
                 counter.text = i.ToString();
                 yield return new WaitForSeconds(1f);
-                i =- 1;
+                i -= 1;
             }
         }
     }

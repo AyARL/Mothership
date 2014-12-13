@@ -26,7 +26,7 @@ namespace MothershipUI
             ClientManager clientManager = RoleManager.roleManager as ClientManager;
             if (clientManager != null)
             {
-                clientManager.OnStatsChaned += UpdateStats;
+                clientManager.OnStatsChanged += UpdateStats;
                 maxHealthBarSize = healthBar.rect.width;
             }
             else
