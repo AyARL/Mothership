@@ -39,11 +39,7 @@ namespace Mothership
         public UnityAction<string, IAIBase.ETeam, string> OnPlayerDrivenEvent { get; set; } // Passes player name, player team and message to be displayed 
         public UnityAction<string> OnGameDrivenEvent { get; set; } // Passes the message to be displayed
         //Player Stat Events
-        public UnityAction<int> OnHealthChanged { get; set; } // Passes new health value
-        public UnityAction<int> OnKillCountChanged { get; set; } // Passes new kill count
-        public UnityAction<int> OnDeathCountChanged { get; set; } // Passes new death count
-        public UnityAction<int> OnCaptureCountChanged { get; set; } // Passes new capture count
-        public UnityAction<int> OnEXPValueChanged { get; set; } // Passes new value for earned EXP
+        public UnityAction<ClientStats> OnStatsChaned { get; set; }
 
         public override void Init(NetworkManager networkManager)
         {
@@ -71,7 +67,11 @@ namespace Mothership
         {
             if (ClientStats == null)
             {
-                ClientStats = new ClientStats();
+                ClientStats = new ClientStats() { CurrentHealth = Constants.DEFAULT_HEALTH_DRONE };
+                if(OnStatsChaned != null)
+                {
+                    OnStatsChaned(ClientStats);
+                }
             }
             GameObject spawnPoint;
             if (FindSpawnPoints(out spawnPoint))

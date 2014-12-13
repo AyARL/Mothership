@@ -59,6 +59,10 @@ namespace Mothership
     public class LogEventMessages
     {
         public const string EVENT_FLAG_DELIVERED = "A point has been scored.";
+        public const string EVENT_PLAYER_FLAG_PICKUP = "captured the flag.";
+        public const string EVENT_PLAYER_FLAG_DROP_OFF = "delivered the flag.";
+        public const string EVENT_MATCH_STARTED = "Match started!";
+        public const string EVENT_MATCH_ENDED = "Match has ended!";
     }
 
     public class DefaultPaths

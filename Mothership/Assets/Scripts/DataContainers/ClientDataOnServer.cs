@@ -26,6 +26,8 @@ namespace Mothership
             Profile = profile;
             NetworkPlayer = networkPlayer;
             ClientTeam = team;
+
+            CurrentHealth = Constants.DEFAULT_HEALTH_DRONE;
         }
     } 
 }

@@ -14,9 +14,53 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
-            MatchExpired expired = message as MatchExpired;
-            if(expired != null)
+            MsgClientStatsUpdate statsUpdate = message as MsgClientStatsUpdate;
+            if (statsUpdate != null)
             {
+                clientManager.ClientStats.UpdateStats(statsUpdate);
+                clientManager.OnStatsChaned(clientManager.ClientStats);
+                return;
+            }
+
+            MsgPlayerDied playerDead = message as MsgPlayerDied;
+            if (playerDead != null)
+            {
+                if(clientManager.OnKillEvent != null)
+                {
+                    clientManager.OnKillEvent(playerDead.KillerName, playerDead.KillerTeam, playerDead.PlayerName, playerDead.PlayerTeam);
+                }
+                return;
+            }
+
+            MsgFlagPickedUp flagPickUp = message as MsgFlagPickedUp;
+            if (flagPickUp != null)
+            {
+                if(clientManager.OnPlayerDrivenEvent != null)
+                {
+                    clientManager.OnPlayerDrivenEvent(flagPickUp.PlayerName, flagPickUp.PlayerTeam, LogEventMessages.EVENT_PLAYER_FLAG_PICKUP);
+                }
+
+                return;
+            }
+
+            MsgFlagDelivered flagDelivered = message as MsgFlagDelivered;
+            if (flagDelivered != null)
+            {
+                if(clientManager.OnPlayerDrivenEvent != null)
+                {
+                    clientManager.OnPlayerDrivenEvent(flagDelivered.PlayerName, flagDelivered.PlayerTeam, LogEventMessages.EVENT_PLAYER_FLAG_DROP_OFF);
+                }
+                return;
+            }
+
+            MatchExpired expired = message as MatchExpired;
+            if (expired != null)
+            {
+                if(clientManager.OnGameDrivenEvent != null)
+                {
+                    clientManager.OnGameDrivenEvent(LogEventMessages.EVENT_MATCH_ENDED);
+                }
+
                 clientManager.ChangeState(clientManager.ClientGameEndState);
                 return;
             }
@@ -27,11 +71,15 @@ namespace MothershipStateMachine
         public override void OnStateMessage(StateMessage message)
         {
             OnEnterState enter = message as OnEnterState;
-            if(enter != null)
+            if (enter != null)
             {
                 GamePlayStarted started = enter.Message as GamePlayStarted;
-                if(started != null && clientManager.OnMatchStarted != null)
+                if (started != null && clientManager.OnMatchStarted != null)
                 {
+                    if (clientManager.OnGameDrivenEvent != null)
+                    {
+                        clientManager.OnGameDrivenEvent(LogEventMessages.EVENT_MATCH_STARTED);
+                    }
                     clientManager.OnMatchStarted(started.Delay);
                 }
                 return;

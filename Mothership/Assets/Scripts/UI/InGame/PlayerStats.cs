@@ -26,14 +26,8 @@ namespace MothershipUI
             ClientManager clientManager = RoleManager.roleManager as ClientManager;
             if (clientManager != null)
             {
-                clientManager.OnHealthChanged += UpdateHealth;
-                clientManager.OnKillCountChanged += (count) => killCounter.text = count.ToString();
-                clientManager.OnDeathCountChanged += (count) => deathCounter.text = count.ToString();
-                clientManager.OnCaptureCountChanged += (count) => captureCounter.text = count.ToString();
-                clientManager.OnEXPValueChanged += (count) => expCounter.text = count.ToString();
-
+                clientManager.OnStatsChaned += UpdateStats;
                 maxHealthBarSize = healthBar.rect.width;
-                UpdateHealth((int)(Constants.DEFAULT_HEALTH_DRONE));
             }
             else
             {
@@ -43,11 +37,17 @@ namespace MothershipUI
 
         }
 
-        private void UpdateHealth(int newHPValue)
+        private void UpdateStats(ClientStats newData)
         {
-            currentHealth.text = newHPValue.ToString();
-            float healthPercentage = newHPValue / Constants.DEFAULT_HEALTH_DRONE;
-            healthBar.sizeDelta = new Vector2(maxHealthBarSize * healthPercentage, healthBar.rect.height);
+            currentHealth.text = newData.CurrentHealth.ToString();
+            float healthPercentage = newData.CurrentHealth / Constants.DEFAULT_HEALTH_DRONE;
+            healthBar.sizeDelta = new Vector2(maxHealthBarSize * healthPercentage, healthBar.rect.height / 2f);
+
+            killCounter.text = newData.KillCount.ToString();
+            deathCounter.text = newData.DeathCount.ToString();
+            captureCounter.text = newData.CaptureCount.ToString();
+            expCounter.text = newData.EXP.ToString();
+
         }
     }
     
