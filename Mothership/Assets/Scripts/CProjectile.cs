@@ -28,6 +28,9 @@ public class CProjectile : MonoBehaviour {
     private GameObject m_goInstantiator;
     public GameObject Instantiator { get { return m_goInstantiator; } set { m_goInstantiator = value; } }
 
+    private string m_strInstantiatorName;
+    public string InstantiatorName { get { return m_strInstantiatorName; } }
+
     [ SerializeField ]
     private Vector3 m_v3Direction;
     public Vector3 Direction { get { return m_v3Direction; } set { m_v3Direction = value; } }
@@ -71,12 +74,16 @@ public class CProjectile : MonoBehaviour {
         // Ignore collisions with the firing object
         Physics.IgnoreCollision(collider, Instantiator.collider);
 
+        // Ignore collisions with other bullets.
+        Physics.IgnoreLayerCollision( Constants.COLLISION_LAYER_BULLETS, Constants.COLLISION_LAYER_BULLETS, true );
+
         switch ( m_eProjectileType )
         {
             case EProjectileType.PROJECTILE_BULLET:
 
                 m_fSpeed = Constants.PROJECTILE_SPEED_BULLET;
                 m_fDamage = Constants.PROJECTILE_DAMAGE_BULLET;
+                CAudioControl.CreateAndPlayAudio( transform.position, Audio.AUDIO_EFFECT_GUNSHOT, false, true, false, 1.0f );
 
                 break;
 
@@ -104,7 +111,7 @@ public class CProjectile : MonoBehaviour {
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////
-    /// Function:               Update
+    /// Function:               FixedUpdate
     /////////////////////////////////////////////////////////////////////////////
 	void FixedUpdate () 
     {
@@ -117,6 +124,9 @@ public class CProjectile : MonoBehaviour {
             Destroy( gameObject );
         }
 
+        if ( null == Instantiator.gameObject )
+            m_fDamage = 0;
+
         float elapsedTime = Time.time - startTime;
         float normalisedTime = elapsedTime / travelTime;
         float curveValue = adjustmentCurve.Evaluate(normalisedTime);
@@ -125,6 +135,9 @@ public class CProjectile : MonoBehaviour {
 
         Vector3 newPos = m_v3InitialPosition + m_v3Direction * m_fSpeed * elapsedTime;
         newPos += adjustment;
+
+        if ( null == gameObject )
+            Destroy( gameObject );
 
         transform.Translate(newPos - transform.position);
 
@@ -139,7 +152,7 @@ public class CProjectile : MonoBehaviour {
     /////////////////////////////////////////////////////////////////////////////
     void OnCollisionEnter( Collision cCollision )
     {
-        if ( false == m_bIsActivated || true == m_liProjectileNames.Contains( cCollision.gameObject.name ) )
+        if ( false == m_bIsActivated )
             return;
 
         Destroy( gameObject );

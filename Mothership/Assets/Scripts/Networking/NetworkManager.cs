@@ -133,11 +133,29 @@ namespace Mothership
         }
 
         [RPC]
-        private void RPCForwardToClients( string strMessage )
+        private void RPCForwardFlagCollected( string strMessage )
         {
-            GameMessage cMessage = JsonUtility.ValidateJsonData<GameMessage>(strMessage);
-            clientManager.SendGameMessage( cMessage );
+            MsgFlagPickedUp cMessage = JsonUtility.ValidateJsonData< MsgFlagPickedUp >( strMessage );
+            clientManager.SendGameMessage( new MsgFlagPickedUp() { PlayerName = cMessage.PlayerName, PlayerTeam = cMessage.PlayerTeam } );
         }
+
+        [RPC]
+        private void RPCForwardFlagCaptured( string strMessage )
+        {
+            MsgFlagDelivered cMessage = JsonUtility.ValidateJsonData< MsgFlagDelivered >( strMessage );
+            clientManager.SendGameMessage( new MsgFlagDelivered() { PlayerName = cMessage.PlayerName, PlayerTeam = cMessage.PlayerTeam } );
+        }
+
+        [RPC]
+        private void RPCForwardCharacterDied( string strMessage )
+        {
+            MsgPlayerDied cMessage = JsonUtility.ValidateJsonData< MsgPlayerDied >( strMessage );
+            clientManager.SendGameMessage( new MsgPlayerDied() { PlayerName = cMessage.PlayerName, 
+                                                                 PlayerTeam = cMessage.PlayerTeam, 
+                                                                 KillerName = cMessage.KillerName, 
+                                                                 KillerTeam = cMessage.KillerTeam });
+        }
+
         #endregion
 
         #region Client->Server

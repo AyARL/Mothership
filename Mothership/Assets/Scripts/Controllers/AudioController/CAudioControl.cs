@@ -27,6 +27,7 @@ public class CAudioControl : MonoBehaviour {
 
     private List< string > m_liRegexPatterns = new List< string > 
     { 
+        Audio.AUDIO_EFFECT_GUNSHOT,
         Audio.AUDIO_MUSIC,
         Audio.AUDIO_EFFECT_MENU_SELECT,
         Audio.AUDIO_EFFECT_GAMEOVER,

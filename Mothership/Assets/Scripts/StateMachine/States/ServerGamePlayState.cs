@@ -36,11 +36,29 @@ namespace MothershipStateMachine
                 return;
             }
 
+            MsgDamageClient msgDamageClient = message as MsgDamageClient;
+            if ( null != msgDamageClient )
+            {
+                // A client has been hit, we want to damage the client which the 
+                //  message specifies.
+                foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
+                {
+                    if ( clientData.Profile.DisplayName == msgDamageClient.UserName )
+                    {
+                        clientData.CurrentHealth -= msgDamageClient.Damage;
+
+                        serverManager.networkManager.UpdateClientStats( clientData );
+
+                        break;
+                    }
+                }
+            }
+
             MsgFlagPickedUp msgFlagPickedUp = message as MsgFlagPickedUp;
             if ( null != msgFlagPickedUp )
             {
                 // Forward this message to the clients so they log the event.
-                serverManager.networkManager.ForwardMessage( message );
+                serverManager.networkManager.ForwardFlagPickedUp( msgFlagPickedUp );
             }
 
             PlayerTakenDamage playerDamage = message as PlayerTakenDamage;
@@ -82,7 +100,7 @@ namespace MothershipStateMachine
                 }
 
                 // Forward this message to the clients so they log the event.
-                serverManager.networkManager.ForwardMessage( message );
+                serverManager.networkManager.ForwardCharacterDied( msgPlayerDied );
             }
 
             MsgFlagDelivered msgFlagDelivered = message as MsgFlagDelivered;
@@ -121,7 +139,7 @@ namespace MothershipStateMachine
                 }
 
                 // Forward this message to the clients so they log the event.
-                serverManager.networkManager.ForwardMessage( message );
+                serverManager.networkManager.ForwardFlagCaptured( msgFlagDelivered );
             }
 
             base.OnGameMessage(message);
