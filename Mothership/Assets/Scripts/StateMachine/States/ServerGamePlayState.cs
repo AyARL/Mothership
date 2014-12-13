@@ -36,14 +36,14 @@ namespace MothershipStateMachine
                 return;
             }
 
-            MsgFlagPickedUp msgFlagPickedUp = (MsgFlagPickedUp) message;
+            MsgFlagPickedUp msgFlagPickedUp = message as MsgFlagPickedUp;
             if ( null != msgFlagPickedUp )
             {
                 // Forward this message to the clients so they log the event.
                 serverManager.networkManager.ForwardMessage( message );
             }
 
-            MsgPlayerDied msgPlayerDied = (MsgPlayerDied) message;
+            MsgPlayerDied msgPlayerDied = message as MsgPlayerDied;
             if ( null != msgPlayerDied )
             {
                 // Try to find the client data object for the scoring player and update his stats.
@@ -68,7 +68,7 @@ namespace MothershipStateMachine
                 serverManager.networkManager.ForwardMessage( message );
             }
 
-            MsgFlagDelivered msgFlagDelivered = (MsgFlagDelivered) message;
+            MsgFlagDelivered msgFlagDelivered = message as MsgFlagDelivered;
             if ( null != msgFlagDelivered )
             {
                 // Increase score depending on the player's team.
