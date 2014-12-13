@@ -41,7 +41,6 @@ namespace MothershipStateMachine
             {
                 // A client has been hit, we want to damage the client which the 
                 //  message specifies.
-                // Try to find the client data object for the scoring player and update his stats.
                 foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
                 {
                     if ( clientData.Profile.DisplayName == msgDamageClient.UserName )
