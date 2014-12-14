@@ -71,6 +71,16 @@ namespace MothershipStateMachine
                 return;
             }
 
+            MsgScoreUpdate updateScore = message as MsgScoreUpdate;
+            if(updateScore != null)
+            {
+                if(clientManager.OnTeamScoreChanged != null)
+                {
+                    clientManager.OnTeamScoreChanged(IAIBase.ETeam.TEAM_BLUE, updateScore.BlueScore);
+                    clientManager.OnTeamScoreChanged(IAIBase.ETeam.TEAM_RED, updateScore.RedScore);
+                }
+            }
+
             PlayerRespawn respawn = message as PlayerRespawn;
             if(respawn != null)
             {
