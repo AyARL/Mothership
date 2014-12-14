@@ -53,6 +53,11 @@ namespace Mothership
             }
         }
 
+        public void RemoveFetchCallback(UnityAction<bool, HostData[]> onFetchCompleted)
+        {
+            OnHostListFetchCompleted -= onFetchCompleted;
+        }
+
         public void ConnectToServer(HostData host)
         {
             NetworkConnectionError error = Network.Connect(host);

@@ -56,6 +56,7 @@ namespace MothershipUI
 
         public void DisableScreen()
         {
+            networkManager.RemoveFetchCallback(OnServerListResponse);
             content.SetActive(false);
         }
 
