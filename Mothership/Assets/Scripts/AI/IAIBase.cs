@@ -273,9 +273,18 @@ public class IAIBase : MonoBehaviour
         goObject = GameObject.Find( Names.NAME_FLAG );
         if ( null == goObject )
         {
-            // Someone is holding the flag, go towards him.
-            goObject = m_goFlagHolder;
-            //Debug.LogError( string.Format( "{0} {1}: {2}", strFunction, ErrorStrings.ERROR_NULL_OBJECT, typeof( GameObject ).ToString() ) );
+            // Check if one of the players is holding the flag.
+            GameObject goPlayer = CheckPlayersForFlag();
+            if ( null != goPlayer )
+            {
+                // A player is holding the flag, go towards him.
+                goObject = goPlayer;
+            }
+            else
+            {
+                // An AI character is holding the flag, go towards him.
+                goObject = m_goFlagHolder;
+            }
         }
 
         return goObject;
@@ -359,6 +368,9 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     protected void OnCollisionEnter( Collision cCollision ) 
     {
+        // For error reporting.
+        string strfunctionName = "IAIBase::OnCollisionEnter()";
+
         // Get a handle on the gameObject with which we collided. 
         GameObject goObject = cCollision.gameObject;
         
@@ -392,8 +404,33 @@ public class IAIBase : MonoBehaviour
                 if ( null == cProjectile.Instantiator.gameObject )
                     return;
 
-                // Set the name.
-                string strAttackerName = cProjectile.Instantiator.gameObject.name;
+                string strAttackerName = "";
+
+                if ( cProjectile.Instantiator.tag == Tags.TAG_PLAYER )
+                {
+                    // We have been hit by a player, get the playercontroller.
+                    PlayerController cPlayerController = cProjectile.Instantiator.GetComponent< PlayerController >();
+                    if ( null == cPlayerController )
+                    {
+                        Debug.LogError( string.Format( "{0} {1}: {2}", strfunctionName, ErrorStrings.ERROR_MISSING_COMPONENT, typeof( PlayerController ).ToString() ) );
+                        return;
+                    }
+
+                    // Get the network player. We're going to compare this to the ClientDataOnServer object.
+                    NetworkPlayer cNetworkPlayer = cPlayerController.networkView.owner;
+
+                    ServerManager serverManager = RoleManager.roleManager as ServerManager;
+                    foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
+                    {
+                        if ( cNetworkPlayer == clientData.NetworkPlayer )
+                            strAttackerName = clientData.Profile.DisplayName;
+                    }
+                }
+                else
+                { 
+                    // This is not a player, we can just set the name.
+                    strAttackerName = cProjectile.Instantiator.gameObject.name;
+                }
                 ETeam eTeam = ETeam.TEAM_NONE;
 
                 // Find the team using the attacker's name.
@@ -493,6 +530,24 @@ public class IAIBase : MonoBehaviour
         }
 
         return liEnemyPlayers;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               CheckPlayersForFlag
+    /////////////////////////////////////////////////////////////////////////////
+    protected GameObject CheckPlayersForFlag()
+    {
+        GameObject goObject = null;
+
+        List< PlayerController > liControllers = PlayerController.PlayerControllers;
+
+        foreach ( PlayerController cPlayerController in liControllers )
+        {
+            if ( true == cPlayerController.HasFlag )
+                goObject = cPlayerController.gameObject;
+        }
+
+        return goObject;
     }
 
     /////////////////////////////////////////////////////////////////////////////

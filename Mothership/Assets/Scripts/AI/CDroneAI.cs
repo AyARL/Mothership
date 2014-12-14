@@ -229,13 +229,33 @@ public class CDroneAI : IAIBase {
         m_trClosestEnemy = GetClosestEnemy();
         if ( null != m_trClosestEnemy )
         { 
+            bool bClearSight = false;
             float fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
 
             if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
             {
-                m_v3Target = Vector3.zero;
-                m_eState = EDroneState.DRONE_ATTACKING;
-                m_bTargetInRange = true;
+                if ( false == Physics.Raycast( transform.position, m_trClosestEnemy.position - transform.position, Constants.DEFAULT_ATTACK_RANGE / 2 ) )
+		        {
+                    //Debug.DrawRay( transform.position, m_trClosestEnemy.position - transform.position, Color.red, Constants.DEFAULT_ATTACK_RANGE / 2 );
+                    // There's nothing in the way, we're free to fire.
+                    bClearSight = true;
+                }
+
+                // We only want to attack if we didn't hit anything during the raycast.
+                if ( true == bClearSight )
+                { 
+                    m_v3Target = Vector3.zero;
+                    m_eState = EDroneState.DRONE_ATTACKING;
+                    m_bTargetInRange = true;
+                }
+
+                else
+                {
+                    // We want to head towards the enemy until we have a clear line of sight.
+                    m_v3Target = m_trClosestEnemy.transform.position;
+                    m_eState = EDroneState.DRONE_MOVING;
+                    m_bTargetInRange = false;
+                }
             }
         }
         else
@@ -277,6 +297,8 @@ public class CDroneAI : IAIBase {
                 
             case EDroneState.DRONE_ATTACKING:
 
+                float fDistance = Vector3.Distance( m_v3Target, transform.position );
+
                 if ( null == m_trClosestEnemy )
                 {
                     // The enemy has been destroyed, switch back to idle.
@@ -287,15 +309,28 @@ public class CDroneAI : IAIBase {
                     break;
                 }
 
+
                 StartCoroutine( AttackTarget( m_trClosestEnemy.transform ) );
 
-                float fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
+                fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
 
                 if ( fDistance > Constants.DEFAULT_ATTACK_RANGE + 20f )
                 {
                     m_v3Target = m_trClosestEnemy.transform.position;
                     m_eState = EDroneState.DRONE_MOVING;
                     m_bTargetInRange = false;
+                }
+
+                else if ( fDistance < Constants.DEFAULT_ATTACK_RANGE )
+                {
+                    if ( true == Physics.Raycast( transform.position, m_trClosestEnemy.transform.position - transform.position, Constants.DEFAULT_ATTACK_RANGE / 2 ) )
+		            {
+                        // There's something standing halfway between us and our target, move towards the target.
+                        //Debug.DrawRay( transform.position, m_v3Target - transform.position, Color.red, Constants.DEFAULT_ATTACK_RANGE / 2 );
+                        m_v3Target = m_trClosestEnemy.transform.position;
+                        m_eState = EDroneState.DRONE_MOVING;
+                        m_bTargetInRange = false;
+                    }
                 }
 
                 break;
