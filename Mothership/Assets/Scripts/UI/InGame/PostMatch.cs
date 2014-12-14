@@ -26,6 +26,8 @@ namespace MothershipUI
             {
                 clientManager.OnMatchEnded += () => screen.SetActive(true);
                 clientManager.OnGameResultReceived += ProcessResults;
+
+                exitButton.onClick.AddListener(() => { ScreenDispatch.screenToOpen = ScreenDispatch.ScreenTarget.Profile; Application.LoadLevel(0); });
             }
             else
             {

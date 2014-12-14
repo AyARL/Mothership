@@ -26,12 +26,16 @@ namespace MothershipUI
         private GameObject orLabel = null;
         [SerializeField]
         private GameObject serverButton = null;
+        [SerializeField]
+        private Button quit = null;
+
 
         public void EnableScreen()
         {
+            content.SetActive(true);
             serverSetupGUI.DisableScreen();
             serverSetupLayout.preferredHeight = 0;
-            content.SetActive(true);
+            quit.onClick.AddListener(Application.Quit);
         }
 
         public void DisableScreen()
@@ -47,6 +51,7 @@ namespace MothershipUI
             registerButton.SetActive(false);
             orLabel.SetActive(false);
             serverButton.SetActive(false);
+            quit.gameObject.SetActive(false);
             StartCoroutine(RollOut(serverSetupLayout, setupTargetHeight, setupRolloutTime, serverSetupGUI.EnableScreen));
         }
 
@@ -56,6 +61,7 @@ namespace MothershipUI
             registerButton.SetActive(true);
             orLabel.SetActive(true);
             serverButton.SetActive(true);
+            quit.gameObject.SetActive(true);
             serverSetupGUI.DisableScreen();
             StartCoroutine(RollIn(serverSetupLayout, setupRolloutTime));
         }
