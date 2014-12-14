@@ -47,12 +47,12 @@ namespace MothershipUI
                 ScoreboardUI ui = null;
                 switch(player.Team)
                 {
-                    case IAIBase.ETeam.TEAM_BLUE:
+                    case IAIBase.ETeam.TEAM_RED:
                         ui = redScoreboard[redI];
                         ++redI;
                         break;
 
-                    case IAIBase.ETeam.TEAM_RED:
+                    case IAIBase.ETeam.TEAM_BLUE:
                         ui = blueScoreboard[blueI];
                         ++blueI;
                         break;
