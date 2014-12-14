@@ -117,6 +117,7 @@ namespace MothershipStateMachine
                     if (clientManager.OnGameDrivenEvent != null)
                     {
                         clientManager.OnGameDrivenEvent(LogEventMessages.EVENT_MATCH_STARTED);
+                        CAudioControl.CreateAndPlayAudio( Vector3.zero, Audio.AUDIO_MUSIC, true, true, false, 0.8f ); 
                     }
                     clientManager.OnMatchStarted(started.Delay);
                 }
