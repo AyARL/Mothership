@@ -56,12 +56,12 @@ namespace MothershipStateMachine
         public NetworkPlayer Player { get; set; }
     }
 
-    public class GamePlayStarted : GameMessage 
+    public class GamePlayStarted : GameMessage
     {
         public float Delay { get; set; }
     }
 
-    public class MsgFlagPickedUp : GameMessage 
+    public class MsgFlagPickedUp : GameMessage
     {
         public string PlayerName { get; set; }
         public IAIBase.ETeam PlayerTeam { get; set; }
@@ -114,7 +114,7 @@ namespace MothershipStateMachine
         public int KillCount { get; set; }
         public int DeathCount { get; set; }
         public int CaptureCount { get; set; }
-        public int EXP { get; set; }  
+        public int EXP { get; set; }
     }
 
     public class MsgDamageClient : GameMessage
@@ -128,5 +128,10 @@ namespace MothershipStateMachine
     public class GameResultReceived : GameMessage
     {
         public GameResult Result { get; set; }
+    }
+
+    public class ExitMatch : GameMessage
+    {
+
     }
 }

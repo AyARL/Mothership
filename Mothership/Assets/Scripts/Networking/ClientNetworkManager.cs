@@ -70,11 +70,22 @@ namespace Mothership
             }
         }
 
+        private void OnDisconnectedFromServer(NetworkDisconnection info)
+        {
+            Debug.Log("Disconnected from server " + info.ToString());
+            RemoveRoleManager();
+        }
+
         private void InitialiseRoleManager()
         {
             GameObject roleManagerObj = new GameObject(roleManagerObjectName);
             clientManager = roleManagerObj.AddComponent<ClientManager>();
             clientManager.Init(this);
+        }
+
+        public void RemoveRoleManager()
+        {
+            Destroy(clientManager.gameObject);
         }
 
         public void RegisterOnServer()

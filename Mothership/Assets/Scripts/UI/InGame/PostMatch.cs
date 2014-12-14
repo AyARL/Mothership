@@ -2,6 +2,7 @@
 using System.Collections;
 using Mothership;
 using UnityEngine.UI;
+using MothershipStateMachine;
 
 namespace MothershipUI
 {
@@ -27,7 +28,7 @@ namespace MothershipUI
                 clientManager.OnMatchEnded += () => screen.SetActive(true);
                 clientManager.OnGameResultReceived += ProcessResults;
 
-                exitButton.onClick.AddListener(() => { ScreenDispatch.screenToOpen = ScreenDispatch.ScreenTarget.Profile; Application.LoadLevel(0); });
+                exitButton.onClick.AddListener(() => clientManager.SendGameMessage(new ExitMatch()));
             }
             else
             {

@@ -35,9 +35,13 @@ namespace MothershipStateMachine
             MsgPlayerDied playerDead = message as MsgPlayerDied;
             if (playerDead != null)
             {
-                if(clientManager.OnKillEvent != null)
+                if (playerDead.KillerName == UserDataManager.userData.Profile.DisplayName)
                 {
-                    clientManager.OnKillEvent(playerDead.KillerName, playerDead.KillerTeam, playerDead.PlayerName, playerDead.PlayerTeam);
+                    if (clientManager.OnKillEvent != null)
+                    {
+                        clientManager.OnKillEvent(UserDataManager.userData.Profile.DisplayName, playerDead.KillerTeam, playerDead.PlayerName, playerDead.PlayerTeam);
+                    }
+                    return;
                 }
 
                 if(playerDead.PlayerName == UserDataManager.userData.Profile.DisplayName)
@@ -51,6 +55,12 @@ namespace MothershipStateMachine
                     {
                         clientManager.DroppedFlag();
                     }
+                    return;
+                }
+
+                if (clientManager.OnKillEvent != null)
+                {
+                    clientManager.OnKillEvent(playerDead.KillerName, playerDead.KillerTeam, playerDead.PlayerName, playerDead.PlayerTeam);
                 }
                 return;
             }

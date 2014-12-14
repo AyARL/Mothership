@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Mothership;
+using MothershipUI;
 
 namespace MothershipStateMachine
 {
@@ -21,6 +22,14 @@ namespace MothershipStateMachine
                 {
                     clientManager.OnGameResultReceived(result.Result);
                 }
+            }
+
+            ExitMatch exit = message as ExitMatch;
+            if(exit != null)
+            {
+                Network.Disconnect();
+                ScreenDispatch.screenToOpen = ScreenDispatch.ScreenTarget.Profile;
+                Application.LoadLevel(0);
             }
 
             base.OnGameMessage(message);
