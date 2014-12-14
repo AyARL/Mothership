@@ -34,6 +34,7 @@ namespace Mothership
         public UnityAction<string, IAIBase.ETeam> OnPlayerDied { get; set; }    // Passes name and team for the killing player
         public UnityAction OnPlayerRespawn { get; set; } // Called when server gives the player all clear to respawn
         public UnityAction OnMatchEnded { get; set; }   // Called when match has ended
+        public UnityAction<GameResult> OnGameResultReceived { get; set; }
         // Log Events
         public UnityAction<string, IAIBase.ETeam, string, IAIBase.ETeam> OnKillEvent { get; set; } // Passes the killing player name and team follwed by killed player name and team
         public UnityAction<string, IAIBase.ETeam, string> OnPlayerDrivenEvent { get; set; } // Passes player name, player team and message to be displayed 

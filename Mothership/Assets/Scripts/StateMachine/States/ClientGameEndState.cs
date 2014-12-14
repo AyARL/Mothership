@@ -14,6 +14,15 @@ namespace MothershipStateMachine
 
         public override void OnGameMessage(GameMessage message)
         {
+            GameResultReceived result = message as GameResultReceived;
+            if(result != null)
+            {
+                if(clientManager.OnGameResultReceived != null)
+                {
+                    clientManager.OnGameResultReceived(result.Result);
+                }
+            }
+
             base.OnGameMessage(message);
         }
 

@@ -176,6 +176,12 @@ namespace Mothership
         {
             networkView.RPC("RPCRespawnPlayer", player);
         }
+
+        public void SendGameResult(GameResult result)
+        {
+            string serializedResult = JsonUtility.SerializeToJson<GameResult>(result);
+            networkView.RPC("RPCGameResult", RPCMode.Others, serializedResult);
+        }
     }
     
 }

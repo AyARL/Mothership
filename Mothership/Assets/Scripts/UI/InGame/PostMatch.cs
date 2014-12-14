@@ -10,6 +10,8 @@ namespace MothershipUI
         [SerializeField]
         private GameObject screen = null;
         [SerializeField]
+        private Text winnerTeam = null;
+        [SerializeField]
         private ScoreboardUI[] redScoreboard = null;
         [SerializeField]
         private ScoreboardUI[] blueScoreboard = null;
@@ -23,11 +25,63 @@ namespace MothershipUI
             if (clientManager != null)
             {
                 clientManager.OnMatchEnded += () => screen.SetActive(true);
+                clientManager.OnGameResultReceived += ProcessResults;
             }
             else
             {
                 Destroy(gameObject);
                 return;
+            }
+        }
+
+        private void ProcessResults(GameResult result)
+        {
+            ShowWinnerText(result);
+            int redI = 0;
+            int blueI = 0;
+            foreach(GameResult.PlayerResult player in result.PlayerResults)
+            {
+                ScoreboardUI ui = null;
+                switch(player.Team)
+                {
+                    case IAIBase.ETeam.TEAM_BLUE:
+                        ui = redScoreboard[redI];
+                        ++redI;
+                        break;
+
+                    case IAIBase.ETeam.TEAM_RED:
+                        ui = blueScoreboard[blueI];
+                        ++blueI;
+                        break;
+                }
+
+                if(ui != null)
+                {
+                    ui.Name = player.PlayerName;
+                    ui.Kills = player.Kills.ToString();
+                    ui.Deaths = player.Deaths.ToString();
+                    ui.Flags = player.Flags.ToString();
+                    ui.EXP = player.EXP.ToString();
+                }
+            }
+        }
+
+        private void ShowWinnerText(GameResult result)
+        {
+            if (result.RedScore > result.BlueScore)
+            {
+                winnerTeam.color = Color.red;
+                winnerTeam.text = "Red Team";
+            }
+            else if (result.BlueScore > result.RedScore)
+            {
+                winnerTeam.color = Color.blue;
+                winnerTeam.text = "Blue Team";
+            }
+            else
+            {
+                winnerTeam.color = Color.white;
+                winnerTeam.text = "It's a Draw. No one";
             }
         }
 

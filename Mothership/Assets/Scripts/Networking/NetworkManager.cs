@@ -162,6 +162,13 @@ namespace Mothership
             clientManager.SendGameMessage(new PlayerRespawn());
         }
 
+        [RPC]
+        private void RPCGameResult(string result)
+        {
+            GameResult gameResult = JsonUtility.ValidateJsonData<GameResult>(result);
+            clientManager.SendGameMessage(new GameResultReceived() { Result = gameResult });
+        }
+
         #endregion
 
         #region Client->Server

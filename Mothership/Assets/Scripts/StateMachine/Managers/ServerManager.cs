@@ -72,7 +72,7 @@ namespace Mothership
             int blueCount = registeredClients.Count(c => c.ClientTeam == IAIBase.ETeam.TEAM_BLUE);
 
             IAIBase.ETeam team = redCount <= blueCount ? IAIBase.ETeam.TEAM_RED : IAIBase.ETeam.TEAM_BLUE;
-            switch(team)
+            switch (team)
             {
                 case IAIBase.ETeam.TEAM_RED:
                     teamOrder = redCount;
@@ -131,6 +131,28 @@ namespace Mothership
             yield return new WaitForSeconds(Constants.GAME_PLAYER_RESPAWN_COUNTDOWN);
             SendGameMessage(new PlayerRespawn() { Player = client });
         }
+
+        public GameResult.PlayerResult[] GetPlayerResults()
+        {
+            GameResult.PlayerResult[] result = new GameResult.PlayerResult[registeredClients.Count];
+            int i = 0;
+            foreach(ClientDataOnServer client in registeredClients)
+            {
+                GameResult.PlayerResult playerResult = new GameResult.PlayerResult()
+                {
+                    PlayerName = client.Profile.DisplayName,
+                    Team = client.ClientTeam,
+                    Kills = client.KillCount,
+                    Deaths = client.DeathCount,
+                    Flags = client.CaptureCount,
+                    EXP = client.EXP
+                };
+
+                result[i] = playerResult;
+                ++i;
+            }
+            return result;
+        }
     }
-    
+
 }

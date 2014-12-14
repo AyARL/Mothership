@@ -6,9 +6,6 @@ namespace MothershipStateMachine
 {
     public class ServerGameEndState : ServerGameState
     {
-        int blueScore = 0;
-        int redScore = 0;
-
         public ServerGameEndState(ServerManager manager) : base(manager)
         {
 
@@ -29,8 +26,8 @@ namespace MothershipStateMachine
                 MsgScoreUpdate score = enter.Message as MsgScoreUpdate;
                 if(score != null)
                 {
-                    blueScore = score.BlueScore;
-                    redScore = score.RedScore;
+                    GameResult result = new GameResult() { BlueScore = score.BlueScore, RedScore = score.RedScore, PlayerResults = serverManager.GetPlayerResults() };
+                    serverManager.networkManager.SendGameResult(result);
                 }
 
                 return;

@@ -119,4 +119,9 @@ namespace MothershipStateMachine
     }
 
     public class MatchExpired : GameMessage { }
+
+    public class GameResultReceived : GameMessage
+    {
+        public GameResult Result { get; set; }
+    }
 }
