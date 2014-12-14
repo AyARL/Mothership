@@ -25,8 +25,7 @@ namespace Mothership
 
         // Events
         public UnityAction OnClientRegistered { get; set; }
-        public UnityAction OnClientDied { get; set; }
-        public UnityAction<GameObject, IAIBase.ETeam> OnClientRespawned { get; set; }
+        public UnityAction OnMatchEnded { get; set; }
 
         public override void Init(NetworkManager networkManager)
         {
