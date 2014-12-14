@@ -63,7 +63,7 @@ public class CSpawner : MonoBehaviour {
     private IEnumerator InitiateSpawnCountDown()
     {
         m_bCanSpawn = false;
-        yield return new WaitForSeconds( 5 );
+        yield return new WaitForSeconds( 1 );
         m_bCanSpawn = true;
     }
 

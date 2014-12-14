@@ -274,13 +274,13 @@ public class IAIBase : MonoBehaviour
         if ( null == goObject )
         {
             // Check if one of the players is holding the flag.
-            GameObject goPlayer = CheckPlayersForFlag();
-            if ( null != goPlayer )
-            {
-                // A player is holding the flag, go towards him.
-                goObject = goPlayer;
-            }
-            else
+            //GameObject goPlayer = CheckPlayersForFlag();
+            //if ( null != goPlayer )
+            //{
+            //    // A player is holding the flag, go towards him.
+            //    goObject = goPlayer;
+            //}
+            //else
             {
                 // An AI character is holding the flag, go towards him.
                 goObject = m_goFlagHolder;
@@ -339,7 +339,10 @@ public class IAIBase : MonoBehaviour
         if ( null == m_liPath )
         {
             // This drone has no idea where he is, kill the sucker.
-            Die();
+            if ( false == m_bHasFlag )
+                Die( false );
+            else
+                Die( true );
         }
 
 		m_iNodeIndex = 0;
@@ -731,13 +734,6 @@ public class IAIBase : MonoBehaviour
                                                         PlayerTeam = m_eTeam,
                                                         KillerTeam = m_Attacker.Team });
         }
-
-        if ( null == gameObject )
-        {
-            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
-            return;
-        }
-
 
         Network.Destroy( gameObject );
         CSpawner.SpawnNPC( m_eTeam, m_eNPCType );

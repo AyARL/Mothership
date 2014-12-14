@@ -91,7 +91,10 @@ public class CDroneAI : IAIBase {
                 case EDroneState.DRONE_DEAD:
 
                     // The drone is dead, we have to clean up and get rid of it.
-                    Die();
+                    if ( true == m_bHasFlag )
+                        Die();
+                    else 
+                        Die( false );
                     
 
                     break;
@@ -124,6 +127,11 @@ public class CDroneAI : IAIBase {
             {
                 // Find the flag.
                 m_goFlag = FindFlag();
+
+                if ( null == m_goFlag )
+                {
+                    m_v3Target = GetClosestEnemy().transform.position;
+                }
 
                 // We couldn't find any power ups, we want the drone to go for the flag.
                 m_v3Target = m_goFlag.transform.position;
