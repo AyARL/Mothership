@@ -5,7 +5,7 @@ namespace MothershipUI
 {
     public class ScreenDispatch : MonoBehaviour
     {
-        public enum ScreenTarget { MainMenu, Profile, ClientLobby }
+        public enum ScreenTarget { MainMenu, Profile, ServerLobby }
         public static ScreenTarget screenToOpen = ScreenTarget.MainMenu;
 
         [SerializeField]
@@ -13,7 +13,7 @@ namespace MothershipUI
         [SerializeField]
         private ProfileGUI profileGUI = null;
         [SerializeField]
-        private ClientLobbyGUI clientLobbyGUI = null;
+        private ServerLobbyGUI serverLobbyGUI = null;
 
         private void Start()
         {
@@ -25,8 +25,8 @@ namespace MothershipUI
                 case ScreenTarget.Profile:
                     profileGUI.EnableScreen();
                     break;
-                case ScreenTarget.ClientLobby:
-                    clientLobbyGUI.EnableScreen();
+                case ScreenTarget.ServerLobby:
+                    serverLobbyGUI.Enable();
                     break;
             }
         }

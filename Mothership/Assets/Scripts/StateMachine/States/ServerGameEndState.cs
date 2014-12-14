@@ -30,6 +30,8 @@ namespace MothershipStateMachine
                     serverManager.networkManager.SendGameResult(result);
                 }
 
+                serverManager.networkManager.StartCoroutine(serverManager.networkManager.DisconnectClients());
+
                 return;
             }
         }

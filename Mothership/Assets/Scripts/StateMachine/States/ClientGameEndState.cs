@@ -28,8 +28,6 @@ namespace MothershipStateMachine
             if(exit != null)
             {
                 Network.Disconnect();
-                ScreenDispatch.screenToOpen = ScreenDispatch.ScreenTarget.Profile;
-                Application.LoadLevel(0);
             }
 
             base.OnGameMessage(message);

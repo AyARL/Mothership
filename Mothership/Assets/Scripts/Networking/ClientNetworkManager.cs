@@ -4,6 +4,7 @@ using UnityEngine.Events;
 using MothershipUtility;
 using MothershipOS;
 using MothershipStateMachine;
+using MothershipUI;
 
 namespace Mothership
 {
@@ -74,6 +75,9 @@ namespace Mothership
         {
             Debug.Log("Disconnected from server " + info.ToString());
             RemoveRoleManager();
+
+            ScreenDispatch.screenToOpen = ScreenDispatch.ScreenTarget.Profile;
+            Application.LoadLevel(0);
         }
 
         private void InitialiseRoleManager()

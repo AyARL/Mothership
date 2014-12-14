@@ -5,6 +5,7 @@ using MothershipUtility;
 using MothershipStateMachine;
 using System.Linq;
 using MothershipOS;
+using MothershipUI;
 
 namespace Mothership
 {
@@ -24,7 +25,7 @@ namespace Mothership
             {
                 GameName = gameName;
                 GameDescription = gameDescription;
-                NetworkConnectionError error = Network.InitializeServer(8, 25000, !Network.HavePublicAddress());
+                NetworkConnectionError error = Network.InitializeServer(Constants.GAME_MAX_PLAYERS, 25000, !Network.HavePublicAddress());
                 if (error == NetworkConnectionError.NoError)
                 {
                     MasterServer.RegisterHost(gameTypeName, GameName, GameDescription);
@@ -79,6 +80,18 @@ namespace Mothership
         private void OnPlayerDisconnected(NetworkPlayer player)
         {
             serverManager.SendGameMessage(new ClientDisconnected() { NetworkPlayer = player });
+        }
+
+        public IEnumerator DisconnectClients()
+        {
+            yield return new WaitForSeconds(10f);
+            Network.Disconnect();
+            Destroy(serverManager.gameObject);
+
+            ScreenDispatch.screenToOpen = ScreenDispatch.ScreenTarget.ServerLobby;
+            Application.LoadLevel(0);
+
+            StartServer(GameName, GameDescription);
         }
 
         public void SendClientRegistration(NetworkPlayer player, IAIBase.ETeam team, int teamOrder)
