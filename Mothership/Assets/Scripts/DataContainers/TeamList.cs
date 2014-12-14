@@ -18,6 +18,7 @@ namespace Mothership
             foreach (ClientDataOnServer p in players)
             {
                 TeamDisplayNames[i] = new TeamListRecord() { PlayerName = p.Profile.DisplayName, ReadyInLobby = p.ReadyToPlay, ReadyInMatch = p.LoadedLevel };
+                ++i;
             }
         }
     }
