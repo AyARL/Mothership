@@ -149,6 +149,11 @@ namespace MothershipReplication
                 else if (Network.isServer)
                 {
                     PlayerPayload latest = stateBuffer[0];
+
+                    // Check if we managed to get a PlayerPayLoad.
+                    if ( null == latest )
+                        return;
+
                     observedTransform.position = latest.Position;
                     observedTransform.rotation = latest.Rotation;
                     controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);

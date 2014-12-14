@@ -165,21 +165,21 @@ public class CDroneAI : IAIBase {
 				
 		if ( m_liPath != null )
 		{
+            if ( true == m_bReachedTarget )
+            {
+                // We reached our destination, switch to idle and clear the target
+                //  vector.
+                m_bReachedTarget = false;
+                m_eState = EDroneState.DRONE_IDLE;
+                m_v3Target = Vector3.zero;
+                return;
+            }
+
 			if ( true == m_bReachedNode )
 			{
 				m_bReachedNode = false;
 			    m_v3CurrNode = m_liPath[ m_iNodeIndex ];
 			} 
-            else if ( true == m_bReachedTarget )
-            {
-                // We reached our destination, switch to idle and clear the target
-                //  vector.
-                m_bReachedTarget = false;
-                //m_bReachedNode = false;
-                m_eState = EDroneState.DRONE_IDLE;
-                m_v3Target = Vector3.zero;
-                return;
-            }
             else
 				GoTo();
 		}

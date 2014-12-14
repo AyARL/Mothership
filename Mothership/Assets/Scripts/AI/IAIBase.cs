@@ -664,12 +664,18 @@ public class IAIBase : MonoBehaviour
             m_goFlagHolder = null;
         }
 
-        // Inform the server who killed this AI character.
-        ServerManager cServer = RoleManager.roleManager as ServerManager;
-        cServer.SendGameMessage( new MsgPlayerDied() { PlayerName = gameObject.name, 
-                                                    KillerName = m_Attacker.AttackerName,
-                                                    PlayerTeam = m_eTeam,
-                                                    KillerTeam = m_Attacker.Team });
+        // We only want to send the death message to the server if the attacker object has been defined.
+        //  The Die function is called on several occasions, one of them being when the drone has lost
+        //  its path and doesn't know how to go back, this means that the attacker may be undefined.
+        if ( null != m_Attacker )
+        { 
+            // Inform the server who killed this AI character.
+            ServerManager cServer = RoleManager.roleManager as ServerManager;
+            cServer.SendGameMessage( new MsgPlayerDied() { PlayerName = gameObject.name, 
+                                                        KillerName = m_Attacker.AttackerName,
+                                                        PlayerTeam = m_eTeam,
+                                                        KillerTeam = m_Attacker.Team });
+        }
 
         Network.Destroy( gameObject );
         CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
