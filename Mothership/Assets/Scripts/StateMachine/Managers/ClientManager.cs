@@ -105,7 +105,10 @@ namespace Mothership
 
         public void Die()
         {
-            Network.Destroy(PlayerController.gameObject);
+            if (PlayerController != null)
+            {
+                Network.Destroy(PlayerController.gameObject);
+            }
         }
 
         public bool LoadPrefabs()
