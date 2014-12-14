@@ -46,6 +46,11 @@ namespace MothershipStateMachine
                     {
                         clientManager.OnPlayerDied(playerDead.KillerName, playerDead.KillerTeam);
                     }
+
+                    if (clientManager.DroppedFlag != null)
+                    {
+                        clientManager.DroppedFlag();
+                    }
                 }
                 return;
             }
@@ -53,21 +58,54 @@ namespace MothershipStateMachine
             MsgFlagPickedUp flagPickUp = message as MsgFlagPickedUp;
             if (flagPickUp != null)
             {
+                if (flagPickUp.PlayerName == UserDataManager.userData.Profile.DisplayName)
+                {
+                    if (clientManager.CapturedFlag != null)
+                    {
+                        clientManager.CapturedFlag();
+                    }
+
+                    if (clientManager.OnPlayerDrivenEvent != null)
+                    {
+                        clientManager.OnPlayerDrivenEvent(UserDataManager.userData.Profile.DisplayName, flagPickUp.PlayerTeam, LogEventMessages.EVENT_PLAYER_FLAG_PICKUP);
+                    }
+                    return;
+                }
+
+
                 if(clientManager.OnPlayerDrivenEvent != null)
                 {
                     clientManager.OnPlayerDrivenEvent(flagPickUp.PlayerName, flagPickUp.PlayerTeam, LogEventMessages.EVENT_PLAYER_FLAG_PICKUP);
                 }
 
+               
                 return;
             }
 
             MsgFlagDelivered flagDelivered = message as MsgFlagDelivered;
             if (flagDelivered != null)
             {
-                if(clientManager.OnPlayerDrivenEvent != null)
+                
+                if (flagPickUp.PlayerName == UserDataManager.userData.Profile.DisplayName)
+                {
+                    if (clientManager.DroppedFlag != null)
+                    {
+                        clientManager.DroppedFlag();
+                    }
+
+                    if (clientManager.OnPlayerDrivenEvent != null)
+                    {
+                        clientManager.OnPlayerDrivenEvent(flagDelivered.PlayerName, flagDelivered.PlayerTeam, LogEventMessages.EVENT_PLAYER_FLAG_DROP_OFF);
+                    }
+                    return;
+                }
+
+                if (clientManager.OnPlayerDrivenEvent != null)
                 {
                     clientManager.OnPlayerDrivenEvent(flagDelivered.PlayerName, flagDelivered.PlayerTeam, LogEventMessages.EVENT_PLAYER_FLAG_DROP_OFF);
                 }
+
+
                 return;
             }
 

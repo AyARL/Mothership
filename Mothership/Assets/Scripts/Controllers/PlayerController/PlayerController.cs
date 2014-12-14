@@ -214,7 +214,16 @@ namespace Mothership
                 // Check if we collided with a base
                 if (goObject.tag == Tags.TAG_BASE)
                 {
-                    // Base collision logic - deliver flag / heal if own base
+                    ClientDataOnServer client = serverManager.RegisteredClients.First(c => c.NetworkPlayer == networkView.owner);
+
+                    if (goObject.name == Names.NAME_RED_BASE && client.ClientTeam == IAIBase.ETeam.TEAM_RED)
+                    {
+                        CollidedWithBase(client);
+                    }
+                    else if (goObject.name == Names.NAME_BLUE_BASE && client.ClientTeam == IAIBase.ETeam.TEAM_BLUE)
+                    {
+                        CollidedWithBase(client);
+                    }
                 }
 
                 // Depending on the name of the object, react accordingly.
@@ -259,19 +268,37 @@ namespace Mothership
             }
         }
 
-        private void OnTriggerEnter(Collider cCollider)
+        private void CollidedWithBase(ClientDataOnServer client)
         {
             if (Network.isServer)
             {
                 ServerManager cServer = RoleManager.roleManager as ServerManager;
 
+                if (HasFlag == true)
+                {
+                    // Inform the server that we delivered the flag to the base.
+                    cServer.SendGameMessage(new MsgFlagDelivered() { PlayerName = client.Profile.DisplayName, PlayerTeam = client.ClientTeam });
+                    HasFlag = false;
+                    CSpawner.SpawnFlag();
+                }
+
+                cServer.SendGameMessage(new PlayerHealed() { Heal = 1 });
+            }
+        }
+
+        private void OnTriggerEnter(Collider cCollider)
+        {
+            if (Network.isServer)
+            {
+                ServerManager cServer = RoleManager.roleManager as ServerManager;
+                ClientDataOnServer client = serverManager.RegisteredClients.First(c => c.NetworkPlayer == networkView.owner);
                 // Check if collided with the flag.
                 if (cCollider.name == Names.NAME_FLAG)
                 {
                     Network.Destroy(cCollider.gameObject);
                     HasFlag = true;
                     // Send message to the server manager.
-                    cServer.SendGameMessage(new MsgFlagPickedUp() { PlayerName = gameObject.name });
+                    cServer.SendGameMessage(new MsgFlagPickedUp() { PlayerName = client.Profile.DisplayName });
                 }
             }
         }

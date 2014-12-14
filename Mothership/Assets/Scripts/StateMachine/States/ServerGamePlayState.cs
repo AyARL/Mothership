@@ -88,6 +88,20 @@ namespace MothershipStateMachine
                 }
             }
 
+            PlayerHealed playerHeal = message as PlayerHealed;
+            if(playerHeal != null)
+            {
+                ClientDataOnServer clientData = serverManager.RegisteredClients.FirstOrDefault(c => c.NetworkPlayer == playerDamage.Player);
+                if (clientData != null)
+                {
+                    clientData.CurrentHealth = Mathf.Min(clientData.CurrentHealth + playerHeal.Heal, Constants.DEFAULT_HEALTH_DRONE);
+
+                    serverManager.networkManager.UpdateClientStats(clientData);
+                }
+
+                return;
+            }
+
             MsgPlayerDied msgPlayerDied = message as MsgPlayerDied;
             if ( null != msgPlayerDied )
             {
@@ -100,6 +114,12 @@ namespace MothershipStateMachine
                         clientData.DeathCount += 1;
                         clientData.CurrentHealth = 0;
                         serverManager.networkManager.UpdateClientStats( clientData );
+
+                        if(clientData.HasFlag == true)
+                        {
+                            clientData.HasFlag = false;
+                            CSpawner.SpawnFlag();
+                        }
                     }
 
                     if ( clientData.Profile.DisplayName == msgPlayerDied.KillerName )

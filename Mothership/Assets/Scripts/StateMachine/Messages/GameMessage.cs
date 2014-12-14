@@ -73,6 +73,11 @@ namespace MothershipStateMachine
         public IAIBase.ETeam PlayerTeam { get; set; }
     }
 
+    public class PlayerHealed : GameMessage
+    {
+        public int Heal { get; set; }
+    }
+
     public class PlayerTakenDamage : GameMessage
     {
         public NetworkPlayer Player { get; set; }
