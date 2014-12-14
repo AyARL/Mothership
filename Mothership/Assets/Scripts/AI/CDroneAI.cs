@@ -251,6 +251,9 @@ public class CDroneAI : IAIBase {
 
                 else
                 {
+                    if ( null == m_trClosestEnemy )
+                        return ;
+
                     // We want to head towards the enemy until we have a clear line of sight.
                     m_v3Target = m_trClosestEnemy.transform.position;
                     m_eState = EDroneState.DRONE_MOVING;
