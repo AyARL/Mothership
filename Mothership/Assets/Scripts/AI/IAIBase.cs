@@ -732,6 +732,13 @@ public class IAIBase : MonoBehaviour
                                                         KillerTeam = m_Attacker.Team });
         }
 
+        if ( null == gameObject )
+        {
+            CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
+            return;
+        }
+
+
         Network.Destroy( gameObject );
         CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
     }
