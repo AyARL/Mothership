@@ -85,8 +85,8 @@ namespace MothershipStateMachine
             MsgFlagDelivered flagDelivered = message as MsgFlagDelivered;
             if (flagDelivered != null)
             {
-                
-                if (flagPickUp.PlayerName == UserDataManager.userData.Profile.DisplayName)
+
+                if (flagDelivered.PlayerName == UserDataManager.userData.Profile.DisplayName)
                 {
                     if (clientManager.DroppedFlag != null)
                     {
