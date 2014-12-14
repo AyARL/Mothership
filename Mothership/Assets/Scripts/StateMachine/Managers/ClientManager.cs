@@ -30,6 +30,8 @@ namespace Mothership
         public UnityAction<TeamList, TeamList> OnUpdateTeamRoster { get; set; } // Called when updated team list arives from server
         public UnityAction<float> OnMatchCountdownStarted { get; set; } // Passes the time value for network latency, so a timer can be started with an adjusted value
         public UnityAction<float> OnMatchStarted { get; set; }    // Passes the time value for network latency, so a timer can be started with an adjusted value
+        public UnityAction CapturedFlag { get; set; } // Called when this player captured flag
+        public UnityAction DroppedFlag { get; set; } // Called when this player is no longer carrying the flag
         public UnityAction<IAIBase.ETeam, int> OnTeamScoreChanged { get; set; } // Passes the team colour and their current score
         public UnityAction<string, IAIBase.ETeam> OnPlayerDied { get; set; }    // Passes name and team for the killing player
         public UnityAction OnPlayerRespawn { get; set; } // Called when server gives the player all clear to respawn

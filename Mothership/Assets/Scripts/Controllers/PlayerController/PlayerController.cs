@@ -29,6 +29,8 @@ namespace Mothership
 
         float lastFireTime = 0f;
 
+        public bool HasFlag { get; private set; }
+
         //private Dictionary<string, int> inventory = new Dictionary<string, int>();
 
         // For debug
@@ -253,6 +255,23 @@ namespace Mothership
                         serverManager.SendGameMessage(new PlayerTakenDamage() { Player = networkView.owner, Damage = (int)cProjectile.Damage, Attacker = strAttackerName, AttackerTeam = eTeam });
 
                         break;
+                }
+            }
+        }
+
+        private void OnTriggerEnter(Collider cCollider)
+        {
+            if (Network.isServer)
+            {
+                ServerManager cServer = RoleManager.roleManager as ServerManager;
+
+                // Check if collided with the flag.
+                if (cCollider.name == Names.NAME_FLAG)
+                {
+                    Network.Destroy(cCollider.gameObject);
+                    HasFlag = true;
+                    // Send message to the server manager.
+                    cServer.SendGameMessage(new MsgFlagPickedUp() { PlayerName = gameObject.name });
                 }
             }
         }

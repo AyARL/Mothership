@@ -63,6 +63,11 @@ namespace MothershipStateMachine
             {
                 // Forward this message to the clients so they log the event.
                 serverManager.networkManager.ForwardFlagPickedUp( msgFlagPickedUp );
+                ClientDataOnServer client = serverManager.RegisteredClients.FirstOrDefault(c => c.Profile.DisplayName == msgFlagPickedUp.PlayerName);
+                if(client != null)
+                {
+                    client.HasFlag = true;
+                }
             }
 
             PlayerTakenDamage playerDamage = message as PlayerTakenDamage;

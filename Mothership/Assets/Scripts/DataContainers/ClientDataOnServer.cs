@@ -20,6 +20,8 @@ namespace Mothership
         public int CaptureCount { get; set; }
         public int EXP { get; set; }
 
+        public bool HasFlag { get; set; }
+
         public ClientDataOnServer(User user, Profile profile, NetworkPlayer networkPlayer, IAIBase.ETeam team)
         {
             User = user;
