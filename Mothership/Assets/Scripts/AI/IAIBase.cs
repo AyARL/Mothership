@@ -887,9 +887,14 @@ public class IAIBase : MonoBehaviour
             else if ( Network.isClient )
             {
                 CAIPayload latest = m_rgBuffer[0];
+
+                // Check if we managed to get an AIPayload.
+                if ( null == latest )
+                    return;
+
                 m_trObservedTransform.position = latest.Position;
                 m_trObservedTransform.rotation = latest.Rotation;
-                //m_trObservedTransform.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+                //SetAnimation( m_trObservedTransform );
             }
         }
     }
