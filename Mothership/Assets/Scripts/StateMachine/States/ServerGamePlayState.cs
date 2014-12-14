@@ -36,7 +36,7 @@ namespace MothershipStateMachine
                 {
                     serverManager.OnMatchEnded();
                 }
-                serverManager.ChangeState(serverManager.ServerGameEndState);
+                serverManager.ChangeState(serverManager.ServerGameEndState, new MsgScoreUpdate() { RedScore = m_iRedScore, BlueScore = m_iBlueScore });
                 return;
             }
 

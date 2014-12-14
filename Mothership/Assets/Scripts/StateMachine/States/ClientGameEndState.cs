@@ -19,7 +19,15 @@ namespace MothershipStateMachine
 
         public override void OnStateMessage(StateMessage message)
         {
-
+            OnEnterState enter = message as OnEnterState;
+            if(enter != null)
+            {
+                clientManager.Die();
+                if(clientManager.OnMatchEnded != null)
+                {
+                    clientManager.OnMatchEnded();
+                }
+            }
         }
     }
 

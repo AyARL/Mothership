@@ -6,6 +6,9 @@ namespace MothershipStateMachine
 {
     public class ServerGameEndState : ServerGameState
     {
+        int blueScore = 0;
+        int redScore = 0;
+
         public ServerGameEndState(ServerManager manager) : base(manager)
         {
 
@@ -22,6 +25,14 @@ namespace MothershipStateMachine
             if(enter != null)
             {
                 serverManager.networkManager.MatchExpired();
+
+                MsgScoreUpdate score = enter.Message as MsgScoreUpdate;
+                if(score != null)
+                {
+                    blueScore = score.BlueScore;
+                    redScore = score.RedScore;
+                }
+
                 return;
             }
         }
