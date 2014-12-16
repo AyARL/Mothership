@@ -159,7 +159,7 @@ public class CNodeController : MonoBehaviour {
 			foreach ( CNode cNode2 in liNodes )
 			{
                 // Check if this is the same node and if we already calculated this path.
-                if ( cNode1.NodePosition == cNode2.NodePosition && false == cNode2.PathsCalculated )
+                if ( cNode1.NodePosition == cNode2.NodePosition || true == cNode2.PathsCalculated )
                     continue;
 
                 // Get the distance between the two nodes and check if there's anything standing between
