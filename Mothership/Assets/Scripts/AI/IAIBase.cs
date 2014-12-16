@@ -778,7 +778,7 @@ public class IAIBase : MonoBehaviour
                 return;
             }
 
-            cProjectile.Direction = direction;
+            cProjectile.Direction = new Vector3 ( direction.x, direction.y - 0.1f, direction.z );
             cProjectile.Instantiator = gameObject;
             cProjectile.Activation = true;
             cProjectile.FiringPosition = position;
