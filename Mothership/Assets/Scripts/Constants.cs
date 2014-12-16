@@ -18,8 +18,8 @@ namespace Mothership
         public const float DEFAULT_HEALTH_WARRIOR = 200f;
         public const float DEFAULT_HEALTH_TANK = 400f;
 
-        public const float DEFAULT_ATTACK_RANGE = 40f;
-        public const float DEFAULT_MAX_PROJECTILE_RANGE = 50f;
+        public const float DEFAULT_ATTACK_RANGE = 60f;
+        public const float DEFAULT_MAX_PROJECTILE_RANGE = 70f;
 
         // Weapons related constants.
         public const float PROJECTILE_DAMAGE_BULLET = 10f;
@@ -62,6 +62,7 @@ namespace Mothership
         public const string RPC_FORWARD_CHARACTER_DIED = "RPCForwardCharacterDied";
         public const string RPC_FORWARD_FLAG_CAPTURED = "RPCForwardFlagCaptured";
         public const string RPC_SET_AI_ANIMATION = "SetAnimation";
+        public const string RPC_DESTROY_EXPLOSION = "RPCDestroyExplosion";
     }
 
     public class LogEventMessages

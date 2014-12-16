@@ -39,6 +39,10 @@ public class IAIBase : MonoBehaviour
     // A list holding all active blue NPCs.
     protected static List< GameObject > m_liActiveBlues = new List< GameObject >();
 
+    // We're going to instantiate this prefab whenever a drone dies.
+    [ SerializeField ]
+    protected GameObject m_goExplosionParticles ;
+
     [ SerializeField ]
     protected ETeam m_eTeam = ETeam.TEAM_NONE;
     public ETeam Team { get { return m_eTeam; } }
@@ -205,9 +209,9 @@ public class IAIBase : MonoBehaviour
     }
 
     /////////////////////////////////////////////////////////////////////////////
-    /// Function:               FixedUpdate
+    /// Function:               Update
     /////////////////////////////////////////////////////////////////////////////
-    protected void FixedUpdate()
+    protected void Update()
     {
         // For error reporting.
         string strFunction = "IAIBase::Update()";
@@ -335,13 +339,24 @@ public class IAIBase : MonoBehaviour
 	protected void SetTarget()
 	{
 		m_liPath = CNodeController.FindPath( transform.position, m_v3Target );
+
+        float fDistance = 0f;
+
         if ( null == m_liPath )
         {
-            // This drone has no idea where he is, kill the sucker.
-            if ( false == m_bHasFlag )
-                Die( false );
-            else
-                Die( true );
+            // We need to check if a player is nearby before we get rid of this drone.
+            //GameObject goPlayer = GetClosestPlayer();
+            //if ( goPlayer != null )
+            //    fDistance = Vector3.Distance( goPlayer.transform.position, transform.position );
+            
+            //if ( fDistance > 0 && fDistance < 20f )
+            {
+                // This drone has no idea where he is, kill the sucker.
+                if ( false == m_bHasFlag )
+                    Die( false );
+                else
+                    Die( true );
+            }
         }
 
 		m_iNodeIndex = 0;
@@ -536,6 +551,19 @@ public class IAIBase : MonoBehaviour
         }
 
         return liEnemyPlayers;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               GetClosestPlayer
+    /////////////////////////////////////////////////////////////////////////////
+    protected GameObject GetClosestPlayer()
+    {
+        List< PlayerController > liControllers = PlayerController.PlayerControllers;
+
+        float fLowestValue = liControllers.Min( entry => Vector3.Distance( entry.transform.position, transform.position ) );
+        GameObject goClosestEnemy = liControllers.Where( entry => Vector3.Distance( entry.transform.position, transform.position ) == fLowestValue ).First().gameObject;
+
+        return goClosestEnemy;
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -738,7 +766,12 @@ public class IAIBase : MonoBehaviour
                                                         KillerTeam = m_Attacker.Team });
         }
 
-        Network.Destroy( gameObject );
+        if ( gameObject )
+        { 
+            Network.Instantiate( m_goExplosionParticles, transform.position, Quaternion.identity, 0 );
+            Network.Destroy( gameObject );
+        }
+
         CSpawner.SpawnNPC( m_eTeam, m_eNPCType );
     }
 

@@ -38,10 +38,10 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Update
     /////////////////////////////////////////////////////////////////////////////
-	void FixedUpdate () 
+	void Update () 
 	{
         // Call in the interface update function.
-        base.FixedUpdate();
+        base.Update();
 
         if ( Network.isServer || true == Constants.DEBUG_MODE )
         { 
@@ -107,9 +107,6 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     private void RunIdleState()
     {
-        // Error reporting...
-        string strFunction = "CDroneAI::RunIdleState()";
-
         // Set the animator to the idle state.
         if ( !IsRunningLocally )
         {
@@ -285,8 +282,8 @@ public class CDroneAI : IAIBase {
 
                 else
                 {
-                    if ( null == m_trClosestEnemy )
-                        return ;
+                    //if ( null == m_trClosestEnemy )
+                    //    return ;
 
                     // We want to head towards the enemy until we have a clear line of sight.
                     m_v3Target = m_trClosestEnemy.transform.position;
@@ -316,7 +313,7 @@ public class CDroneAI : IAIBase {
                 //        if ( Random.Range( 0, 5 ) < 4 )
                 //        {
                 //            m_v3Target = m_goHomeBase.transform.position;
-                //            m_eState = EDroneState.DRONE_MOVING;
+                //            m_eState = EDroneState.DRONE_FLEE;
                 //            break;
                 //        }
                 //    }
