@@ -166,8 +166,7 @@ public class CDroneAI : IAIBase {
     private void RunMovingState()
     {
         // Enable the moving animation if it's not on.
-        if ( false == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
-            SetAnimation( AnimatorValues.ANIMATOR_INDEX_MOVING );
+        SetAnimation( AnimatorValues.ANIMATOR_INDEX_MOVING );
 
         m_fOldTime = m_fElapsedTime + 0.01f;
 
@@ -287,20 +286,20 @@ public class CDroneAI : IAIBase {
         {
             case EDroneState.DRONE_IDLE:
 
-                if ( true == m_bIsBeingAttacked )
-                {
-                    // Attempt to decide if we should attack or flee.
-                    if ( m_fHealth < Constants.DEFAULT_HEALTH_DRONE / 2 )
-                    {
-                        // There's a 4 in 6 chance that the drone will try to run to home base.
-                        if ( Random.Range( 0, 5 ) < 4 )
-                        {
-                            m_v3Target = m_goHomeBase.transform.position;
-                            m_eState = EDroneState.DRONE_MOVING;
-                            break;
-                        }
-                    }
-                }
+                //if ( true == m_bIsBeingAttacked )
+                //{
+                //    // Attempt to decide if we should attack or flee.
+                //    if ( m_fHealth < Constants.DEFAULT_HEALTH_DRONE / 2 )
+                //    {
+                //        // There's a 4 in 6 chance that the drone will try to run to home base.
+                //        if ( Random.Range( 0, 5 ) < 4 )
+                //        {
+                //            m_v3Target = m_goHomeBase.transform.position;
+                //            m_eState = EDroneState.DRONE_MOVING;
+                //            break;
+                //        }
+                //    }
+                //}
 
                 if ( Vector3.zero != m_v3Target )
                 {
@@ -325,7 +324,6 @@ public class CDroneAI : IAIBase {
                     m_bIsBeingAttacked = false;
                     break;
                 }
-
 
                 StartCoroutine( AttackTarget( m_trClosestEnemy.transform ) );
 

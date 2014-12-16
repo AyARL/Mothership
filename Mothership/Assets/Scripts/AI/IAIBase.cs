@@ -797,41 +797,44 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     private void OnSerializeNetworkView( BitStream stream, NetworkMessageInfo info )
     {
-        Vector3 v3Position = m_trObservedTransform.position;
-        Quaternion qRotation = m_trObservedTransform.rotation;
-        int iAnimFlagIndex = -1;
+        if ( Network.isServer )
+        { 
+            Vector3 v3Position = m_trObservedTransform.position;
+            Quaternion qRotation = m_trObservedTransform.rotation;
+            int iAnimFlagIndex = -1;
 
-        if ( stream.isWriting )    // Executed by owner of the network view
-        {
-            stream.Serialize( ref v3Position );
-            stream.Serialize( ref qRotation );
-
-            if ( m_bSendAnimationFlags == true )
+            if ( stream.isWriting )    // Executed by owner of the network view
             {
-                if ( m_dictAnimatorStates.Any( s => s.Value.State == true ) )
+                stream.Serialize( ref v3Position );
+                stream.Serialize( ref qRotation );
+
+                if ( m_bSendAnimationFlags == true )
                 {
-                    var animState = m_dictAnimatorStates.First( s => s.Value.State == true );
-                    iAnimFlagIndex = animState.Key;
+                    if ( m_dictAnimatorStates.Any( s => s.Value.State == true ) )
+                    {
+                        var animState = m_dictAnimatorStates.First( s => s.Value.State == true );
+                        iAnimFlagIndex = animState.Key;
 
+                    }
                 }
+                stream.Serialize( ref iAnimFlagIndex );
+
             }
-            stream.Serialize( ref iAnimFlagIndex );
-
-        }
-        else    // Executed by everyone else receiving the data
-        {
-            stream.Serialize( ref v3Position );
-            stream.Serialize( ref qRotation );
-            stream.Serialize( ref iAnimFlagIndex );
-
-            // Shift buffer
-            for ( int i = m_rgBuffer.Length - 1; i >= 1; i-- )
+            else    // Executed by everyone else receiving the data
             {
-                m_rgBuffer[i] = m_rgBuffer[i - 1];
-            }
+                stream.Serialize( ref v3Position );
+                stream.Serialize( ref qRotation );
+                stream.Serialize( ref iAnimFlagIndex );
 
-            // Insert latest data at the front of buffer
-            m_rgBuffer[ 0 ] = new CAIPayload() { Position = v3Position, Rotation = qRotation, ActiveAnimatorFlagIndex = iAnimFlagIndex, Timestamp = (float)info.timestamp };
+                // Shift buffer
+                for ( int i = m_rgBuffer.Length - 1; i >= 1; i-- )
+                {
+                    m_rgBuffer[i] = m_rgBuffer[i - 1];
+                }
+
+                // Insert latest data at the front of buffer
+                m_rgBuffer[ 0 ] = new CAIPayload() { Position = v3Position, Rotation = qRotation, ActiveAnimatorFlagIndex = iAnimFlagIndex, Timestamp = (float)info.timestamp };
+            }
         }
     }
 
