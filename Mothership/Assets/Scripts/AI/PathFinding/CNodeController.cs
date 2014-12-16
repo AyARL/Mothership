@@ -40,9 +40,12 @@ class CNode
 	private List< CNode > m_liConnectedNodes = new List< CNode >();
     public List< CNode > ConnectedNodes { get { return m_liConnectedNodes; } }
 
-
 	private List< CNode > m_liPotentialPrevPoints = new List< CNode >();
     public List<CNode> PotentialPrevNodes { get { return m_liPotentialPrevPoints; } }
+
+    // We're going to use this boolean to make sure we don't recalculate paths.
+    private bool m_bPathsCalculated = false;
+    public bool PathsCalculated { get { return m_bPathsCalculated; } set { m_bPathsCalculated = value; } }
 		
     /////////////////////////////////////////////////////////////////////////////
     /// CTOR:               CNode
@@ -151,12 +154,12 @@ public class CNodeController : MonoBehaviour {
         float fDistance = 0;
 
 		// Create the node connections for all our nodes.
-		foreach( CNode cNode1 in liNodes )
+		foreach ( CNode cNode1 in liNodes )
 		{
 			foreach ( CNode cNode2 in liNodes )
 			{
-                // Check if this is the same node.
-                if ( cNode1.NodePosition == cNode2.NodePosition )
+                // Check if this is the same node and if we already calculated this path.
+                if ( cNode1.NodePosition == cNode2.NodePosition && false == cNode2.PathsCalculated )
                     continue;
 
                 // Get the distance between the two nodes and check if there's anything standing between
@@ -175,6 +178,8 @@ public class CNodeController : MonoBehaviour {
 				//Debug.DrawRay( v3TargetPos, cNode1.NodePosition - v3TargetPos, Color.white, 1 );
 				cNode1.AddNode( cTargetNode );
 			}
+
+            cNode1.PathsCalculated = true;
 		}
 		
 		// Loop through a the node list and find all nodes which the NPC can use to travel to from the start node.

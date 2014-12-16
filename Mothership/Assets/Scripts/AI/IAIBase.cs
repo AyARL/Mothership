@@ -406,6 +406,7 @@ public class IAIBase : MonoBehaviour
                     return;
 
                 string strAttackerName = "";
+                ETeam eTeam = ETeam.TEAM_NONE;
 
                 if ( cProjectile.Instantiator.tag == Tags.TAG_PLAYER )
                 {
@@ -425,21 +426,24 @@ public class IAIBase : MonoBehaviour
                     {
                         if ( cNetworkPlayer == clientData.NetworkPlayer )
                             strAttackerName = clientData.Profile.DisplayName;
+
+                        eTeam = clientData.ClientTeam;
                     }
                 }
                 else
                 { 
                     // This is not a player, we can just set the name.
                     strAttackerName = cProjectile.Instantiator.gameObject.name;
+
+                    // Find the team using the attacker's name.
+                    if ( strAttackerName == Names.NAME_AI_DRONE_BLUE )
+                        eTeam = ETeam.TEAM_BLUE;
+
+                    else if ( strAttackerName == Names.NAME_AI_DRONE_RED )
+                        eTeam = ETeam.TEAM_RED;
                 }
-                ETeam eTeam = ETeam.TEAM_NONE;
 
-                // Find the team using the attacker's name.
-                if ( strAttackerName == Names.NAME_AI_DRONE_BLUE || strAttackerName == Names.NAME_PLAYER_BLUE_DRONE + "(Clone)" )
-                    eTeam = ETeam.TEAM_BLUE;
-
-                else if ( strAttackerName == Names.NAME_AI_DRONE_RED  || strAttackerName == Names.NAME_PLAYER_RED_DRONE + "(Clone)" )
-                    eTeam = ETeam.TEAM_RED;
+                
                 
                 m_Attacker = new CAttacker() { AttackerName = strAttackerName, Team = eTeam };
 
@@ -797,50 +801,34 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     private void OnSerializeNetworkView( BitStream stream, NetworkMessageInfo info )
     {
-        if ( Network.isServer )
-        { 
-            Vector3 v3Position = m_trObservedTransform.position;
-            Quaternion qRotation = m_trObservedTransform.rotation;
-            int iAnimFlagIndex = -1;
+        Vector3 v3Position = m_trObservedTransform.position;
+        Quaternion qRotation = m_trObservedTransform.rotation;
 
-            if ( stream.isWriting )    // Executed by owner of the network view
+        if ( stream.isWriting )    // Executed by owner of the network view
+        {
+            stream.Serialize( ref v3Position );
+            stream.Serialize( ref qRotation );
+        }
+        else    // Executed by everyone else receiving the data
+        {
+            stream.Serialize( ref v3Position );
+            stream.Serialize( ref qRotation );
+
+            // Shift buffer
+            for ( int i = m_rgBuffer.Length - 1; i >= 1; i-- )
             {
-                stream.Serialize( ref v3Position );
-                stream.Serialize( ref qRotation );
-
-                if ( m_bSendAnimationFlags == true )
-                {
-                    if ( m_dictAnimatorStates.Any( s => s.Value.State == true ) )
-                    {
-                        var animState = m_dictAnimatorStates.First( s => s.Value.State == true );
-                        iAnimFlagIndex = animState.Key;
-
-                    }
-                }
-                stream.Serialize( ref iAnimFlagIndex );
-
+                m_rgBuffer[i] = m_rgBuffer[i - 1];
             }
-            else    // Executed by everyone else receiving the data
-            {
-                stream.Serialize( ref v3Position );
-                stream.Serialize( ref qRotation );
-                stream.Serialize( ref iAnimFlagIndex );
 
-                // Shift buffer
-                for ( int i = m_rgBuffer.Length - 1; i >= 1; i-- )
-                {
-                    m_rgBuffer[i] = m_rgBuffer[i - 1];
-                }
-
-                // Insert latest data at the front of buffer
-                m_rgBuffer[ 0 ] = new CAIPayload() { Position = v3Position, Rotation = qRotation, ActiveAnimatorFlagIndex = iAnimFlagIndex, Timestamp = (float)info.timestamp };
-            }
+            // Insert latest data at the front of buffer
+            m_rgBuffer[ 0 ] = new CAIPayload() { Position = v3Position, Rotation = qRotation, Timestamp = (float)info.timestamp };
         }
     }
 
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               SetAnimation
     /////////////////////////////////////////////////////////////////////////////
+    [RPC]
     public void SetAnimation( int index )
     {
         if( index >= 0 )
@@ -874,24 +862,13 @@ public class IAIBase : MonoBehaviour
         {
             clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
 
-            float interpolationTime = (float)Network.time - clientPing;
-
-            int iAnimationIndex = 0;
-
-            // Find out which animation this AI character is running.
-            foreach ( KeyValuePair< int, AnimatorBoolProperty > kvpAnim in m_dictAnimatorStates )
-            {
-                if ( true == kvpAnim.Value.State )
-                { 
-                    iAnimationIndex = kvpAnim.Key;
-                    break;
-                }
-            }
+            //float interpolationTime = (float)Network.time - clientPing;
+            float interpolationTime = (float)Network.time;
 
             // make sure there is at least one entry in the buffer
             if (m_rgBuffer[0] == null)
             {
-                m_rgBuffer[0] = new CAIPayload() { Position = m_trObservedTransform.position, Rotation = m_trObservedTransform.rotation, ActiveAnimatorFlagIndex = iAnimationIndex, Timestamp = 0 };
+                m_rgBuffer[0] = new CAIPayload() { Position = m_trObservedTransform.position, Rotation = m_trObservedTransform.rotation, Timestamp = 0 };
             }
 
             // Interpolation
@@ -920,7 +897,6 @@ public class IAIBase : MonoBehaviour
 
                         m_trObservedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
                         m_trObservedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
-                        SetAnimation( iAnimationIndex );
                         
 
                         return;
@@ -949,7 +925,6 @@ public class IAIBase : MonoBehaviour
 
                     m_trObservedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
                     m_trObservedTransform.rotation = lastSample.Rotation;
-                    SetAnimation( iAnimationIndex );
                     
                 }
             }

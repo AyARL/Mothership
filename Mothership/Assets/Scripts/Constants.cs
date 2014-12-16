@@ -61,6 +61,7 @@ namespace Mothership
         public const string RPC_FORWARD_FLAG_COLLECTED = "RPCForwardFlagCollected";
         public const string RPC_FORWARD_CHARACTER_DIED = "RPCForwardCharacterDied";
         public const string RPC_FORWARD_FLAG_CAPTURED = "RPCForwardFlagCaptured";
+        public const string RPC_SET_AI_ANIMATION = "SetAnimation";
     }
 
     public class LogEventMessages

@@ -111,7 +111,14 @@ public class CDroneAI : IAIBase {
         string strFunction = "CDroneAI::RunIdleState()";
 
         // Set the animator to the idle state.
-        SetAnimation( AnimatorValues.ANIMATOR_INDEX_IDLE );
+        if ( !IsRunningLocally )
+        {
+            networkView.RPC( RPCFunctions.RPC_SET_AI_ANIMATION, RPCMode.All, AnimatorValues.ANIMATOR_INDEX_IDLE );
+        }
+        else
+        {
+            SetAnimation( AnimatorValues.ANIMATOR_INDEX_IDLE );
+        }
 
         // We only want to set the target if it's unset.
         if ( m_v3Target != Vector3.zero )
@@ -166,7 +173,14 @@ public class CDroneAI : IAIBase {
     private void RunMovingState()
     {
         // Enable the moving animation if it's not on.
-        SetAnimation( AnimatorValues.ANIMATOR_INDEX_MOVING );
+        if ( !IsRunningLocally )
+        {
+            networkView.RPC( RPCFunctions.RPC_SET_AI_ANIMATION, RPCMode.All, AnimatorValues.ANIMATOR_INDEX_MOVING );
+        }
+        else
+        {
+            SetAnimation( AnimatorValues.ANIMATOR_INDEX_MOVING );
+        }
 
         m_fOldTime = m_fElapsedTime + 0.01f;
 
@@ -204,7 +218,14 @@ public class CDroneAI : IAIBase {
     private void RunAttackState()
     {
         // We want the animator to play the idle animation while attacking.
-        SetAnimation( AnimatorValues.ANIMATOR_INDEX_IDLE );
+        if ( !IsRunningLocally )
+        {
+            networkView.RPC( RPCFunctions.RPC_SET_AI_ANIMATION, RPCMode.All, AnimatorValues.ANIMATOR_INDEX_IDLE );
+        }
+        else
+        {
+            SetAnimation( AnimatorValues.ANIMATOR_INDEX_IDLE );
+        }
 
         // Get the direction towards the closest enemy and rotate the NPC to face him.
         Vector3 v3Direction = m_trClosestEnemy.transform.position - transform.position;
