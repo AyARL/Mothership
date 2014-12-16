@@ -205,9 +205,9 @@ public class IAIBase : MonoBehaviour
     }
 
     /////////////////////////////////////////////////////////////////////////////
-    /// Function:               Update
+    /// Function:               FixedUpdate
     /////////////////////////////////////////////////////////////////////////////
-    protected void Update()
+    protected void FixedUpdate()
     {
         // For error reporting.
         string strFunction = "IAIBase::Update()";
@@ -252,8 +252,6 @@ public class IAIBase : MonoBehaviour
             // Find the flag.
             if ( null == m_goFlag ) 
                 m_goFlag = FindFlag( m_eTeam );
-
-            m_liEnemyPlayers = GetEnemyPlayers( m_eTeam ); 
 
             // The server will send messages to the clients to inform them
             //  of AI position and state.
@@ -437,10 +435,10 @@ public class IAIBase : MonoBehaviour
                 ETeam eTeam = ETeam.TEAM_NONE;
 
                 // Find the team using the attacker's name.
-                if ( strAttackerName == Names.NAME_AI_DRONE_BLUE + "(Clone)" )
+                if ( strAttackerName == Names.NAME_AI_DRONE_BLUE || strAttackerName == Names.NAME_PLAYER_BLUE_DRONE + "(Clone)" )
                     eTeam = ETeam.TEAM_BLUE;
 
-                else if ( strAttackerName == Names.NAME_AI_DRONE_RED + "(Clone)" )
+                else if ( strAttackerName == Names.NAME_AI_DRONE_RED  || strAttackerName == Names.NAME_PLAYER_RED_DRONE + "(Clone)" )
                     eTeam = ETeam.TEAM_RED;
                 
                 m_Attacker = new CAttacker() { AttackerName = strAttackerName, Team = eTeam };
@@ -869,90 +867,88 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     protected void UpdateClients()
     {
-        //if (!networkView.isMine && Network.connections.Length > 0) // If this is remote side receiving the data and connection exists
+        if ( Network.isClient )
         {
-            if ( Network.isServer )
+            clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
+
+            float interpolationTime = (float)Network.time - clientPing;
+
+            int iAnimationIndex = 0;
+
+            // Find out which animation this AI character is running.
+            foreach ( KeyValuePair< int, AnimatorBoolProperty > kvpAnim in m_dictAnimatorStates )
             {
-                clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
-
-                float interpolationTime = (float)Network.time - clientPing;
-
-                // make sure there is at least one entry in the buffer
-                if (m_rgBuffer[0] == null)
-                {
-                    m_rgBuffer[0] = new CAIPayload() { Position = m_trObservedTransform.position, Rotation = m_trObservedTransform.rotation, ActiveAnimatorFlagIndex = -1, Timestamp = 0 };
+                if ( true == kvpAnim.Value.State )
+                { 
+                    iAnimationIndex = kvpAnim.Key;
+                    break;
                 }
+            }
 
-                // Interpolation
-                if (m_rgBuffer[0].Timestamp > interpolationTime)
+            // make sure there is at least one entry in the buffer
+            if (m_rgBuffer[0] == null)
+            {
+                m_rgBuffer[0] = new CAIPayload() { Position = m_trObservedTransform.position, Rotation = m_trObservedTransform.rotation, ActiveAnimatorFlagIndex = iAnimationIndex, Timestamp = 0 };
+            }
+
+            // Interpolation
+            if (m_rgBuffer[0].Timestamp > interpolationTime)
+            {
+                for (int i = 0; i < m_rgBuffer.Length; i++)
                 {
-                    for (int i = 0; i < m_rgBuffer.Length; i++)
+                    if (m_rgBuffer[i] == null)
                     {
-                        if (m_rgBuffer[i] == null)
-                        {
-                            continue;
-                        }
-
-                        // Find best fitting state or use the last one available
-                        if (m_rgBuffer[i].Timestamp <= interpolationTime || i == m_rgBuffer.Length - 1)
-                        {
-                            CAIPayload bestTarget = m_rgBuffer[Mathf.Max(i - 1, 0)];
-                            CAIPayload bestStart = m_rgBuffer[i];
-
-                            float timeDiff = bestTarget.Timestamp - bestStart.Timestamp;
-                            float lerpTime = 0f;
-
-                            if (timeDiff > 0.0001)
-                            {
-                                lerpTime = ((interpolationTime - bestStart.Timestamp) / timeDiff);
-                            }
-
-                            m_trObservedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
-                            m_trObservedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
-                            //controllerScript.CurrentAnimationFlag(bestTarget.ActiveAnimatorFlagIndex);
-
-                            return;
-                        }
+                        continue;
                     }
-                }
-                else
-                {
-                    //Extrapolation
-                    float extrapolationTime = (interpolationTime - m_rgBuffer[0].Timestamp);
 
-                    if (m_rgBuffer[0] != null && m_rgBuffer[1] != null)
+                    // Find best fitting state or use the last one available
+                    if (m_rgBuffer[i].Timestamp <= interpolationTime || i == m_rgBuffer.Length - 1)
                     {
-                        CAIPayload lastSample = m_rgBuffer[0];
-                        CAIPayload prevSample = m_rgBuffer[1];
+                        CAIPayload bestTarget = m_rgBuffer[Mathf.Max(i - 1, 0)];
+                        CAIPayload bestStart = m_rgBuffer[i];
 
-                        float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
+                        float timeDiff = bestTarget.Timestamp - bestStart.Timestamp;
                         float lerpTime = 0f;
 
                         if (timeDiff > 0.0001)
                         {
-                            lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
+                            lerpTime = ((interpolationTime - bestStart.Timestamp) / timeDiff);
                         }
 
-                        Vector3 predictedPosition = lastSample.Position + prevSample.Position;
+                        m_trObservedTransform.position = Vector3.Lerp(bestStart.Position, bestTarget.Position, lerpTime);
+                        m_trObservedTransform.rotation = Quaternion.Slerp(bestStart.Rotation, bestTarget.Rotation, lerpTime);
+                        SetAnimation( iAnimationIndex );
+                        
 
-                        m_trObservedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
-                        m_trObservedTransform.rotation = lastSample.Rotation;
-                        //controllerScript.CurrentAnimationFlag(lastSample.ActiveAnimatorFlagIndex);
+                        return;
                     }
                 }
             }
-
-            else if ( Network.isClient )
+            else
             {
-                CAIPayload latest = m_rgBuffer[0];
+                //Extrapolation
+                float extrapolationTime = (interpolationTime - m_rgBuffer[0].Timestamp);
 
-                // Check if we managed to get an AIPayload.
-                if ( null == latest )
-                    return;
+                if (m_rgBuffer[0] != null && m_rgBuffer[1] != null)
+                {
+                    CAIPayload lastSample = m_rgBuffer[0];
+                    CAIPayload prevSample = m_rgBuffer[1];
 
-                m_trObservedTransform.position = latest.Position;
-                m_trObservedTransform.rotation = latest.Rotation;
-                //SetAnimation( m_trObservedTransform );
+                    float timeDiff = lastSample.Timestamp - prevSample.Timestamp;
+                    float lerpTime = 0f;
+
+                    if (timeDiff > 0.0001)
+                    {
+                        lerpTime = ((extrapolationTime - lastSample.Timestamp) / timeDiff);
+                    }
+
+                    Vector3 predictedPosition = lastSample.Position + prevSample.Position;
+
+                    m_trObservedTransform.position = Vector3.Lerp(lastSample.Position, predictedPosition, lerpTime);
+                    m_trObservedTransform.rotation = lastSample.Rotation;
+                    SetAnimation( iAnimationIndex );
+                    
+                }
             }
         }
     }

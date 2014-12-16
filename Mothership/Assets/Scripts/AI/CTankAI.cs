@@ -40,10 +40,10 @@ public class CTankAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Update
     /////////////////////////////////////////////////////////////////////////////
-	void Update () 
+	void FixedUpdate () 
 	{
         // Call in the interface update function.
-        base.Update();
+        base.FixedUpdate();
 
         // Will check if we need to transition to a new state
         CheckForTransitions();

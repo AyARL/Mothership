@@ -40,10 +40,10 @@ public class CWarriorAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Update
     /////////////////////////////////////////////////////////////////////////////
-	void Update () 
+	void FixedUpdate () 
 	{
         // Call in the interface update function.
-        base.Update();
+        base.FixedUpdate();
 
         // Will check if we need to transition to a new state
         CheckForTransitions();
@@ -104,12 +104,8 @@ public class CWarriorAI : IAIBase {
         // Error reporting...
         string strFunction = "CDroneAI::RunIdleState()";
 
-        // Check if the moving animation is on and disable it if it is.
-        if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_IS_MOVING ) )
-            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_IS_MOVING, false );
-
-        if ( true == m_anAnimator.GetBool( AnimatorValues.ANIMATOR_ENEMY_SEEN ) )
-            m_anAnimator.SetBool( AnimatorValues.ANIMATOR_ENEMY_SEEN, false );
+        // Set animation to idle.
+        SetAnimation( AnimatorValues.ANIMATOR_INDEX_IDLE );
 
         // We only want to set the target if it's unset.
         if ( m_v3Target != Vector3.zero )

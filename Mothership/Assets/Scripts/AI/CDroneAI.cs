@@ -38,10 +38,10 @@ public class CDroneAI : IAIBase {
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               Update
     /////////////////////////////////////////////////////////////////////////////
-	void Update () 
+	void FixedUpdate () 
 	{
         // Call in the interface update function.
-        base.Update();
+        base.FixedUpdate();
 
         if ( Network.isServer || true == Constants.DEBUG_MODE )
         { 
@@ -140,6 +140,12 @@ public class CDroneAI : IAIBase {
         }
 
         m_goFlag = FindFlag();
+        if ( null == m_goFlag )
+        {
+            // We can't find the flag so we should try to find an enemy player to attack.
+            m_v3Target = GetClosestEnemy().transform.position;
+            return;
+        }
 
         // We don't want the drone to lazy about, so we send it after the flag if it doesn't hold it.
         if ( false == m_bHasFlag )
