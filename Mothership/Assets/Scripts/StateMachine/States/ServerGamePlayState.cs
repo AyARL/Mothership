@@ -137,7 +137,12 @@ namespace MothershipStateMachine
             PlayerRespawn playerRespawn = message as PlayerRespawn;
             if(playerRespawn != null)
             {
-                serverManager.networkManager.RespawnPlayer(playerRespawn.Player);
+                ClientDataOnServer client = serverManager.RegisteredClients.FirstOrDefault(c => c.NetworkPlayer == playerRespawn.Player);
+                if (client != null)
+                {
+                    client.CurrentHealth = Constants.DEFAULT_HEALTH_DRONE;
+                    serverManager.networkManager.RespawnPlayer(playerRespawn.Player);
+                }
             }
 
             MsgFlagDelivered msgFlagDelivered = message as MsgFlagDelivered;
