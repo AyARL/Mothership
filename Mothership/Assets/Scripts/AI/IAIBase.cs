@@ -254,9 +254,10 @@ public class IAIBase : MonoBehaviour
                 m_goFlag = FindFlag( m_eTeam );
 
             // The server will send messages to the clients to inform them
-            //  of AI position and state.
-            UpdateClients();
+            //  of AI position and state.  
         }
+
+        UpdateClients();
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -504,7 +505,7 @@ public class IAIBase : MonoBehaviour
 
             // Send message to the server manager.
             ServerManager cServer = RoleManager.roleManager as ServerManager;
-            cServer.SendGameMessage( new MsgFlagPickedUp() { PlayerName = gameObject.name } );
+            cServer.SendGameMessage( new MsgFlagPickedUp() { PlayerName = gameObject.name, PlayerTeam = m_eTeam } );
         }
     }
 
@@ -799,15 +800,18 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     /// Function:               OnSerializeNetworkView
     /////////////////////////////////////////////////////////////////////////////
-    private void OnSerializeNetworkView( BitStream stream, NetworkMessageInfo info )
+    protected void OnSerializeNetworkView( BitStream stream, NetworkMessageInfo info )
     {
         Vector3 v3Position = m_trObservedTransform.position;
         Quaternion qRotation = m_trObservedTransform.rotation;
 
         if ( stream.isWriting )    // Executed by owner of the network view
         {
-            stream.Serialize( ref v3Position );
-            stream.Serialize( ref qRotation );
+            if ( Network.isServer )
+            { 
+                stream.Serialize( ref v3Position );
+                stream.Serialize( ref qRotation );
+            }
         }
         else    // Executed by everyone else receiving the data
         {
@@ -862,8 +866,7 @@ public class IAIBase : MonoBehaviour
         {
             clientPing = (Network.GetAveragePing(Network.connections[0]) / 100) + pingMargin;   // on client the only connection [0] is the server
 
-            //float interpolationTime = (float)Network.time - clientPing;
-            float interpolationTime = (float)Network.time;
+            float interpolationTime = (float)Network.time - clientPing;
 
             // make sure there is at least one entry in the buffer
             if (m_rgBuffer[0] == null)
