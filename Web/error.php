@@ -29,4 +29,10 @@
 		const Error_IncorrectCredentials = 2;
 		const Error_NoData = 3;
 	}
+
+	abstract class InsertGameResponse extends Response
+	{
+		const Error_GameInsertFailes = 2;
+		const Error_PlayerInsertFailed = 3;
+	}
 ?>

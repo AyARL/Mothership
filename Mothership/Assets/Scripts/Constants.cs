@@ -39,7 +39,7 @@ namespace Mothership
         public const int GAME_MIN_PLAYERS = 2;
         public const int GAME_MAX_PLAYERS = 8;
         public const int GAME_MAX_PLAYERS_PER_TEAM = GAME_MAX_PLAYERS / 2;
-        public const float GAME_MATCH_LENGTH = 300f; // seconds
+        public const float GAME_MATCH_LENGTH = 60f; // seconds
         public const int GAME_PLAYER_RESPAWN_COUNTDOWN = 5;
         public const bool DEBUG_MODE = false;
 

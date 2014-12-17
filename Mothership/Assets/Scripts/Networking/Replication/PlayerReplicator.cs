@@ -151,12 +151,12 @@ namespace MothershipReplication
                     PlayerPayload latest = stateBuffer[0];
 
                     // Check if we managed to get a PlayerPayLoad.
-                    if ( null == latest )
-                        return;
-
-                    observedTransform.position = latest.Position;
-                    observedTransform.rotation = latest.Rotation;
-                    controllerScript.CurrentAnimationFlag(latest.ActiveAnimatorFlagIndex);
+                    if (latest != null)
+                    {
+                        observedTransform.position = latest.Position;
+                        observedTransform.rotation = latest.Rotation;
+                        // Ignore the animation as it has no bearing on server behaviour
+                    }
                 }
                 #endregion
             }

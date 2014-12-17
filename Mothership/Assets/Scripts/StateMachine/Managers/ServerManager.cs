@@ -13,6 +13,7 @@ namespace Mothership
 
         private List<ClientDataOnServer> registeredClients;
         public IEnumerable<ClientDataOnServer> RegisteredClients { get { return registeredClients; } }
+        public int ClientCount { get { return registeredClients.Count; } }
 
         public float MatchStartTime { get; private set; }
         public float MatchDuration { get; private set; }

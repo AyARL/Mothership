@@ -208,7 +208,14 @@ namespace MothershipUI
                 noDataLabel.gameObject.SetActive(false);
                 dataGroup.SetActive(true);
                 datePlayed.text = lastGameStats.DatePlayed;
-                gameResult.text = lastGameStats.Winner == lastGameStats.Team ? "Win" : "Loss";
+                if (lastGameStats.Winner == "Draw")
+                {
+                    gameResult.text = "Draw";
+                }
+                else
+                {
+                    gameResult.text = lastGameStats.Winner == lastGameStats.Team ? "Win" : "Loss";
+                }
                 expEarned.text = lastGameStats.EXPEarned.ToString();
             }
             else
