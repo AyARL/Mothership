@@ -439,13 +439,16 @@ public class IAIBase : MonoBehaviour
                     // Get the network player. We're going to compare this to the ClientDataOnServer object.
                     NetworkPlayer cNetworkPlayer = cPlayerController.networkView.owner;
 
-                    ServerManager serverManager = RoleManager.roleManager as ServerManager;
-                    foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
+                    if (Network.isServer)
                     {
-                        if ( cNetworkPlayer == clientData.NetworkPlayer )
-                            strAttackerName = clientData.Profile.DisplayName;
+                        ServerManager serverManager = RoleManager.roleManager as ServerManager;
+                        foreach (ClientDataOnServer clientData in serverManager.RegisteredClients)
+                        {
+                            if (cNetworkPlayer == clientData.NetworkPlayer)
+                                strAttackerName = clientData.Profile.DisplayName;
 
-                        eTeam = clientData.ClientTeam;
+                            eTeam = clientData.ClientTeam;
+                        }
                     }
                 }
                 else
@@ -883,10 +886,17 @@ public class IAIBase : MonoBehaviour
         }
         else
         {
-            foreach ( var flag in m_dictAnimatorStates )
+            try
             {
-                m_dictAnimatorStates[ flag.Key ].State = false;
-                m_anAnimator.SetBool( flag.Value.Name, false );
+                foreach (var flag in m_dictAnimatorStates)
+                {
+                    m_dictAnimatorStates[flag.Key].State = false;
+                    m_anAnimator.SetBool(flag.Value.Name, false);
+                }
+            }
+            catch(System.Exception e)
+            {
+
             }
         }
     }
