@@ -126,6 +126,48 @@ public class IAIBase : MonoBehaviour
 
     protected Dictionary< int, AnimatorBoolProperty > m_dictAnimatorStates;
 
+    protected string FriendlyAIName
+    {
+        get 
+        {
+            switch ( m_eTeam )
+            {
+                case ETeam.TEAM_BLUE:
+
+                    return Names.NAME_AI_DRONE_BLUE;
+
+                case ETeam.TEAM_RED:
+
+                    return Names.NAME_AI_DRONE_RED;
+
+                default:
+
+                    return "NULL";
+            }
+        }
+    }
+
+    protected string EnemyAIName
+    {
+        get 
+        {
+            switch ( m_eTeam )
+            {
+                case ETeam.TEAM_BLUE:
+
+                    return Names.NAME_AI_DRONE_RED;
+
+                case ETeam.TEAM_RED:
+
+                    return Names.NAME_AI_DRONE_BLUE;
+
+                default:
+
+                    return "NULL";
+            }
+        }
+    }
+
     protected bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
 
     // Replication variables start here.
@@ -269,8 +311,6 @@ public class IAIBase : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////
     protected GameObject FindFlag( ETeam eTeam = ETeam.TEAM_NONE )
     {
-        string strFunction = "IAIBase::CDroneAI()";
-
         GameObject goObject = null;
 
         goObject = GameObject.Find( Names.NAME_FLAG );
@@ -331,44 +371,6 @@ public class IAIBase : MonoBehaviour
 		v3NewPos += v3Motion * m_fSpeed;
 		
 		transform.position = v3NewPos;
-	}
-	
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               SetTarget
-    /////////////////////////////////////////////////////////////////////////////
-	protected void SetTarget()
-	{
-		m_liPath = CNodeController.FindPath( transform.position, m_v3Target );
-
-        float fDistance = 0f;
-
-        if ( null == m_liPath )
-        {
-            // We need to check if a player is nearby before we get rid of this drone.
-            //GameObject goPlayer = GetClosestPlayer();
-            //if ( goPlayer != null )
-            //    fDistance = Vector3.Distance( goPlayer.transform.position, transform.position );
-            
-            //if ( fDistance > 0 && fDistance < 20f )
-            {
-                // This drone has no idea where he is, kill the sucker.
-                if ( false == m_bHasFlag )
-                    Die( false );
-                else
-                    Die( true );
-            }
-        }
-
-		m_iNodeIndex = 0;
-	}
-	
-    /////////////////////////////////////////////////////////////////////////////
-    /// Function:               MoveOrder
-    /////////////////////////////////////////////////////////////////////////////
-	protected void MoveOrder( Vector3 v3Pos )
-	{
-		m_v3Target = v3Pos;
-		SetTarget();
 	}
 
     /////////////////////////////////////////////////////////////////////////////
@@ -607,7 +609,6 @@ public class IAIBase : MonoBehaviour
 
         m_liEnemyPlayers= GetEnemyPlayers( m_eTeam );
 
-        int iCounter = 0;
         foreach ( GameObject goPlayer in m_liEnemyPlayers )
         {
             float fDistance = Vector3.Distance( goPlayer.transform.position, transform.position );
@@ -966,6 +967,29 @@ public class IAIBase : MonoBehaviour
             }
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               SetTarget
+    /////////////////////////////////////////////////////////////////////////////
+	virtual protected void SetTarget()
+	{
+		m_liPath = CNodeController.FindPath( transform.position, m_v3Target );
+        m_iNodeIndex = 0;
+
+        if ( null == m_liPath )
+        {
+            m_v3Target = GetClosestEnemy().position;
+        }
+	}
+	
+    /////////////////////////////////////////////////////////////////////////////
+    /// Function:               MoveOrder
+    /////////////////////////////////////////////////////////////////////////////
+	virtual protected void MoveOrder( Vector3 v3Pos )
+	{
+		m_v3Target = v3Pos;
+		SetTarget();
+	}
 }
 
 public class CAttacker

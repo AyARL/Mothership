@@ -6,11 +6,11 @@ public class CSimpleExplosionRemover : MonoBehaviour
 {
     private const float ONE_SECOND = 1f;
     private float m_fInstantiationTime = 0;
-    private bool IsRunningLocally { get { return !Network.isClient && !Network.isServer; } }
 
 	// Use this for initialization
 	void Start () 
     {
+        CAudioControl.CreateAndPlayAudio( transform.position, Audio.AUDIO_EFFECT_EXPLOSION, false, true, false, 1f );
         m_fInstantiationTime = Time.time;
 	}
 	
@@ -19,20 +19,8 @@ public class CSimpleExplosionRemover : MonoBehaviour
     {
 	    if ( m_fInstantiationTime <= Time.time - ONE_SECOND )
         { 
-            if ( !IsRunningLocally )
-            {
-                networkView.RPC( RPCFunctions.RPC_DESTROY_EXPLOSION, RPCMode.All );
-            }
-            else
-            {
-                RPCDestroyExplosion();
-            }
+            if ( Network.isServer )
+                Network.Destroy( gameObject );
         }
 	}
-
-    [RPC]
-    private void RPCDestroyExplosion()
-    {
-        Destroy( gameObject );
-    }
 }

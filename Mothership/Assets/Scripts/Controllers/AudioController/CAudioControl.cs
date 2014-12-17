@@ -32,6 +32,7 @@ public class CAudioControl : MonoBehaviour {
         Audio.AUDIO_EFFECT_MENU_SELECT,
         Audio.AUDIO_EFFECT_GAMEOVER,
         Audio.AUDIO_EFFECT_LEVEL_COMPLETED,
+        Audio.AUDIO_EFFECT_EXPLOSION,
     };
 
     private static bool m_bMainMenuMode = false;

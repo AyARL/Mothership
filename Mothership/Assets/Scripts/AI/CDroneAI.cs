@@ -194,6 +194,7 @@ public class CDroneAI : IAIBase {
                 // We reached our destination, switch to idle and clear the target
                 //  vector.
                 m_bReachedTarget = false;
+                m_bReachedNode = false;
                 m_eState = EDroneState.DRONE_IDLE;
                 m_v3Target = Vector3.zero;
                 return;
@@ -265,10 +266,21 @@ public class CDroneAI : IAIBase {
 
             if ( fDistance <= Constants.DEFAULT_ATTACK_RANGE )
             {
-                if ( false == Physics.Raycast( transform.position, m_trClosestEnemy.position - transform.position, Constants.DEFAULT_ATTACK_RANGE / 2 ) )
-		        {
-                    //Debug.DrawRay( transform.position, m_trClosestEnemy.position - transform.position, Color.red, Constants.DEFAULT_ATTACK_RANGE / 2 );
-                    // There's nothing in the way, we're free to fire.
+                 // We're going to use this variable to identify the object we're hitting.
+                RaycastHit rayHit;
+                if ( true == Physics.Raycast( transform.position, m_trClosestEnemy.transform.position - transform.position, out rayHit, Constants.DEFAULT_ATTACK_RANGE / 2 ) )
+                {
+                    // There's something standing halfway between us and our target, identify the object.
+                    if ( rayHit.collider.name != FriendlyAIName )
+                    { 
+                        // There are no friendly AI characters in the way, we're free to fire.
+                        bClearSight = true;
+                    }
+                }
+                
+                else if ( false == Physics.Raycast( transform.position, m_trClosestEnemy.transform.position - transform.position, Constants.DEFAULT_ATTACK_RANGE / 2 ) )
+                {
+                    // There's nothing in the way, fire.
                     bClearSight = true;
                 }
 
@@ -282,11 +294,8 @@ public class CDroneAI : IAIBase {
 
                 else
                 {
-                    //if ( null == m_trClosestEnemy )
-                    //    return ;
-
                     // We want to head towards the enemy until we have a clear line of sight.
-                    m_v3Target = m_trClosestEnemy.transform.position;
+                    m_v3Target = GetClosestEnemy().position;
                     m_eState = EDroneState.DRONE_MOVING;
                     m_bTargetInRange = false;
                 }
@@ -356,13 +365,18 @@ public class CDroneAI : IAIBase {
 
                 else if ( fDistance < Constants.DEFAULT_ATTACK_RANGE )
                 {
-                    if ( true == Physics.Raycast( transform.position, m_trClosestEnemy.transform.position - transform.position, Constants.DEFAULT_ATTACK_RANGE / 2 ) )
-		            {
-                        // There's something standing halfway between us and our target, move towards the target.
-                        //Debug.DrawRay( transform.position, m_v3Target - transform.position, Color.red, Constants.DEFAULT_ATTACK_RANGE / 2 );
-                        m_v3Target = m_trClosestEnemy.transform.position;
-                        m_eState = EDroneState.DRONE_MOVING;
-                        m_bTargetInRange = false;
+                    // We're going to use this variable to identify the object we're hitting.
+                    RaycastHit rayHit;
+                    if ( true == Physics.Raycast( transform.position, m_trClosestEnemy.transform.position - transform.position, out rayHit, Constants.DEFAULT_ATTACK_RANGE / 2 ) )
+                    {
+                        // There's something standing halfway between us and our target, identify the object.
+                        if ( rayHit.collider.name == FriendlyAIName )
+                        { 
+                            //Debug.DrawRay( transform.position, m_v3Target - transform.position, Color.red, Constants.DEFAULT_ATTACK_RANGE / 2 );
+                            m_v3Target = GetClosestEnemy().position;
+                            m_eState = EDroneState.DRONE_MOVING;
+                            m_bTargetInRange = false;
+                        }
                     }
                 }
 
