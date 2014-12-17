@@ -117,9 +117,6 @@ public class CNodeController : MonoBehaviour {
     /////////////////////////////////////////////////////////////////////////////
 	public static List< Vector3 > FindPath( Vector3 v3StartPos, Vector3 v3TargetPos )
 	{
-        // For error reporting.
-        string strFunction = "CNodeController::FindPath()";
-
 		// We need to check if we have a clear path towards the target.
 		float fTargetDistance = Vector3.Distance( v3StartPos, v3TargetPos );
 
