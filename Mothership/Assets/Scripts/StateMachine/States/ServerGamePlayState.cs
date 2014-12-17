@@ -11,6 +11,16 @@ namespace MothershipStateMachine
 
         private int m_iRedScore = 0;
 
+        private PlayerPrefabResourceSO prefabResource = null;
+        public PlayerPrefabResourceSO PrefabResource 
+        {
+            get
+            {
+                prefabResource = Resources.Load< PlayerPrefabResourceSO >( ResourcePacks.RESOURCE_PLAYER_PREFABS );
+                return prefabResource;
+            }
+        }
+
         public ServerGamePlayState(ServerManager manager)
             : base(manager)
         {
@@ -79,6 +89,8 @@ namespace MothershipStateMachine
                 // If client is dead
                 if(clientData.CurrentHealth <= 0)
                 {
+                    CAudioControl.CreateAndPlayAudio( playerDamage.PlayerPosition, Audio.AUDIO_EFFECT_EXPLOSION, false, true, false, 1f );
+                    Network.Instantiate( PrefabResource.ExplosionPrefab, playerDamage.PlayerPosition, Quaternion.identity, 0 );
                     serverManager.CountdownToPlayerRespawn(clientData.NetworkPlayer);
                     serverManager.SendGameMessage(new MsgPlayerDied() { PlayerName = clientData.Profile.DisplayName, PlayerTeam = clientData.ClientTeam, KillerName = playerDamage.Attacker, KillerTeam = playerDamage.AttackerTeam });
                 }
@@ -105,7 +117,6 @@ namespace MothershipStateMachine
             MsgPlayerDied msgPlayerDied = message as MsgPlayerDied;
             if ( null != msgPlayerDied )
             {
-
                 // Try to find the client data object for the scoring player and update his stats.
                 foreach ( ClientDataOnServer clientData in serverManager.RegisteredClients )
                 {

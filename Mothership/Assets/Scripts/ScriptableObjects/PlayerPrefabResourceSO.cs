@@ -12,5 +12,9 @@ namespace Mothership
         [SerializeField]
         private PlayerController blueDrone = null;
         public PlayerController BlueDrone { get { return blueDrone; } }
+
+        [SerializeField]
+        private GameObject explosionPrefab = null;
+        public GameObject ExplosionPrefab { get { return explosionPrefab; } }
     } 
 }

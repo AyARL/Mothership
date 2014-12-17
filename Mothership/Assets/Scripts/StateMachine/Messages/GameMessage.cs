@@ -81,6 +81,7 @@ namespace MothershipStateMachine
     public class PlayerTakenDamage : GameMessage
     {
         public NetworkPlayer Player { get; set; }
+        public Vector3 PlayerPosition { get; set; }
         public int Damage { get; set; }
         public string Attacker { get; set; }
         public IAIBase.ETeam AttackerTeam { get; set; }

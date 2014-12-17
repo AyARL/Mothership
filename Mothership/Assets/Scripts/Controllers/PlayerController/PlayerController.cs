@@ -261,7 +261,7 @@ namespace Mothership
                                 eTeam = IAIBase.ETeam.TEAM_RED;
                         }
 
-                        serverManager.SendGameMessage(new PlayerTakenDamage() { Player = networkView.owner, Damage = (int)cProjectile.Damage, Attacker = strAttackerName, AttackerTeam = eTeam });
+                        serverManager.SendGameMessage(new PlayerTakenDamage() { Player = networkView.owner, PlayerPosition = transform.position, Damage = (int)cProjectile.Damage, Attacker = strAttackerName, AttackerTeam = eTeam });
 
                         break;
                 }

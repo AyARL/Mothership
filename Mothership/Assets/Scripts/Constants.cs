@@ -198,6 +198,7 @@ namespace Mothership
         public const string RESOURCE_CONTAINER_AUDIO_OBJECTS = "AudioResource";
         public const string RESOURCE_CONTAINER_NPCS = "NPCResource";
         public const string RESOURCE_CONTAINER_ITEMS = "ItemsResource";
+        public const string RESOURCE_PLAYER_PREFABS = "PlayerPrefabResource";
     }
 
     public class PowerUpIDs
