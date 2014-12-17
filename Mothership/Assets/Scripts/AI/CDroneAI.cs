@@ -216,8 +216,10 @@ public class CDroneAI : IAIBase {
 
         // Get the direction towards the closest enemy and rotate the NPC to face him.
         Vector3 v3Direction = m_trClosestEnemy.transform.position - transform.position;
-
         transform.rotation = Quaternion.LookRotation( v3Direction.normalized );
+
+        // Start firing.
+        StartCoroutine( AttackTarget( m_trClosestEnemy.transform ) );
     }
   
     /////////////////////////////////////////////////////////////////////////////
@@ -352,8 +354,6 @@ public class CDroneAI : IAIBase {
                     m_bIsBeingAttacked = false;
                     break;
                 }
-
-                StartCoroutine( AttackTarget( m_trClosestEnemy.transform ) );
 
                 fDistance = Vector3.Distance( m_trClosestEnemy.transform.position, transform.position );
 
