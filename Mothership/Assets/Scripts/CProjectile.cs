@@ -140,11 +140,6 @@ public class CProjectile : MonoBehaviour {
             Destroy( gameObject );
 
         transform.Translate(newPos - transform.position);
-
-        // Draw some debug stuff
-        Debug.DrawLine(FiringPosition, FiringPosition + m_v3Direction * Constants.DEFAULT_MAX_PROJECTILE_RANGE, Color.green);
-        Debug.DrawLine(transform.position, transform.position + newPos, Color.yellow);
-
 	}
 
     /////////////////////////////////////////////////////////////////////////////
