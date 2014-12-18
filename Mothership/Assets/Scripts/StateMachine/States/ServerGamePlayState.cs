@@ -89,7 +89,7 @@ namespace MothershipStateMachine
                 // If client is dead
                 if(clientData.CurrentHealth <= 0)
                 {
-                    CAudioControl.CreateAndPlayAudio( playerDamage.PlayerPosition, Audio.AUDIO_EFFECT_EXPLOSION, false, true, false, 1f );
+                    CAudioControl.CreateAndPlayAudio( playerDamage.PlayerPosition, Audio.AUDIO_EFFECT_EXPLOSION, false, true, false, 2f );
                     Network.Instantiate( PrefabResource.ExplosionPrefab, playerDamage.PlayerPosition, Quaternion.identity, 0 );
                     serverManager.CountdownToPlayerRespawn(clientData.NetworkPlayer);
                     serverManager.SendGameMessage(new MsgPlayerDied() { PlayerName = clientData.Profile.DisplayName, PlayerTeam = clientData.ClientTeam, KillerName = playerDamage.Attacker, KillerTeam = playerDamage.AttackerTeam });
