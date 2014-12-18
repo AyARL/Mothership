@@ -7,7 +7,6 @@ namespace MothershipStateMachine
     public interface IState
     {
         void OnGameMessage(GameMessage message);
-
         void OnStateMessage(StateMessage message);
     }
 }

@@ -14,11 +14,15 @@ namespace Mothership
         // Going to use the below to teamlist variables to figure out how many AI NPCs are needed.
         private TeamList RedTeam { get; set; }
         private TeamList BlueTeam { get; set; }
+
+        // Server details entered by the client
         private string GameName { get; set; }
         private string GameDescription { get; set; }
 
+        // Event called whtn the server has been fully initialised
         public UnityAction OnServerReady { get; set; }
 
+        // Starts the server, initialises network interface and makes a registration call to the Master Server
         public void StartServer(string gameName, string gameDescription)
         {
             if (!Network.isServer && !Network.isClient)
@@ -37,7 +41,7 @@ namespace Mothership
             }
         }
 
-
+        // Respond to events from the master server.
         private void OnMasterServerEvent(MasterServerEvent msEvent)
         {
             Debug.Log("Master Server Event: " + msEvent.ToString());
@@ -45,20 +49,16 @@ namespace Mothership
             switch (msEvent)
             {
                 case MasterServerEvent.RegistrationSucceeded:
+                    // if there is no server manager yet, create one
                     if (serverManager == null)
                     {
                         InitialiseRoleManager();
                     }
                     break;
             }
-
         }
 
-        private void OnFailedToConnectToMasterServer(NetworkConnectionError info)
-        {
-            Debug.LogError(info.ToString());
-        }
-
+        // Create a ServerManager to handle game level communication
         private void InitialiseRoleManager()
         {
             GameObject roleManagerObj = new GameObject(roleManagerObjectName);
@@ -69,6 +69,12 @@ namespace Mothership
             {
                 OnServerReady();
             }
+        }
+
+
+        private void OnFailedToConnectToMasterServer(NetworkConnectionError info)
+        {
+            Debug.LogError(info.ToString());
         }
 
         private void OnPlayerConnected(NetworkPlayer newPlayer)
